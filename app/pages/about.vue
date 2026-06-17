@@ -1,5 +1,7 @@
 <script setup lang="ts">
 // About — story timeline, leadership, team (uses the Figma portrait assets).
+definePageMeta({ transparentHeader: true })
+
 const { t } = useI18n()
 const page = await usePageContent('about')
 

@@ -7,6 +7,7 @@
     "branches": "Branches",
     "careers": "Careers",
     "services": "Trust services",
+    "trust": "Trust",
     "news": "News",
     "login": "Log in",
     "logout": "Log out"
@@ -23,8 +24,9 @@
     "back": "Back"
   },
   "announcement": {
-    "text": "⚡ Beep Wallet — New loan terms are live",
-    "cta": "Learn more"
+    "text": "Beep Wallet - New loan terms are live",
+    "cta": "Learn more",
+    "dismiss": "Close"
   },
   "footer": {
     "about": "About",

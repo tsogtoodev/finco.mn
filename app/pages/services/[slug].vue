@@ -1,5 +1,7 @@
 <script setup lang="ts">
 // Trust service detail — PageHero + body + related + FAQ.
+definePageMeta({ transparentHeader: true })
+
 const route = useRoute()
 const { locale, t } = useI18n()
 const slug = computed(() => route.params.slug as string)
@@ -40,6 +42,7 @@ useSeoMeta({
 <template>
   <div v-if="service">
     <PageHero
+      dark
       :title="service.title"
       :subtitle="service.summary"
       :breadcrumb="[{ label: t('nav.home'), to: '/' }, { label: service.title }]"

@@ -1,61 +1,142 @@
 <script setup lang="ts">
-// Primary site header: wordmark, nav, locale switcher, auth. Mobile menu
-// slides in via motion-v (AnimatePresence).
+// Global site nav. ONE component, two page-driven treatments (Figma 1:14121 /
+// 1:13321):
+//   • solid  (default)      — white bg, dark text + full-colour logo. Homepage,
+//                             form pages. Gains a shadow once scrolled a touch.
+//   • overlay (transparent) — floats over a dark image hero with a white logo +
+//                             links and a top-down scrim, then transitions to the
+//                             solid treatment after scrolling past the hero top.
+//
+// The 36px AnnouncementBar lives above this row in the layout and scrolls away;
+// only this row is sticky (top:0). Height is 60px to match Figma — the "97px"
+// top bar in the brief is the announcement (36) + this row (60) + 1px border.
+const props = withDefaults(defineProps<{ transparent?: boolean }>(), {
+  transparent: false,
+})
+
 const { t } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
 
 const links = computed(() => [
+  { to: '/about', label: t('nav.about') },
   { to: '/products', label: t('nav.products') },
   { to: '/business', label: t('nav.business') },
-  { to: '/about', label: t('nav.about') },
-  { to: '/branches', label: t('nav.branches') },
-  { to: '/careers', label: t('nav.careers') },
+  { to: '/services', label: t('nav.trust') },
+  { to: '/news', label: t('nav.news') },
 ])
 
+// ── scroll state ──────────────────────────────────────────────────────────
+const scrolled = ref(false) // past a small offset → drop shadow
+const pastHero = ref(false) // past the hero top → overlay flips to solid
+function onScroll() {
+  const y = window.scrollY
+  scrolled.value = y > 8
+  pastHero.value = y > 80
+}
+onMounted(() => {
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+})
+onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
+
+// ── mobile menu ───────────────────────────────────────────────────────────
 const mobileOpen = ref(false)
-// Close the mobile menu whenever the route changes.
 watch(() => route.fullPath, () => { mobileOpen.value = false })
+
+// Solid *appearance* = white bg + dark content. Overlay flips to it once the user
+// scrolls past the hero, or whenever the mobile menu is open (so the links stay
+// readable instead of sitting over a photo).
+const solid = computed(() => !props.transparent || pastHero.value || mobileOpen.value)
+const showScrim = computed(() => props.transparent && !solid.value)
+
+// Shrink-on-scroll: condense the bar (shorter row + smaller logo + shadow) once
+// scrolled. Overlay pages condense at the hero threshold (where they also turn
+// solid); solid pages condense after a small offset. The open mobile menu keeps
+// the bar at full height. On overlay pages the negative margin is matched to the
+// row height so the hero never shifts as the bar grows/shrinks.
+const condensed = computed(
+  () => !mobileOpen.value && (props.transparent ? pastHero.value : scrolled.value),
+)
+const showShadow = computed(() => condensed.value)
 </script>
 
 <template>
-  <header class="sticky top-0 z-40 border-b border-black/5 bg-background/90 backdrop-blur">
-    <div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-3.5">
-      <!-- Wordmark -->
-      <NuxtLink :to="localePath('/')" class="flex items-center gap-1.5 font-display text-xl font-bold tracking-tight text-primary">
-        <span class="inline-block size-2.5 rounded-full bg-teal" />
-        Finco
-      </NuxtLink>
+  <header
+    class="sticky top-0 z-50 transition-[background-color,border-color,box-shadow,margin] duration-200"
+    :class="[
+      solid ? 'border-b border-black/10 bg-white' : 'border-b border-transparent bg-transparent',
+      showShadow ? 'shadow-2xs' : 'shadow-none',
+      transparent ? (condensed ? '-mb-[52px]' : '-mb-[60px]') : '',
+    ]"
+  >
+    <!-- top-down scrim keeps the white nav legible over the hero before it solidifies -->
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-x-0 top-0 h-[120px] bg-gradient-to-b from-black/35 to-transparent transition-opacity duration-200"
+      :class="showScrim ? 'opacity-100' : 'opacity-0'"
+    />
 
-      <!-- Desktop nav -->
-      <nav class="hidden items-center gap-7 text-sm font-medium lg:flex">
+    <div
+      class="relative mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 transition-[height] duration-200"
+      :class="condensed ? 'h-[52px]' : 'h-[60px]'"
+    >
+      <!-- left: logo + desktop nav -->
+      <div class="flex items-center gap-8 xl:gap-16">
         <NuxtLink
-          v-for="l in links"
-          :key="l.to"
-          :to="localePath(l.to)"
-          class="text-secondary-foreground transition-colors hover:text-primary"
-          active-class="text-primary"
+          :to="localePath('/')"
+          class="relative block shrink-0 transition-[width,height] duration-200"
+          :class="condensed ? 'h-6 w-[120px]' : 'h-7 w-[140px]'"
+          aria-label="Finco Capital"
         >
-          {{ l.label }}
+          <FincoLogo
+            variant="color"
+            class="absolute inset-0 size-full transition-opacity duration-200"
+            :class="solid ? 'opacity-100' : 'opacity-0'"
+          />
+          <FincoLogo
+            variant="white"
+            class="absolute inset-0 size-full transition-opacity duration-200"
+            :class="solid ? 'opacity-0' : 'opacity-100'"
+          />
         </NuxtLink>
-      </nav>
 
-      <!-- Right actions -->
-      <div class="flex items-center gap-3">
-        <LocaleSwitcher class="hidden sm:flex" />
-        <AuthButton class="hidden sm:block" />
+        <nav class="hidden items-center gap-1 lg:flex">
+          <NuxtLink
+            v-for="l in links"
+            :key="l.to"
+            :to="localePath(l.to)"
+            class="rounded-full px-4 py-2 text-sm font-light transition-colors"
+            :class="solid ? 'text-dark hover:bg-black/5' : 'text-white hover:bg-white/10'"
+            :active-class="solid ? 'bg-black/[0.06] font-normal' : 'bg-white/15 font-normal'"
+          >
+            {{ l.label }}
+          </NuxtLink>
+        </nav>
+      </div>
+
+      <!-- right: locale switcher + mobile toggle -->
+      <div class="flex items-center gap-2">
+        <LocaleSwitcher :variant="solid ? 'solid' : 'overlay'" />
         <button
           type="button"
-          class="lg:hidden"
-          :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
+          class="rounded-full p-2 transition-colors lg:hidden"
+          :class="solid ? 'text-dark hover:bg-black/5' : 'text-white hover:bg-white/10'"
+          :aria-label="mobileOpen ? t('announcement.dismiss') : 'Menu'"
+          :aria-expanded="mobileOpen"
           @click="mobileOpen = !mobileOpen"
         >
-          <Icon :name="mobileOpen ? 'hugeicons:cancel-01' : 'hugeicons:menu-01'" class="size-6 text-foreground" />
+          <svg v-if="!mobileOpen" viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+          <svg v-else viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg>
         </button>
       </div>
     </div>
 
-    <!-- Mobile menu -->
+    <!-- mobile menu — solid white panel (readable in both modes), overlays content -->
     <AnimatePresence>
       <Motion
         v-if="mobileOpen"
@@ -63,21 +144,18 @@ watch(() => route.fullPath, () => { mobileOpen.value = false })
         :animate="{ opacity: 1, height: 'auto' }"
         :exit="{ opacity: 0, height: 0 }"
         :transition="{ duration: 0.25, ease: 'easeOut' }"
-        class="overflow-hidden border-t border-black/5 lg:hidden"
+        class="absolute inset-x-0 top-full overflow-hidden border-t border-black/10 bg-white shadow-2xs lg:hidden"
       >
-        <nav class="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3 text-sm font-medium">
+        <nav class="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
           <NuxtLink
             v-for="l in links"
             :key="l.to"
             :to="localePath(l.to)"
-            class="rounded-[--radius-sm] px-3 py-2 text-secondary-foreground transition-colors hover:bg-muted hover:text-primary"
+            class="rounded-[--radius-sm] px-3 py-2.5 text-sm font-light text-dark transition-colors hover:bg-black/5"
+            active-class="bg-black/[0.06] font-normal"
           >
             {{ l.label }}
           </NuxtLink>
-          <div class="mt-2 flex items-center justify-between border-t border-black/5 px-3 pt-3">
-            <LocaleSwitcher />
-            <AuthButton />
-          </div>
         </nav>
       </Motion>
     </AnimatePresence>

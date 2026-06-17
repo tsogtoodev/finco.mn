@@ -1,5 +1,7 @@
 <script setup lang="ts">
 // Careers — recruitment timeline (horizontal), perks, open positions.
+definePageMeta({ transparentHeader: true })
+
 const { locale, t } = useI18n()
 
 const page = await usePageContent('careers')

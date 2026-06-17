@@ -10,7 +10,8 @@
   --color-primary-hover: #1a3a6c;  /* derived darker step for hover/pressed */
   --color-teal: #13cfb9;           /* Beep accent / highlights */
   --color-accent: #5b5bd6;         /* blurple — CTAs, map pins — CONFIRM hex */
-  --color-dark: #28303f;           /* dark hero/footer backgrounds */
+  --color-dark: #28303f;           /* dark hero/footer backgrounds + nav text */
+  --color-announcement: #080a12;   /* near-black announcement bar (Figma 1:12280) */
 
   /* Neutrals & surfaces */
   --color-foreground: #09090b;          /* body text */

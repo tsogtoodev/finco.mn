@@ -1,5 +1,7 @@
 <script setup lang="ts">
 // Individual products catalog.
+definePageMeta({ transparentHeader: true })
+
 const { locale } = useI18n()
 
 const page = await usePageContent('products')
@@ -24,6 +26,7 @@ useSeoMeta({
 <template>
   <div>
     <PageHero
+      dark
       :eyebrow="page?.hero?.eyebrow"
       :title="page?.hero?.headline"
       :subtitle="page?.hero?.subheadline"

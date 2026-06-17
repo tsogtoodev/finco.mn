@@ -1,5 +1,7 @@
 <script setup lang="ts">
 // Branches — selectable list + photo + static map.
+definePageMeta({ transparentHeader: true })
+
 const { locale, t } = useI18n()
 
 const page = await usePageContent('branches')
@@ -23,6 +25,7 @@ useSeoMeta({
 <template>
   <div>
     <PageHero
+      dark
       :eyebrow="page?.hero?.eyebrow"
       :title="page?.hero?.headline"
       :subtitle="page?.hero?.subheadline"

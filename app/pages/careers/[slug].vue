@@ -1,5 +1,7 @@
 <script setup lang="ts">
 // Job detail + data-driven application form.
+definePageMeta({ transparentHeader: true })
+
 const route = useRoute()
 const { locale, t } = useI18n()
 const slug = computed(() => route.params.slug as string)
@@ -27,6 +29,7 @@ useSeoMeta({
 <template>
   <div v-if="job">
     <PageHero
+      dark
       :eyebrow="job.department"
       :title="job.title"
       :subtitle="job.summary"

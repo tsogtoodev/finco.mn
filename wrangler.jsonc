@@ -1,17 +1,16 @@
 {
   // Cloudflare Workers config for direct deploy (NuxtHub v0.10, no NuxtHub Admin).
-  // Nuxt's nitro `cloudflare-module` preset (v2.13) emits a Workers-Sites layout:
-  // worker entry at .output/server/index.mjs + static files served from a
-  // __STATIC_CONTENT KV that wrangler auto-creates from `site.bucket` on deploy.
-  // (Workers Sites is "legacy" but still deploys; modern Static Assets needs a
-  // newer nitro — revisit on upgrade.)
+  // Nuxt's nitro `cloudflare-module` preset (with compatibilityDate ≥ 2024-09-19)
+  // emits modern Workers Static Assets: worker entry at .output/server/index.mjs
+  // + static files in .output/public served via the ASSETS binding.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "finco-mn",
   "main": ".output/server/index.mjs",
   "compatibility_date": "2025-01-01",
   "compatibility_flags": ["nodejs_compat"],
-  "site": {
-    "bucket": "./.output/public"
+  "assets": {
+    "directory": ".output/public",
+    "binding": "ASSETS"
   },
   "observability": {
     "enabled": true
@@ -30,7 +29,8 @@
     "NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "finco-mn.firebasestorage.app",
     "NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "770110256021",
     "NUXT_PUBLIC_FIREBASE_APP_ID": "1:770110256021:web:188ff48afefdd58f163c9c",
-    "NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-4LXMHLLTKR"
+    "NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-4LXMHLLTKR",
+    "STUDIO_GITHUB_CLIENT_ID": "Ov23licOMn7LIJvNhX7y"
   },
 
   // Raw D1 binding queried by @nuxt/content (content.database.bindingName: 'DB').

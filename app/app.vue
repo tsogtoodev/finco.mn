@@ -7,17 +7,17 @@ useHead(() => ({
   meta: head.value.meta,
 }))
 
-// Default social share image (bundled template). Branded templates land in Phase 7.
-defineOgImageComponent('NuxtSeo', { title: 'finco.mn', description: 'Санхүүгийн шийдэл' })
+// Default social share image (bundled template).
+defineOgImageComponent('NuxtSeo', { title: 'finco.design', description: 'Санхүүгийн шийдэл' })
 
 // Site-wide structured data.
 useSchemaOrg([
   defineOrganization({
-    name: 'finco.mn',
-    url: 'https://finco.mn',
+    name: 'finco.design',
+    url: 'https://finco.design',
     logo: '/favicon.ico',
   }),
-  defineWebSite({ name: 'finco.mn' }),
+  defineWebSite({ name: 'finco.design' }),
 ])
 </script>
 

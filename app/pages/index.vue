@@ -26,7 +26,7 @@ const { data: news } = await useAsyncData(
 )
 
 useSeoMeta({
-  title: () => page.value?.hero?.headline ?? 'finco.mn',
+  title: () => page.value?.hero?.headline ?? 'finco.design',
   description: () => page.value?.hero?.subheadline,
 })
 </script>

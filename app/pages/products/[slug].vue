@@ -1,5 +1,7 @@
 <script setup lang="ts">
 // Product detail — (locale, slug) query + batched related lookup.
+definePageMeta({ transparentHeader: true })
+
 const route = useRoute()
 const { locale, t } = useI18n()
 const slug = computed(() => route.params.slug as string)
@@ -46,6 +48,7 @@ useSeoMeta({
 <template>
   <div v-if="product">
     <PageHero
+      dark
       :eyebrow="product.category"
       :title="product.title"
       :subtitle="product.summary"

@@ -11,8 +11,21 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@nuxtjs/seo',
     'nuxt-auth-utils',
+    'nuxt-studio',
     'motion-v/nuxt',
   ],
+
+  // Nuxt Studio v2 (self-hosted CMS). Editors visit /_studio on the deployed
+  // site and sign in via a GitHub OAuth app (STUDIO_GITHUB_CLIENT_ID/SECRET);
+  // edits commit to this repo's `main`, which triggers a redeploy.
+  studio: {
+    repository: {
+      provider: 'github',
+      owner: 'tsogtoodev',
+      repo: 'finco.mn',
+      branch: 'main',
+    },
+  },
 
   // Firebase = identity provider (client SDK). The server verifies its ID
   // tokens with `jose` and mints a sealed-cookie session via nuxt-auth-utils
@@ -71,7 +84,9 @@ export default defineNuxtConfig({
   },
 
   devtools: { enabled: true },
-  compatibilityDate: '2024-04-03',
+  // ≥ 2024-09-19 makes the cloudflare-module preset use modern Workers Static
+  // Assets (ASSETS binding) instead of the legacy Workers Sites/KV approach.
+  compatibilityDate: '2025-01-01',
 
   // Pin the modern Cloudflare Workers preset (Static Assets, ASSETS binding) so
   // `npm run build` in CI produces .output/server/index.mjs + .output/public for
@@ -89,16 +104,12 @@ export default defineNuxtConfig({
   },
 
   // @nuxt/content runs on the Cloudflare D1 binding provided by NuxtHub.
-  // (@nuxthub/core sets the Cloudflare nitro preset automatically.)
+  // (Studio v2 is configured above via the `studio` key — not content.preview,
+  // which was the deprecated v1 hosted approach.)
   content: {
     database: {
       type: 'd1',
       bindingName: 'DB',
-    },
-    // Nuxt Studio: enables live editing/preview. Connect the GitHub repo at
-    // https://nuxt.studio to manage content/ markdown + media via the CMS.
-    preview: {
-      api: 'https://api.nuxt.studio',
     },
   },
 })

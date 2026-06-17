@@ -24,7 +24,11 @@ const localePath = useLocalePath()
       <div class="absolute -right-10 bottom-0 size-72 rounded-full bg-accent/30 blur-[100px]" />
     </div>
 
-    <div class="relative mx-auto max-w-7xl px-4 py-16 sm:py-20">
+    <!-- dark heroes sit under the transparent overlay nav (60px); add top clearance -->
+    <div
+      class="relative mx-auto max-w-7xl px-4"
+      :class="dark ? 'pb-16 pt-28 sm:pb-20 sm:pt-32' : 'py-16 sm:py-20'"
+    >
       <nav v-if="breadcrumb?.length" class="mb-5 flex items-center gap-2 text-sm" :class="dark ? 'text-white/60' : 'text-muted-foreground'">
         <template v-for="(c, i) in breadcrumb" :key="i">
           <NuxtLink v-if="c.to" :to="localePath(c.to)" class="hover:text-primary">{{ c.label }}</NuxtLink>
