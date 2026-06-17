@@ -33,7 +33,8 @@ function goBack() {
       style="background: linear-gradient(250.94deg, rgba(0, 0, 0, 0.3) 7%, rgba(0, 0, 0, 0.78) 96%)"
     />
 
-    <div class="relative mx-auto flex w-full max-w-[1440px] flex-1 flex-col px-4 pb-14 pt-24 sm:px-10 sm:pt-28">
+    <!-- max-w-7xl + px-4 matches the header and page sections so the breadcrumb aligns with the nav logo -->
+    <div class="relative mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pb-14 pt-24 sm:pt-28">
       <!-- breadcrumb + back -->
       <div class="hero-rise flex flex-col gap-5">
         <nav aria-label="Breadcrumb">

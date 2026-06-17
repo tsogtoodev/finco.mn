@@ -12,6 +12,68 @@
     "login": "Log in",
     "logout": "Log out"
   },
+  "megaMenu": {
+    "individualLabel": "Individuals",
+    "businessLabel": "Business",
+    "beepTagline": "Manage your finances smartly",
+    "fincobizTagline": "Flexible financing for SMEs and businesses.",
+    "beepLogoAlt": "Beep",
+    "fincobizLogoAlt": "FincoBiz",
+    "items": {
+      "consumer-loan": {
+        "title": "Consumer loan",
+        "desc": "A simple, flexible loan that quickly meets your everyday financial needs"
+      },
+      "green-loan": {
+        "title": "🍀 Green consumer loan",
+        "desc": "A loan that finances energy-efficient, eco-friendly solutions"
+      },
+      "auto-loan": {
+        "title": "Auto loan",
+        "desc": "Get behind the wheel in just a few hours"
+      },
+      "collateral-loan": {
+        "title": "Quick collateral loan",
+        "desc": "The fastest way to get financing against real estate or movable assets"
+      },
+      "salary-loan": {
+        "title": "Salary loan",
+        "desc": "For employees of Premium Corporation's subsidiary companies"
+      },
+      "business-loan": {
+        "title": "Business loan",
+        "desc": "Flexible financing tailored to grow your operations and boost working capital"
+      },
+      "working-capital-loan": {
+        "title": "Business working-capital loan",
+        "desc": "Keeping your operations running is the foundation of stable business growth."
+      },
+      "investment-loan": {
+        "title": "Business investment loan",
+        "desc": "Financing aimed at production, equipment and long-term business growth"
+      },
+      "concrete-loan": {
+        "title": "Concrete-mix loan with PBM",
+        "desc": "A financing solution for purchasing concrete mix together with PBM LLC"
+      },
+      "machinery-loan": {
+        "title": "Special-terms loan for machinery & equipment",
+        "desc": "Finance equipment and technical tools on preferential terms"
+      },
+      "women-business-loan": {
+        "title": "Loan supporting women entrepreneurs",
+        "desc": "We understand and support women entrepreneurs first and foremost."
+      },
+      "green-business-loan": {
+        "title": "Green business loan",
+        "desc": "Financing dedicated to eco-friendly, sustainable businesses"
+      },
+      "quick-collateral-loan": {
+        "title": "Quick collateral loan",
+        "desc": "Pledge real estate or a vehicle for short-term financing"
+      }
+    }
+  },
   "locale": {
     "switch": "Language",
     "mn": "Монгол",
