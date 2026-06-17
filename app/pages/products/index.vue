@@ -1,43 +1,15 @@
 <script setup lang="ts">
-// Individual products catalog.
+// Individual loan catalog — renders the shared ProductsListing with audience.
 definePageMeta({ transparentHeader: true })
 
-const { locale } = useI18n()
-
-const page = await usePageContent('products')
-
-const { data: products } = await useAsyncData(
-  () => `products-individual-${locale.value}`,
-  () =>
-    queryCollection('products')
-      .where('locale', '=', locale.value)
-      .where('audience', '=', 'individual')
-      .order('order', 'ASC')
-      .all(),
-  { watch: [locale] },
-)
+const { t } = useI18n()
 
 useSeoMeta({
-  title: () => page.value?.hero?.headline,
-  description: () => page.value?.hero?.subheadline,
+  title: () => t('productsPage.headline'),
+  description: () => t('productsPage.intro.individual'),
 })
 </script>
 
 <template>
-  <div>
-    <PageHero
-      dark
-      :eyebrow="page?.hero?.eyebrow"
-      :title="page?.hero?.headline"
-      :subtitle="page?.hero?.subheadline"
-    >
-      <AudienceToggle active="individual" />
-    </PageHero>
-
-    <div class="mx-auto max-w-7xl px-4 py-16">
-      <ProductCardGrid :products="products ?? []" />
-    </div>
-
-    <FaqAccordion :items="page?.faq" />
-  </div>
+  <ProductsListing audience="individual" />
 </template>

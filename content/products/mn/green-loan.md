@@ -2,6 +2,7 @@
 locale: mn
 slug: green-loan
 audience: individual
+heroImage: /images/products/green.jpg
 title: Ногоон зээл
 summary: Байгаль орчинд ээлтэй шийдлүүдийг дэмжих хөнгөлөлттэй зээл.
 category: Ногоон зээл

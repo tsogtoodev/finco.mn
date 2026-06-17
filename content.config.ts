@@ -56,8 +56,10 @@ const services = defineCollection({
     locale,
     slug: z.string(),
     title: z.string(),
+    breadcrumb: z.string().optional(), // short label for the breadcrumb (≠ headline)
     summary: z.string().optional(),
     heroImage: z.string().optional(),
+    cta: link.optional(), // hero CTA pill → label + localized route
     order: z.number().optional(),
     related: z.array(z.string()).optional(),
     faq: z.array(faqItem).optional(),

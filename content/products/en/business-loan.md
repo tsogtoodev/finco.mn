@@ -2,6 +2,7 @@
 locale: en
 slug: business-loan
 audience: business
+heroImage: /images/products/collateral.jpg
 title: Business Loan
 summary: A flexible loan to finance expansion and working capital.
 category: Business loan

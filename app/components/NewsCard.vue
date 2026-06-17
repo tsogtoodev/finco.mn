@@ -1,31 +1,45 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-defineProps<{ item: Collections['news'] }>()
+// News card (Figma 1:14243): image with a signature large top-right radius,
+// then title + excerpt. Accepts a `news` collection doc or explicit fields.
+const props = defineProps<{
+  item?: Collections['news']
+  title?: string
+  excerpt?: string
+  image?: string
+  to?: string
+}>()
+
 const localePath = useLocalePath()
+const title = computed(() => props.title ?? props.item?.title ?? '')
+const excerpt = computed(() => props.excerpt ?? props.item?.excerpt)
+const image = computed(() => props.image ?? props.item?.image)
+const to = computed(() => props.to ?? props.item?.to)
 </script>
 
 <template>
-  <NuxtLink
-    :to="item.to ? localePath(item.to) : '#'"
-    class="group flex flex-col overflow-hidden rounded-[--radius] ring-1 ring-black/5 transition-shadow hover:shadow-2xs"
+  <component
+    :is="to ? 'NuxtLink' : 'div'"
+    :to="to ? localePath(to) : undefined"
+    class="group flex flex-col gap-6"
   >
-    <div class="aspect-[16/10] overflow-hidden bg-muted">
-      <img
-        v-if="item.image"
-        :src="item.image"
-        :alt="item.title"
+    <div class="h-[282px] overflow-hidden rounded-[--radius] rounded-tr-[90px] bg-muted">
+      <NuxtImg
+        v-if="image"
+        :src="image"
+        :alt="title"
         loading="lazy"
+        sizes="408px"
         class="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-      >
+      />
       <div v-else class="size-full bg-gradient-to-br from-primary/15 via-accent/10 to-teal/15" />
     </div>
-    <div class="flex flex-1 flex-col p-5">
-      <time class="text-xs text-muted-foreground">{{ item.publishedAt }}</time>
-      <h3 class="mt-2 font-display font-semibold text-foreground transition-colors group-hover:text-primary">
-        {{ item.title }}
+    <div class="flex flex-col gap-3">
+      <h3 class="font-display text-lg font-medium leading-snug text-black/90 transition-colors group-hover:text-primary">
+        {{ title }}
       </h3>
-      <p v-if="item.excerpt" class="mt-2 line-clamp-2 text-sm text-muted-foreground">{{ item.excerpt }}</p>
+      <p v-if="excerpt" class="text-base font-extralight leading-6 text-black/60">{{ excerpt }}</p>
     </div>
-  </NuxtLink>
+  </component>
 </template>

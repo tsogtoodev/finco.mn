@@ -21,7 +21,10 @@
     "getStarted": "Get started",
     "learnMore": "Learn more",
     "submit": "Submit",
-    "back": "Back"
+    "back": "Back",
+    "prev": "Previous",
+    "next": "Next",
+    "homeBreadcrumb": "Home"
   },
   "announcement": {
     "text": "Beep Wallet - New loan terms are live",
@@ -41,6 +44,65 @@
       "trust": "Trust services"
     }
   },
+  "home": {
+    "features": {
+      "heading": "Build it, own the future... ",
+      "headingAccent": "let's finance it!",
+      "subtext": "We bring financial solutions together in one place to power your next stage of growth.",
+      "fast": {
+        "title": "Fast decisions",
+        "body": "Optimised technology and processes resolve your financing request in the shortest possible time."
+      },
+      "secure": {
+        "title": "Fully secured",
+        "body": "We fully meet international information-security standards and confidently honour the commitments we make to our customers."
+      },
+      "smart": {
+        "title": "Smart scoring system",
+        "body": "Our behaviour-based scoring system offers you better terms while reducing risk."
+      }
+    },
+    "stats": {
+      "heading": "Faster, smarter, trustworthy financial solutions",
+      "customers": { "label": "Customers using our financial services" },
+      "funding": { "unit": "B+", "label": "Total financing disbursed" },
+      "users": { "label": "App users" }
+    },
+    "products": {
+      "heading": "Financial solutions tailored ",
+      "headingAccent": "to your needs",
+      "subtext": "Manage your finances more easily with products built for individuals and businesses."
+    },
+    "beep": {
+      "heading": "Feel, Build, Stand out",
+      "subtext": "BeepCU virtual credit card, loan products, savings and reward points — feel it every day, all in one place.",
+      "toggle": "Show more",
+      "appDownload": "Download app",
+      "expandLead": "A digital wallet that manages payments, transfers and purchases",
+      "expandRest": "all in one place. Use QR payments, card linking and transaction tracking quickly and easily.",
+      "pills": {
+        "purchase": "Purchases",
+        "loan": "Loans",
+        "loyalty": "Loyalty",
+        "luck": "Lucky rate",
+        "rewards": "Rewards",
+        "split": "BeepSplit",
+        "finance": "Finance tracker",
+        "energy": "Beep energy",
+        "card": "Credit card"
+      }
+    },
+    "fincobiz": {
+      "subtext": "A digital platform that handles business loans and flexible financing for companies in the fastest, simplest and easiest way.",
+      "calloutHeading": "Faster than you think",
+      "calloutSubtext": "The FincoBiz platform makes the whole journey — from application to decision — simpler and faster."
+    },
+    "contact": {
+      "heading": "Get in touch",
+      "subtext": "Send us your feedback about working together.",
+      "cta": "Send feedback"
+    }
+  },
   "footer": {
     "about": "About",
     "individuals": "Individuals",
@@ -51,7 +113,29 @@
     "contact": "Get in touch",
     "rights": "© 2026 Finco Capital. All rights reserved.",
     "terms": "Terms of service",
-    "privacy": "Privacy policy"
+    "privacy": "Privacy policy",
+    "iso": "ISO certifications",
+    "links": {
+      "branches": "Branch locations",
+      "consumerLoan": "Consumer loan",
+      "greenLoan": "🍀 Green loan",
+      "autoLease": "Auto leasing",
+      "autoCollateral": "Vehicle-secured loan",
+      "businessLoan": "Business loan",
+      "investmentLoan": "Investment loan",
+      "purchaseLoan": "Purchase loan",
+      "greenBusinessLoan": "🍀 Green business loan",
+      "womenLoan": "Loan for women entrepreneurs",
+      "trust": "Trust services",
+      "careers": "Open positions",
+      "news": "News & updates"
+    },
+    "disclaimer": [
+      "“Finco Capital NBFI LLC” is a financial institution operating within the framework of the relevant laws of Mongolia and the rules, regulations and policies of the Bank of Mongolia. We focus on delivering financial services transparently, reliably and accessibly.",
+      "The information published on this website is intended as a general overview of products and services. Service terms, criteria, fees, interest, periods and other details are determined by the contract and actual conditions of each product. Some services may require additional verification, information checks and supporting documents.",
+      "Finco Capital develops and delivers Beep, FincoBiz and other digital financial products and services, and the terms, options and requirements of each service may differ depending on the customer type and the nature of the service.",
+      "We value the privacy and security of customer information and protect it within the framework of the relevant laws, regulations and internal policies. Please review the terms of service and related policy documents before using our services."
+    ]
   },
   "contact": {
     "phone": "+976 7017 3311",
@@ -84,6 +168,52 @@
   },
   "related": {
     "heading": "Other products you may like"
+  },
+  "productsPage": {
+    "breadcrumbHome": "Home",
+    "breadcrumbCurrent": "Loan products",
+    "headline": "Financial solutions tailored to your needs",
+    "intro": {
+      "individual": "Manage your finances more smartly with loan products tailored to your personal needs",
+      "business": "Financing for your business operations, working capital and investment"
+    },
+    "cards": {
+      "collateral-loan": "Collateral loan",
+      "auto-loan": "Auto loan",
+      "green-loan": "Green consumer loan",
+      "consumer-loan": "Consumer loan",
+      "salary-loan": "Salary loan",
+      "business-loan": "Business loan",
+      "machinery-loan": "Special-terms loan for machinery & equipment",
+      "working-capital-loan": "Business working-capital loan",
+      "investment-loan": "Business investment loan",
+      "women-business-loan": "Loan supporting women entrepreneurs",
+      "green-business-loan": "Green business loan",
+      "concrete-loan": "Concrete-mix loan with PBM",
+      "quick-collateral-loan": "Quick collateral loan"
+    },
+    "faq": [
+      {
+        "question": "What documents do I need to apply for a loan?",
+        "answer": "Finco Capital NBFI LLC provides financial services within the framework of the relevant laws and regulations. The information published on this website is for general information purposes only and does not fully represent the final terms or decisions of any financial service. Terms, criteria and limits may vary depending on the product type and the customer's assessment."
+      },
+      {
+        "question": "Do I have to visit a branch in person?",
+        "answer": "No. You can submit your loan application fully online through the Beep Wallet app or the website."
+      },
+      {
+        "question": "How do I apply for a loan online?",
+        "answer": "Sign in to the Beep Wallet app, choose your loan type, fill in the required details and submit your application to receive a response within a short time."
+      },
+      {
+        "question": "What interest rates apply to loans?",
+        "answer": "The interest rate is set based on the product type, the loan term and the customer's credit assessment."
+      },
+      {
+        "question": "Can the loan term be extended?",
+        "answer": "Yes. For some products the loan term can be extended in accordance with the set conditions."
+      }
+    ]
   },
   "exam": {
     "title": "Exam",

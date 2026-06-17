@@ -4,9 +4,11 @@
 const props = withDefaults(
   defineProps<{
     to?: string
-    variant?: 'primary' | 'accent' | 'secondary' | 'outline' | 'ghost'
+    variant?: 'primary' | 'accent' | 'teal' | 'light' | 'secondary' | 'outline' | 'ghost'
     size?: 'sm' | 'md' | 'lg'
     arrow?: boolean
+    /** Fully rounded pill shape (Figma CTAs). Default is the 12px radius. */
+    pill?: boolean
     type?: 'button' | 'submit'
     disabled?: boolean
     block?: boolean
@@ -17,6 +19,8 @@ const props = withDefaults(
 const variants: Record<NonNullable<typeof props.variant>, string> = {
   primary: 'bg-primary text-white hover:bg-primary-hover',
   accent: 'bg-accent text-white hover:opacity-90',
+  teal: 'bg-teal text-white hover:opacity-90',
+  light: 'bg-white text-foreground shadow-2xs hover:bg-white/90',
   secondary: 'bg-secondary text-secondary-foreground hover:bg-muted',
   outline: 'border border-input text-foreground hover:border-primary hover:text-primary',
   ghost: 'text-foreground hover:bg-muted',
@@ -29,7 +33,8 @@ const sizes: Record<NonNullable<typeof props.size>, string> = {
 }
 
 const classes = computed(() => [
-  'inline-flex items-center justify-center gap-2 rounded-[--radius] font-display font-medium transition-colors disabled:opacity-60 disabled:pointer-events-none',
+  'inline-flex items-center justify-center gap-2 font-display font-medium transition-colors disabled:opacity-60 disabled:pointer-events-none',
+  props.pill ? 'rounded-full' : 'rounded-[--radius]',
   variants[props.variant],
   sizes[props.size],
   props.block && 'w-full',

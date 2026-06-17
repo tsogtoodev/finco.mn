@@ -2,6 +2,7 @@
 locale: mn
 slug: auto-loan
 audience: individual
+heroImage: /images/products/auto.jpg
 title: Автомашины зээл
 summary: Автомашин худалдан авахад зориулсан уян хатан нөхцөлтэй зээл.
 category: Хэрэглээний зээл

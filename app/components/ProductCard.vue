@@ -1,35 +1,56 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-defineProps<{ product: Collections['products'] }>()
+// Product card (Figma 1:14185): photo with a dark-green gradient overlay,
+// ExtraBold title + light description, and a "Дэлгэрэнгүй" CTA on hover.
+// Accepts either a `product` collection doc or explicit fields (home data file).
+const props = defineProps<{
+  product?: Collections['products']
+  title?: string
+  summary?: string
+  image?: string
+  category?: string
+  to?: string
+}>()
+
 const localePath = useLocalePath()
+
+const title = computed(() => props.title ?? props.product?.title ?? '')
+const summary = computed(() => props.summary ?? props.product?.summary ?? '')
+const image = computed(() => props.image ?? props.product?.heroImage)
+const category = computed(() => props.category ?? props.product?.category)
+const to = computed(() =>
+  props.to ?? (props.product ? `/products/${props.product.slug}` : undefined),
+)
 </script>
 
 <template>
-  <NuxtLink
-    :to="localePath(`/products/${product.slug}`)"
-    class="group relative flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-[--radius] bg-dark p-6 text-white ring-1 ring-black/5"
+  <component
+    :is="to ? 'NuxtLink' : 'div'"
+    :to="to ? localePath(to) : undefined"
+    class="group relative flex h-full min-h-[420px] flex-col justify-end overflow-hidden rounded-[--radius] bg-[#06322d]"
   >
-    <!-- Image -->
-    <img
-      v-if="product.heroImage"
-      :src="product.heroImage"
-      :alt="product.title"
+    <NuxtImg
+      v-if="image"
+      :src="image"
+      :alt="title"
       loading="lazy"
+      sizes="360px"
       class="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
-    >
-    <div v-else class="absolute inset-0 bg-gradient-to-br from-primary via-accent/80 to-teal/70" />
-    <!-- Legibility gradient -->
-    <div class="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 to-transparent" />
+    />
+    <!-- Dark-green legibility gradient -->
+    <div class="absolute inset-0 bg-gradient-to-t from-[rgba(4,20,18,0.85)] via-[rgba(4,20,18,0.35)] to-transparent" />
 
-    <div class="relative">
-      <span v-if="product.category" class="text-xs font-medium text-teal">{{ product.category }}</span>
-      <h3 class="mt-1 font-display text-lg font-semibold">{{ product.title }}</h3>
-      <p v-if="product.summary" class="mt-1 line-clamp-2 text-sm text-white/75">{{ product.summary }}</p>
-      <span class="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-white">
+    <div class="relative flex flex-col gap-3 p-6 pb-7">
+      <span v-if="category" class="text-xs font-medium text-teal">{{ category }}</span>
+      <h3 class="font-display text-xl font-extrabold leading-8 text-white">{{ title }}</h3>
+      <p v-if="summary" class="text-[15px] font-light leading-relaxed text-white/70">{{ summary }}</p>
+      <span
+        class="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+      >
         {{ $t('common.learnMore') }}
         <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-0.5" />
       </span>
     </div>
-  </NuxtLink>
+  </component>
 </template>

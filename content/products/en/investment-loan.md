@@ -2,6 +2,7 @@
 locale: en
 slug: investment-loan
 audience: business
+heroImage: /images/products/investment.jpg
 title: Investment Loan
 summary: A loan to finance long-term investments and projects.
 category: Investment

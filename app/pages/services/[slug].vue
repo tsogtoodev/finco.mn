@@ -3,7 +3,7 @@
 definePageMeta({ transparentHeader: true })
 
 const route = useRoute()
-const { locale, t } = useI18n()
+const { locale } = useI18n()
 const slug = computed(() => route.params.slug as string)
 
 const { data: service } = await useAsyncData(
@@ -41,16 +41,13 @@ useSeoMeta({
 
 <template>
   <div v-if="service">
-    <PageHero
-      dark
+    <ServiceHero
+      :image="service.heroImage"
       :title="service.title"
       :subtitle="service.summary"
-      :breadcrumb="[{ label: t('nav.home'), to: '/' }, { label: service.title }]"
+      :breadcrumb-current="service.breadcrumb || service.title"
+      :cta="service.cta"
     />
-
-    <article v-if="service.body" class="mx-auto max-w-3xl px-4 py-12">
-      <ContentRenderer :value="service" class="prose max-w-none" />
-    </article>
 
     <RelatedProductsCarousel :products="related ?? []" />
     <FaqAccordion :items="service.faq" />

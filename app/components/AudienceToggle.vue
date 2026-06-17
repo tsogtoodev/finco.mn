@@ -1,26 +1,42 @@
 <script setup lang="ts">
-// Segmented Иргэнд / Бизнест switch — navigates between /products and /business.
-// `active` marks which side is current.
-defineProps<{ active: 'individual' | 'business' }>()
+// Segmented Иргэнд / Бизнест switch pinned in the products hero. Each side is a
+// localized link to /products vs /business, so the audience swap is a real route
+// change (correct under the i18n locale prefix). Active pill matches the audience
+// brand: teal for individuals, blurple (accent) for business — per Figma 1:13616.
+import type { Audience } from '~/data/productListing'
+
+defineProps<{ audience: Audience }>()
 const { t } = useI18n()
 const localePath = useLocalePath()
 
-const options = computed(() => [
-  { key: 'individual', label: t('nav.products'), to: '/products' },
-  { key: 'business', label: t('nav.business'), to: '/business' },
-])
+const options = [
+  { key: 'individual', labelKey: 'nav.products', to: '/products' },
+  { key: 'business', labelKey: 'nav.business', to: '/business' },
+] as const
 </script>
 
 <template>
-  <div class="mt-8 inline-flex rounded-full bg-white p-1 ring-1 ring-black/5">
+  <div
+    role="tablist"
+    class="inline-flex items-center gap-1 rounded-[--radius] p-1.5 backdrop-blur-sm"
+    :class="audience === 'individual' ? 'bg-teal/10' : 'bg-accent/10'"
+  >
     <NuxtLink
       v-for="o in options"
       :key="o.key"
       :to="localePath(o.to)"
-      class="rounded-full px-5 py-2 text-sm font-medium transition-colors"
-      :class="o.key === active ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
+      role="tab"
+      :aria-selected="o.key === audience"
+      class="rounded-[--radius] px-6 py-1.5 text-base font-medium transition-colors sm:text-lg"
+      :class="
+        o.key === audience
+          ? audience === 'individual'
+            ? 'bg-teal text-white'
+            : 'bg-accent text-white'
+          : 'font-light text-white/80 hover:text-white'
+      "
     >
-      {{ o.label }}
+      {{ t(o.labelKey) }}
     </NuxtLink>
   </div>
 </template>

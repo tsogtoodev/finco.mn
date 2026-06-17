@@ -2,6 +2,7 @@
 locale: mn
 slug: business-loan
 audience: business
+heroImage: /images/products/collateral.jpg
 title: Бизнесийн зээл
 summary: Бизнесийн өргөтгөл, эргэлтийн хөрөнгийг санхүүжүүлэх уян хатан зээл.
 category: Бизнесийн зээл

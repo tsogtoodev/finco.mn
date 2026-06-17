@@ -2,6 +2,7 @@
 locale: mn
 slug: investment-loan
 audience: business
+heroImage: /images/products/investment.jpg
 title: Хөрөнгө оруулалтын зээл
 summary: Урт хугацаат хөрөнгө оруулалт, төслийг санхүүжүүлэх зээл.
 category: Хөрөнгө оруулалт

@@ -2,6 +2,7 @@
 locale: en
 slug: auto-loan
 audience: individual
+heroImage: /images/products/auto.jpg
 title: Auto Loan
 summary: A flexible loan for purchasing a vehicle.
 category: Consumer loan

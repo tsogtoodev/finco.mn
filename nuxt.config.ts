@@ -46,6 +46,12 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  // Local SVG icon set exported from Figma (cleaned, currentColor). Use as
+  // <Icon name="f:fast-time" />. Bundled server-side by @nuxt/icon.
+  icon: {
+    customCollections: [{ prefix: 'f', dir: './app/assets/svg' }],
+  },
+
   // Canonical site identity — drives @nuxtjs/seo (sitemap, canonical, og,
   // hreflang) and i18n baseUrl. URL is overridable via NUXT_PUBLIC_SITE_URL.
   site: {

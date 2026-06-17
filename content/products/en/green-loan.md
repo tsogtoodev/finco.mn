@@ -2,6 +2,7 @@
 locale: en
 slug: green-loan
 audience: individual
+heroImage: /images/products/green.jpg
 title: Green Loan
 summary: A discounted loan supporting eco-friendly choices.
 category: Green loan
