@@ -18,7 +18,7 @@ const cards = computed(() => productListing[props.audience])
         v-for="c in cards"
         :key="c.slug"
         :to="localePath(`/products/${c.slug}`)"
-        class="group relative flex h-[260px] items-center justify-center overflow-hidden rounded-[--radius] sm:h-[400px]"
+        class="group relative flex h-[260px] items-center justify-center overflow-hidden rounded-[var(--radius)] sm:h-[400px]"
       >
         <NuxtImg
           :src="c.image"

@@ -18,7 +18,7 @@ const options = [
 <template>
   <div
     role="tablist"
-    class="inline-flex items-center gap-1 rounded-[--radius] p-1.5 backdrop-blur-sm"
+    class="inline-flex items-center gap-1 rounded-[var(--radius)] p-1.5 backdrop-blur-sm"
     :class="audience === 'individual' ? 'bg-teal/10' : 'bg-accent/10'"
   >
     <NuxtLink
@@ -27,7 +27,7 @@ const options = [
       :to="localePath(o.to)"
       role="tab"
       :aria-selected="o.key === audience"
-      class="rounded-[--radius] px-6 py-1.5 text-base font-medium transition-colors sm:text-lg"
+      class="rounded-[var(--radius)] px-6 py-1.5 text-base font-medium transition-colors sm:text-lg"
       :class="
         o.key === audience
           ? audience === 'individual'

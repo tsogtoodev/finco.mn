@@ -50,7 +50,7 @@ function goBack() {
 
         <button
           type="button"
-          class="inline-flex h-10 w-fit items-center gap-2 rounded-[--radius] bg-secondary px-4 text-sm font-medium text-[#171717] transition-colors hover:bg-white"
+          class="inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius)] bg-secondary px-4 text-sm font-medium text-[#171717] transition-colors hover:bg-white"
           @click="goBack"
         >
           <Icon name="lucide:arrow-left" class="size-4" />
