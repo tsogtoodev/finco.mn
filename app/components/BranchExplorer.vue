@@ -1,55 +1,82 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
+// Selectable branch list (left) drives the building photo (middle) and the
+// animated map (right). Selection state lives here; first branch is default.
 const props = defineProps<{ branches: Collections['branches'][] }>()
+const { t } = useI18n()
 
 const activeSlug = ref(props.branches[0]?.slug)
-const active = computed(() => props.branches.find(b => b.slug === activeSlug.value) ?? props.branches[0])
+const active = computed(
+  () => props.branches.find(b => b.slug === activeSlug.value) ?? props.branches[0],
+)
 </script>
 
 <template>
-  <div class="grid gap-6 lg:grid-cols-2">
+  <div
+    class="grid gap-6 lg:grid-cols-[minmax(0,1.94fr)_minmax(0,1fr)_minmax(0,2fr)] lg:gap-12"
+  >
     <!-- Branch list -->
-    <ul class="space-y-3">
-      <li v-for="b in branches" :key="b.slug">
-        <button
-          type="button"
-          class="w-full rounded-[var(--radius)] border p-5 text-left transition-colors"
-          :class="b.slug === activeSlug ? 'border-primary bg-secondary' : 'border-input hover:border-primary/50'"
-          @click="activeSlug = b.slug"
-        >
-          <div class="flex items-center justify-between gap-3">
-            <span class="font-display font-semibold text-foreground">{{ b.name }}</span>
-            <Icon name="lucide:arrow-right" class="size-4 shrink-0 text-muted-foreground" />
-          </div>
-          <div
-            v-if="b.slug === activeSlug"
-            class="mt-3 space-y-1 text-sm text-muted-foreground"
-          >
-            <p v-if="b.hours">{{ b.hours }}</p>
-            <p v-if="b.phone">{{ b.phone }}</p>
-            <p>{{ b.address }}</p>
-          </div>
-        </button>
-      </li>
+    <ul class="flex flex-col gap-[19px]">
+      <BranchListItem
+        v-for="b in branches"
+        :key="b.slug"
+        :branch="b"
+        :active="b.slug === activeSlug"
+        @select="activeSlug = b.slug"
+      />
     </ul>
 
-    <!-- Photo + map -->
-    <div v-if="active" class="space-y-4">
-      <div class="relative aspect-[4/3] overflow-hidden rounded-[var(--radius)] bg-muted">
-        <img
+    <!-- Branch photo -->
+    <div
+      v-if="active"
+      class="relative h-72 overflow-hidden rounded-[24px] bg-muted lg:h-full"
+    >
+      <Transition name="branch-fade" mode="out-in">
+        <NuxtImg
           v-if="active.photo"
+          :key="active.slug"
           :src="active.photo"
-          :alt="active.name"
+          :alt="t('branchesPage.photoAlt', { name: active.name })"
+          width="415"
+          height="606"
           class="size-full object-cover"
-          loading="lazy"
-        >
-        <div v-else class="size-full bg-gradient-to-br from-primary/20 via-accent/15 to-teal/20" />
-        <span class="absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs text-white">
-          {{ active.name }}
-        </span>
+          sizes="sm:100vw md:50vw lg:280px"
+        />
+        <div v-else :key="active.slug" class="size-full bg-gradient-to-br from-primary/20 via-accent/15 to-teal/20" />
+      </Transition>
+      <div class="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+        <span class="text-sm font-semibold text-white">{{ active.caption || active.name }}</span>
       </div>
-      <MapEmbed :lat="active.coords.lat" :lng="active.coords.lng" :label="active.name" />
     </div>
+
+    <!-- Animated map -->
+    <MapEmbed
+      v-if="active"
+      class="h-80 lg:h-full"
+      :map-image="active.mapImage"
+      :pin="active.pin"
+      :lat="active.coords.lat"
+      :lng="active.coords.lng"
+      :label="active.name"
+      :aria-label="t('branchesPage.mapLabel', { name: active.name })"
+    />
   </div>
 </template>
+
+<style scoped>
+.branch-fade-enter-active,
+.branch-fade-leave-active {
+  transition: opacity 0.35s ease;
+}
+.branch-fade-enter-from,
+.branch-fade-leave-to {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .branch-fade-enter-active,
+  .branch-fade-leave-active {
+    transition: none;
+  }
+}
+</style>

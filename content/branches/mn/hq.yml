@@ -1,10 +1,12 @@
 locale: mn
 slug: hq
-name: Төв оффис
-address: Улаанбаатар, Сүхбаатар дүүрэг, Энхтайваны өргөн чөлөө
-phone: "+976 7700 0000"
-hours: Даваа–Баасан 09:00–18:00
-coords:
-  lat: 47.918
-  lng: 106.917
+name: Төв салбар
+hours: Даваа-Баасан 09:00-18:00 цаг
+phone: "8063-8484"
+address: СБД, 1-р хороо, Олимпийн гудамж, Minister Tower, 7-707
+caption: Ministet Tower, 7 давхар
+photo: /images/branches/minister-tower.jpg
+mapImage: /images/branches/map-base.jpg
+pin: { x: 0.5, y: 0.54 }
+coords: { lat: 47.918, lng: 106.917 }
 order: 1

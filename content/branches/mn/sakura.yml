@@ -1,8 +1,12 @@
 locale: mn
 slug: sakura
 name: Сакура салбар
-address: Улаанбаатар, Баянзүрх дүүрэг, Сакура хотхон
-phone: "+976 7700 0001"
-hours: Даваа–Баасан 09:00–18:00
+hours: Даваа-Баасан 09:00-18:00 цаг
+phone: "8063-8484"
+address: БЗД, 13-р хороо, Сакура хотхон, 1 давхар
+caption: Сакура салбар
+photo: /images/branches/minister-tower.jpg
+mapImage: /images/branches/map-base.jpg
+pin: { x: 0.63, y: 0.4 }
 coords: { lat: 47.9165, lng: 106.9405 }
 order: 2

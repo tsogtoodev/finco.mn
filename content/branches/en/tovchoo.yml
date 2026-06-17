@@ -1,8 +1,12 @@
 locale: en
 slug: tovchoo
 name: 22 Tovchoo Branch
-address: 22 Tovchoo, Songinokhairkhan District, Ulaanbaatar
-phone: "+976 7700 0003"
-hours: Mon–Fri 09:00–18:00
-coords: { lat: 47.9000, lng: 106.8300 }
+hours: Mon-Fri 09:00-18:00
+phone: "8063-8484"
+address: 22 Tovchoo, Ikh Naimaa, Songinokhairkhan District, 1st floor
+caption: 22 Tovchoo Branch
+photo: /images/branches/minister-tower.jpg
+mapImage: /images/branches/map-base.jpg
+pin: { x: 0.7, y: 0.58 }
+coords: { lat: 47.9, lng: 106.83 }
 order: 4

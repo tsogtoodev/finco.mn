@@ -3,4 +3,5 @@ key: branches
 hero:
   eyebrow: Branches
   headline: Branch locations
-  subheadline: Find the branch nearest you and get service.
+  accent: locations
+  subheadline: Choose the branch nearest you and get the service you need.

@@ -1,8 +1,12 @@
 locale: mn
 slug: zuun-ail
 name: 100 айл салбар
-address: Улаанбаатар, Баянзүрх дүүрэг, 100 айл
-phone: "+976 7700 0002"
-hours: Даваа–Баасан 09:00–18:00
-coords: { lat: 47.9210, lng: 106.9520 }
+hours: Даваа-Баасан 09:00-18:00 цаг
+phone: "8063-8484"
+address: БЗД, 100 айл, Худалдааны төв, 1 давхар
+caption: 100 айл салбар
+photo: /images/branches/minister-tower.jpg
+mapImage: /images/branches/map-base.jpg
+pin: { x: 0.4, y: 0.62 }
+coords: { lat: 47.921, lng: 106.952 }
 order: 3

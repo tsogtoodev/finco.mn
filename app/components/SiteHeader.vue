@@ -134,7 +134,6 @@ function onScroll() {
   scrolled.value = y > 8
   pastHero.value = y > 80
 }
-const reduceMotion = ref(false)
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && openMenu.value) escClose()
 }
@@ -142,7 +141,6 @@ onMounted(() => {
   onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('keydown', onKeydown)
-  reduceMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 })
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)
@@ -171,11 +169,6 @@ const condensed = computed(
   () => !mobileOpen.value && (props.transparent ? pastHero.value : scrolled.value),
 )
 const showShadow = computed(() => condensed.value)
-
-// ── panel animation (honours reduced motion) ───────────────────────────────
-const panelInitial = computed(() => (reduceMotion.value ? { opacity: 0 } : { opacity: 0, y: -8 }))
-const panelExit = computed(() => (reduceMotion.value ? { opacity: 0 } : { opacity: 0, y: -8 }))
-const panelTransition = computed(() => ({ duration: reduceMotion.value ? 0 : 0.18, ease: 'easeOut' }))
 </script>
 
 <template>
@@ -196,18 +189,12 @@ const panelTransition = computed(() => ({ duration: reduceMotion.value ? 0 : 0.1
     />
 
     <!-- dimming scrim behind an open mega-menu panel; click anywhere to close -->
-    <AnimatePresence>
-      <Motion
-        v-if="openMenu"
-        :initial="{ opacity: 0 }"
-        :animate="{ opacity: 1 }"
-        :exit="{ opacity: 0 }"
-        :transition="{ duration: reduceMotion ? 0 : 0.18 }"
-        class="fixed inset-0 z-40 hidden bg-black/10 backdrop-blur-[2px] lg:block"
-        aria-hidden="true"
-        @click="closeNow"
-      />
-    </AnimatePresence>
+    <div
+      v-if="openMenu"
+      class="scrim-fade fixed inset-0 z-40 hidden bg-black/10 backdrop-blur-[2px] lg:block"
+      aria-hidden="true"
+      @click="closeNow"
+    />
 
     <div
       ref="navWrap"
@@ -298,46 +285,39 @@ const panelTransition = computed(() => ({ duration: reduceMotion.value ? 0 : 0.1
 
       <!-- desktop mega-menu panel: full container width, dropped below the bar -->
       <div class="pointer-events-none absolute inset-x-4 top-full z-50 hidden lg:block">
-        <AnimatePresence>
-          <Motion
-            v-if="openMenu"
-            :id="`mega-${openMenu}`"
-            role="region"
-            :aria-label="menus[openMenu].sectionLabel"
-            :initial="panelInitial"
-            :animate="{ opacity: 1, y: 0 }"
-            :exit="panelExit"
-            :transition="panelTransition"
-            class="pointer-events-auto mt-2"
-            @mouseenter="cancelClose"
-            @mouseleave="scheduleClose"
-          >
-            <NavMegaMenu
-              :section-label="menus[openMenu].sectionLabel"
-              :links="menus[openMenu].links"
-              :promo-side="menus[openMenu].promoSide"
-              :promo="menus[openMenu].promo"
-            />
-          </Motion>
-        </AnimatePresence>
+        <div
+          v-if="openMenu"
+          :id="`mega-${openMenu}`"
+          role="region"
+          :aria-label="menus[openMenu].sectionLabel"
+          class="mega-pop pointer-events-auto mt-2"
+          @mouseenter="cancelClose"
+          @mouseleave="scheduleClose"
+        >
+          <NavMegaMenu
+            :section-label="menus[openMenu].sectionLabel"
+            :links="menus[openMenu].links"
+            :promo-side="menus[openMenu].promoSide"
+            :promo="menus[openMenu].promo"
+          />
+        </div>
       </div>
     </div>
 
-    <!-- mobile menu — solid white panel (readable in both modes), overlays content -->
-    <AnimatePresence>
-      <Motion
-        v-if="mobileOpen"
-        :initial="{ opacity: 0, height: 0 }"
-        :animate="{ opacity: 1, height: 'auto' }"
-        :exit="{ opacity: 0, height: 0 }"
-        :transition="{ duration: reduceMotion ? 0 : 0.25, ease: 'easeOut' }"
-        class="absolute inset-x-0 top-full max-h-[calc(100dvh-60px)] overflow-y-auto border-t border-black/10 bg-white shadow-2xs lg:hidden"
-      >
-        <nav class="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
+    <!-- mobile menu — solid white panel (readable in both modes), overlays content.
+         Height animates via the CSS grid-rows 0fr→1fr trick (reliable, no JS). -->
+    <div
+      class="absolute inset-x-0 top-full grid border-b bg-white transition-[grid-template-rows,border-color] duration-300 ease-out motion-reduce:transition-none lg:hidden"
+      :class="mobileOpen ? 'grid-rows-[1fr] border-black/10 shadow-2xs' : 'grid-rows-[0fr] border-transparent'"
+      :aria-hidden="!mobileOpen"
+    >
+      <div class="overflow-hidden">
+        <nav class="mx-auto flex max-h-[calc(100dvh-60px)] max-w-7xl flex-col gap-1 overflow-y-auto px-4 py-3">
           <template v-for="item in navItems" :key="item.kind === 'menu' ? item.audience : item.to">
             <NuxtLink
               v-if="item.kind === 'link'"
               :to="localePath(item.to)"
+              :tabindex="mobileOpen ? undefined : -1"
               class="rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-light text-dark transition-colors hover:bg-black/5"
               active-class="bg-black/[0.06] font-normal"
             >
@@ -348,6 +328,7 @@ const panelTransition = computed(() => ({ duration: reduceMotion.value ? 0 : 0.1
             <div v-else>
               <button
                 type="button"
+                :tabindex="mobileOpen ? undefined : -1"
                 class="flex w-full items-center justify-between rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-light text-dark transition-colors hover:bg-black/5"
                 :aria-expanded="mobileExpanded === item.audience"
                 @click="mobileExpanded = mobileExpanded === item.audience ? null : item.audience"
@@ -360,32 +341,29 @@ const panelTransition = computed(() => ({ duration: reduceMotion.value ? 0 : 0.1
                   aria-hidden="true"
                 />
               </button>
-              <AnimatePresence>
-                <Motion
-                  v-if="mobileExpanded === item.audience"
-                  :initial="{ opacity: 0, height: 0 }"
-                  :animate="{ opacity: 1, height: 'auto' }"
-                  :exit="{ opacity: 0, height: 0 }"
-                  :transition="{ duration: reduceMotion ? 0 : 0.22, ease: 'easeOut' }"
-                  class="overflow-hidden"
-                >
+              <div
+                class="grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none"
+                :class="mobileExpanded === item.audience ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"
+              >
+                <div class="overflow-hidden">
                   <div class="flex flex-col gap-0.5 py-1 pl-3">
                     <NuxtLink
                       v-for="link in menus[item.audience].links"
                       :key="link.to"
                       :to="localePath(link.to)"
+                      :tabindex="mobileOpen && mobileExpanded === item.audience ? undefined : -1"
                       class="flex flex-col gap-0.5 rounded-[var(--radius-sm)] px-3 py-2 transition-colors hover:bg-black/5"
                     >
                       <span class="text-sm font-normal text-black/80">{{ link.title }}</span>
                       <span class="text-xs font-extralight leading-4 text-black/55">{{ link.desc }}</span>
                     </NuxtLink>
                   </div>
-                </Motion>
-              </AnimatePresence>
+                </div>
+              </div>
             </div>
           </template>
         </nav>
-      </Motion>
-    </AnimatePresence>
+      </div>
+    </div>
   </header>
 </template>

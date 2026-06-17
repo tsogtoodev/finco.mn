@@ -1,8 +1,12 @@
 locale: mn
 slug: tovchoo
 name: 22-ын товчооны салбар
-address: Улаанбаатар, Сонгинохайрхан дүүрэг, 22-ын товчоо
-phone: "+976 7700 0003"
-hours: Даваа–Баасан 09:00–18:00
-coords: { lat: 47.9000, lng: 106.8300 }
+hours: Даваа-Баасан 09:00-18:00 цаг
+phone: "8063-8484"
+address: СХД, 22-ын товчоо, Их наймаа, 1 давхар
+caption: 22-ын товчооны салбар
+photo: /images/branches/minister-tower.jpg
+mapImage: /images/branches/map-base.jpg
+pin: { x: 0.7, y: 0.58 }
+coords: { lat: 47.9, lng: 106.83 }
 order: 4

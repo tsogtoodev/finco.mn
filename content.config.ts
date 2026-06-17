@@ -78,7 +78,10 @@ const branches = defineCollection({
     phone: z.string().optional(),
     hours: z.string().optional(),
     photo: z.string().optional(),
-    coords: z.object({ lat: z.number(), lng: z.number() }), // → static MapEmbed
+    caption: z.string().optional(), // overlay label on the branch photo
+    mapImage: z.string().optional(), // static tilted map base (animated pin layered on top)
+    pin: z.object({ x: z.number(), y: z.number() }).optional(), // normalised pin position (0–1)
+    coords: z.object({ lat: z.number(), lng: z.number() }), // → "open in Google Maps"
     order: z.number().optional(),
   }),
 })
@@ -145,6 +148,7 @@ const pages = defineCollection({
       .object({
         eyebrow: z.string().optional(),
         headline: z.string(),
+        accent: z.string().optional(), // substring of headline rendered in the accent colour
         subheadline: z.string().optional(),
         cta: link.optional(),
         secondaryCta: link.optional(),

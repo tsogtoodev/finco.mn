@@ -126,9 +126,16 @@
     },
     "stats": {
       "heading": "Faster, smarter, trustworthy financial solutions",
-      "customers": { "label": "Customers using our financial services" },
-      "funding": { "unit": "B+", "label": "Total financing disbursed" },
-      "users": { "label": "App users" }
+      "customers": {
+        "label": "Customers using our financial services"
+      },
+      "funding": {
+        "unit": "B+",
+        "label": "Total financing disbursed"
+      },
+      "users": {
+        "label": "App users"
+      }
     },
     "products": {
       "heading": "Financial solutions tailored ",
@@ -327,5 +334,11 @@
     "registryNo": "Registry number",
     "password": "Password",
     "error": "Login failed"
+  },
+  "branchesPage": {
+    "openInMaps": "Open in Google Maps",
+    "mapLabel": "Location of {name} on the map",
+    "photoAlt": "Photo of the {name} building",
+    "selectAria": "Select {name}"
   }
 }

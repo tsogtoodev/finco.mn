@@ -70,3 +70,38 @@ body {
     animation: none;
   }
 }
+
+/* Nav mega-menu panel + dimming scrim open animation. CSS @keyframes (compositor-
+   driven) rather than motion-v / Vue <Transition> — JS/rAF-driven presence
+   animations can strand a toggling panel mid-opacity, same reason the hero uses a
+   CSS animation above. Runs on mount; close is an instant unmount. */
+@keyframes mega-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes scrim-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.mega-pop {
+  animation: mega-pop 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.scrim-fade {
+  animation: scrim-fade 0.18s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mega-pop,
+  .scrim-fade {
+    animation: none;
+  }
+}
