@@ -1,0 +1,20 @@
+{
+  "name": "finco-mn",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "@nuxt/content": "^3.14.0",
+    "@nuxt/fonts": "^0.14.0",
+    "@nuxt/image": "^2.0.0",
+    "better-sqlite3": "^12.10.1",
+    "nuxt": "^4.4.8",
+    "vue": "^3.5.35",
+    "vue-router": "^5.1.0"
+  }
+}
