@@ -22,10 +22,11 @@ const pills = computed(() => [
 
 <template>
   <section class="bg-white px-6 py-10">
-    <MotionReveal
-      class="relative mx-auto min-h-[560px] w-full max-w-[1440px] overflow-hidden rounded-[40px] lg:h-[704px]"
+    <div class="mx-auto w-full max-w-[1440px]">
+     <div
+      class="relative min-h-[560px] overflow-hidden rounded-[40px] lg:h-[704px]"
       :style="{ background: 'radial-gradient(120% 130% at 88% 0%, #0f2c23 0%, #071612 50%, #040b09 75%, #000 100%)' }"
-    >
+     >
       <!-- Halftone dots -->
       <NuxtImg
         src="/images/home/beep-dots.png"
@@ -110,6 +111,7 @@ const pills = computed(() => [
           </div>
         </Transition>
       </div>
-    </MotionReveal>
+     </div>
+    </div>
   </section>
 </template>
