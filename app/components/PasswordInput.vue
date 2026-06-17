@@ -13,7 +13,7 @@ const visible = ref(false)
       :type="visible ? 'text' : 'password'"
       :placeholder="placeholder"
       :required="required"
-      class="w-full rounded-[--radius-sm] border border-input bg-white px-3 py-2.5 pr-10 outline-none transition-colors focus:border-primary"
+      class="w-full rounded-[var(--radius-sm)] border border-input bg-white px-3 py-2.5 pr-10 outline-none transition-colors focus:border-primary"
     >
     <button
       type="button"

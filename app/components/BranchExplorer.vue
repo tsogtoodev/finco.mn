@@ -14,7 +14,7 @@ const active = computed(() => props.branches.find(b => b.slug === activeSlug.val
       <li v-for="b in branches" :key="b.slug">
         <button
           type="button"
-          class="w-full rounded-[--radius] border p-5 text-left transition-colors"
+          class="w-full rounded-[var(--radius)] border p-5 text-left transition-colors"
           :class="b.slug === activeSlug ? 'border-primary bg-secondary' : 'border-input hover:border-primary/50'"
           @click="activeSlug = b.slug"
         >
@@ -36,7 +36,7 @@ const active = computed(() => props.branches.find(b => b.slug === activeSlug.val
 
     <!-- Photo + map -->
     <div v-if="active" class="space-y-4">
-      <div class="relative aspect-[4/3] overflow-hidden rounded-[--radius] bg-muted">
+      <div class="relative aspect-[4/3] overflow-hidden rounded-[var(--radius)] bg-muted">
         <img
           v-if="active.photo"
           :src="active.photo"

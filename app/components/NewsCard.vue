@@ -24,7 +24,7 @@ const to = computed(() => props.to ?? props.item?.to)
     :to="to ? localePath(to) : undefined"
     class="group flex flex-col gap-6"
   >
-    <div class="h-[282px] overflow-hidden rounded-[--radius] rounded-tr-[90px] bg-muted">
+    <div class="h-[282px] overflow-hidden rounded-[var(--radius)] rounded-tr-[90px] bg-muted">
       <NuxtImg
         v-if="image"
         :src="image"

@@ -142,6 +142,45 @@
     "email": "info{'@'}finco.mn",
     "address": "Olympiin Street 7/2, Suite 706/707, Soyol Amralt 14240, 1st khoroo, Sukhbaatar District, Ulaanbaatar"
   },
+  "contactPage": {
+    "hero": {
+      "breadcrumb": "Get in touch",
+      "title": "Get in touch",
+      "subtitle": "Send us your feedback about working together."
+    },
+    "info": {
+      "heading": "Contact us",
+      "subtext": "Reach us directly through the channels below, or fill in the feedback form.",
+      "phoneLabel": "Phone",
+      "emailLabel": "Email",
+      "addressLabel": "Address",
+      "followLabel": "Follow us"
+    },
+    "form": {
+      "heading": "Send feedback",
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "you{'@'}email.com",
+      "phone": "Phone number",
+      "phonePlaceholder": "+976 XXXX XXXX",
+      "message": "Message",
+      "messagePlaceholder": "Write your message...",
+      "submit": "Send feedback",
+      "submitting": "Sending...",
+      "success": {
+        "title": "Thank you!",
+        "body": "We have received your message and will get back to you shortly."
+      },
+      "errors": {
+        "required": "Please fill in this field.",
+        "email": "Please enter a valid email address.",
+        "phone": "Please enter a valid phone number.",
+        "server": "Something went wrong. Please try again."
+      }
+    },
+    "mapLabel": "Finco Capital head office"
+  },
   "about": {
     "story": "Our journey",
     "leadership": "Leadership",

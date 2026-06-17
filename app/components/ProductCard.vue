@@ -28,7 +28,7 @@ const to = computed(() =>
   <component
     :is="to ? 'NuxtLink' : 'div'"
     :to="to ? localePath(to) : undefined"
-    class="group relative flex h-full min-h-[420px] flex-col justify-end overflow-hidden rounded-[--radius] bg-[#06322d]"
+    class="group relative flex h-full min-h-[420px] flex-col justify-end overflow-hidden rounded-[var(--radius)] bg-[#06322d]"
   >
     <NuxtImg
       v-if="image"

@@ -12,7 +12,7 @@ defineProps<{
 
 <template>
   <div
-    class="relative isolate min-h-[254px] overflow-hidden rounded-[--radius] border border-accent/5 bg-[#f6f6ff]"
+    class="relative isolate min-h-[254px] overflow-hidden rounded-[var(--radius)] border border-accent/5 bg-[#f6f6ff]"
   >
     <!-- Gradient blob -->
     <NuxtImg
@@ -25,7 +25,7 @@ defineProps<{
     <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#f6f6ff] via-[#f6f6ff] to-transparent" />
 
     <!-- Icon chip -->
-    <div class="absolute left-5 top-5 flex size-13 items-center justify-center rounded-[--radius] bg-white/60 backdrop-blur-sm">
+    <div class="absolute left-5 top-5 flex size-13 items-center justify-center rounded-[var(--radius)] bg-white/60 backdrop-blur-sm">
       <Icon :name="icon" class="size-8 text-accent" />
     </div>
 

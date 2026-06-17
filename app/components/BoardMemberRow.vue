@@ -14,7 +14,7 @@ defineProps<{ member: BoardMember }>()
         :alt="member.name"
         width="120"
         height="144"
-        class="h-36 w-[120px] shrink-0 rounded-[--radius] object-cover"
+        class="h-36 w-[120px] shrink-0 rounded-[var(--radius)] object-cover"
       />
       <div class="flex flex-col gap-2.5">
         <h3 class="text-xl font-semibold uppercase leading-tight text-black sm:text-2xl">{{ member.name }}</h3>

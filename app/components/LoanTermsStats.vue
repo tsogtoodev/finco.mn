@@ -10,7 +10,7 @@ const { t } = useI18n()
     <div
       v-for="(item, key) in { amount: terms.amount, rate: terms.rate, period: terms.period }"
       :key="key"
-      class="rounded-[--radius] bg-secondary p-5 text-center ring-1 ring-black/5"
+      class="rounded-[var(--radius)] bg-secondary p-5 text-center ring-1 ring-black/5"
     >
       <dt class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {{ t(`loanTerms.${key}`) }}

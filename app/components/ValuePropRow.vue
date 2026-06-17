@@ -23,7 +23,7 @@ defineProps<{ value?: Collections['pages']['valueProps'] }>()
         :key="item.title"
         :delay="i * 0.08"
         :class="i === 0 ? 'lg:row-span-2' : ''"
-        class="group relative flex flex-col justify-end overflow-hidden rounded-[--radius] bg-secondary p-7 ring-1 ring-black/5"
+        class="group relative flex flex-col justify-end overflow-hidden rounded-[var(--radius)] bg-secondary p-7 ring-1 ring-black/5"
       >
         <!-- gradient blob -->
         <div class="pointer-events-none absolute -right-10 -top-10 size-56 rounded-full bg-gradient-to-br from-accent/40 via-primary/30 to-teal/30 blur-2xl transition-transform duration-500 group-hover:scale-110" />

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // Shared page header: optional breadcrumb + eyebrow + title + subtitle.
-// `dark` renders the dark image-bg variant.
+// `dark` renders the dark image-bg variant. `back` adds a "Буцах" pill and
+// `centered` centers the title/subtitle (Figma 1:13610 breadcrumb-hero pattern).
 withDefaults(
   defineProps<{
     eyebrow?: string
@@ -8,10 +9,21 @@ withDefaults(
     subtitle?: string
     dark?: boolean
     breadcrumb?: { label: string; to?: string }[]
+    /** Show a "Back" pill below the breadcrumb (router.back, falls to home). */
+    back?: boolean
+    /** Center the title/subtitle block (1:13610 centered-title pattern). */
+    centered?: boolean
   }>(),
-  { dark: false },
+  { dark: false, back: false, centered: false },
 )
+const { t } = useI18n()
 const localePath = useLocalePath()
+const router = useRouter()
+
+function goBack() {
+  if (import.meta.client && window.history.length > 1) router.back()
+  else navigateTo(localePath('/'))
+}
 </script>
 
 <template>
@@ -29,7 +41,11 @@ const localePath = useLocalePath()
       class="relative mx-auto max-w-7xl px-4"
       :class="dark ? 'pb-16 pt-28 sm:pb-20 sm:pt-32' : 'py-16 sm:py-20'"
     >
-      <nav v-if="breadcrumb?.length" class="mb-5 flex items-center gap-2 text-sm" :class="dark ? 'text-white/60' : 'text-muted-foreground'">
+      <nav
+        v-if="breadcrumb?.length"
+        class="mb-5 flex items-center gap-2 text-sm"
+        :class="[dark ? 'text-white/60' : 'text-muted-foreground', centered && 'justify-center']"
+      >
         <template v-for="(c, i) in breadcrumb" :key="i">
           <NuxtLink v-if="c.to" :to="localePath(c.to)" class="hover:text-primary">{{ c.label }}</NuxtLink>
           <span v-else>{{ c.label }}</span>
@@ -37,16 +53,36 @@ const localePath = useLocalePath()
         </template>
       </nav>
 
-      <p v-if="eyebrow" class="text-sm font-semibold" :class="dark ? 'text-teal' : 'text-accent'">
-        {{ eyebrow }}
-      </p>
-      <h1 class="mt-2 max-w-3xl font-display text-3xl font-bold tracking-tight sm:text-4xl">
-        {{ title }}
-      </h1>
-      <p v-if="subtitle" class="mt-4 max-w-2xl text-lg" :class="dark ? 'text-white/70' : 'text-muted-foreground'">
-        {{ subtitle }}
-      </p>
-      <slot />
+      <button
+        v-if="back"
+        type="button"
+        class="mb-8 inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius)] bg-secondary px-4 text-sm font-medium text-[#171717] transition-colors hover:bg-white"
+        :class="centered && 'mx-auto'"
+        @click="goBack"
+      >
+        <Icon name="lucide:arrow-left" class="size-4" />
+        {{ t('common.back') }}
+      </button>
+
+      <div :class="centered && 'text-center'">
+        <p v-if="eyebrow" class="text-sm font-semibold" :class="dark ? 'text-teal' : 'text-accent'">
+          {{ eyebrow }}
+        </p>
+        <h1
+          class="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl"
+          :class="centered ? 'mx-auto max-w-[700px]' : 'max-w-3xl'"
+        >
+          {{ title }}
+        </h1>
+        <p
+          v-if="subtitle"
+          class="mt-4 text-lg"
+          :class="[dark ? 'text-white/70' : 'text-muted-foreground', centered ? 'mx-auto max-w-2xl' : 'max-w-2xl']"
+        >
+          {{ subtitle }}
+        </p>
+        <slot />
+      </div>
     </div>
   </section>
 </template>

@@ -11,7 +11,7 @@ const mapsUrl = computed(() => `https://www.google.com/maps?q=${props.lat},${pro
     :href="mapsUrl"
     target="_blank"
     rel="noopener"
-    class="group relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[--radius] bg-gradient-to-br from-secondary to-muted ring-1 ring-black/5"
+    class="group relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[var(--radius)] bg-gradient-to-br from-secondary to-muted ring-1 ring-black/5"
   >
     <!-- faux street grid -->
     <div class="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(var(--color-input)_1px,transparent_1px),linear-gradient(90deg,var(--color-input)_1px,transparent_1px)] [background-size:40px_40px]" />

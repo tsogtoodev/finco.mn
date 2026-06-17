@@ -16,7 +16,7 @@ const alignClass = computed(() => ({
 
 <template>
   <article
-    class="relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-[--radius] bg-white p-8 shadow-2xs lg:min-h-[400px]"
+    class="relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-[var(--radius)] bg-white p-8 shadow-2xs lg:min-h-[400px]"
     :class="graphic === 'top' ? 'justify-end' : 'justify-start'"
   >
     <!-- teal cube cluster + glow -->

@@ -58,7 +58,7 @@ function goBack() {
 
         <button
           type="button"
-          class="inline-flex h-10 w-fit items-center gap-2 rounded-[--radius] border border-white/20 px-4 text-sm font-medium text-white shadow-[0_4px_4px_rgba(0,0,0,0.25)] transition-colors hover:bg-white/10"
+          class="inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius)] border border-white/20 px-4 text-sm font-medium text-white shadow-[0_4px_4px_rgba(0,0,0,0.25)] transition-colors hover:bg-white/10"
           @click="goBack"
         >
           <Icon name="lucide:arrow-left" class="size-4" />

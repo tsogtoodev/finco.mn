@@ -35,7 +35,7 @@ async function submit() {
 
 <template>
   <form v-if="!done" @submit.prevent="submit">
-    <div class="divide-y divide-input rounded-[--radius] border border-input">
+    <div class="divide-y divide-input rounded-[var(--radius)] border border-input">
       <div v-for="section in sections" :key="section.id">
         <button
           type="button"
@@ -60,14 +60,14 @@ async function submit() {
               v-model="form[f.name]"
               :required="f.required"
               rows="3"
-              class="w-full rounded-[--radius-sm] border border-input bg-white px-3 py-2 outline-none focus:border-primary"
+              class="w-full rounded-[var(--radius-sm)] border border-input bg-white px-3 py-2 outline-none focus:border-primary"
             />
             <select
               v-else-if="f.type === 'select'"
               :id="f.name"
               v-model="form[f.name]"
               :required="f.required"
-              class="w-full rounded-[--radius-sm] border border-input bg-white px-3 py-2 outline-none focus:border-primary"
+              class="w-full rounded-[var(--radius-sm)] border border-input bg-white px-3 py-2 outline-none focus:border-primary"
             >
               <option value="" disabled>—</option>
               <option v-for="o in f.options" :key="o" :value="o">{{ o }}</option>
@@ -78,7 +78,7 @@ async function submit() {
               v-model="form[f.name]"
               :type="f.type"
               :required="f.required"
-              class="w-full rounded-[--radius-sm] border border-input bg-white px-3 py-2 outline-none focus:border-primary"
+              class="w-full rounded-[var(--radius-sm)] border border-input bg-white px-3 py-2 outline-none focus:border-primary"
             >
           </div>
         </div>
@@ -91,7 +91,7 @@ async function submit() {
     </AppButton>
   </form>
 
-  <div v-else class="rounded-[--radius] border border-teal/30 bg-teal/5 p-6 text-foreground">
+  <div v-else class="rounded-[var(--radius)] border border-teal/30 bg-teal/5 p-6 text-foreground">
     <Icon name="lucide:check-circle" class="size-8 text-teal" />
     <p class="mt-3 font-display font-semibold">{{ t('common.submit') }} ✓</p>
   </div>

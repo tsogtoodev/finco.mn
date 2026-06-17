@@ -64,7 +64,7 @@ useSeoMeta({ title: () => t('exam.title'), robots: 'noindex' })
             type="text"
             :placeholder="t('exam.registryNo')"
             required
-            class="w-full rounded-[--radius-sm] border border-input bg-white px-3 py-2.5 outline-none transition-colors focus:border-primary"
+            class="w-full rounded-[var(--radius-sm)] border border-input bg-white px-3 py-2.5 outline-none transition-colors focus:border-primary"
           >
           <PasswordInput v-model="password" :placeholder="t('exam.password')" required />
           <p v-if="error" class="text-sm text-red-600">{{ error }}</p>

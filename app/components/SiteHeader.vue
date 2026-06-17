@@ -151,7 +151,7 @@ const showShadow = computed(() => condensed.value)
             v-for="l in links"
             :key="l.to"
             :to="localePath(l.to)"
-            class="rounded-[--radius-sm] px-3 py-2.5 text-sm font-light text-dark transition-colors hover:bg-black/5"
+            class="rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-light text-dark transition-colors hover:bg-black/5"
             active-class="bg-black/[0.06] font-normal"
           >
             {{ l.label }}
