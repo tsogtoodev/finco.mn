@@ -2,6 +2,12 @@
   "nav": {
     "home": "Home",
     "about": "About",
+    "products": "Individuals",
+    "business": "Business",
+    "branches": "Branches",
+    "careers": "Careers",
+    "services": "Trust services",
+    "news": "News",
     "login": "Log in",
     "logout": "Log out"
   },
@@ -11,6 +17,69 @@
     "en": "English"
   },
   "common": {
-    "getStarted": "Get started"
+    "getStarted": "Get started",
+    "learnMore": "Learn more",
+    "submit": "Submit",
+    "back": "Back"
+  },
+  "announcement": {
+    "text": "⚡ Beep Wallet — New loan terms are live",
+    "cta": "Learn more"
+  },
+  "footer": {
+    "about": "About",
+    "individuals": "Individuals",
+    "business": "Business",
+    "other": "Other",
+    "intro": "Company overview",
+    "reports": "Reports",
+    "contact": "Get in touch",
+    "rights": "© 2026 Finco Capital. All rights reserved.",
+    "terms": "Terms of service",
+    "privacy": "Privacy policy"
+  },
+  "contact": {
+    "phone": "+976 7017 3311",
+    "email": "info{'@'}finco.mn",
+    "address": "Olympiin Street 7/2, Suite 706/707, Soyol Amralt 14240, 1st khoroo, Sukhbaatar District, Ulaanbaatar"
+  },
+  "about": {
+    "story": "Our journey",
+    "leadership": "Leadership",
+    "team": "Our team"
+  },
+  "careers": {
+    "process": "Recruitment process",
+    "perks": "Benefits",
+    "openRoles": "Open positions",
+    "apply": "Apply"
+  },
+  "faq": {
+    "heading": "Frequently asked questions"
+  },
+  "tabs": {
+    "info": "Overview",
+    "requirements": "Requirements",
+    "other": "Other"
+  },
+  "loanTerms": {
+    "amount": "Loan amount",
+    "rate": "Rate",
+    "period": "Term"
+  },
+  "related": {
+    "heading": "Other products you may like"
+  },
+  "exam": {
+    "title": "Exam",
+    "headline": "We wish you",
+    "headlineAccent": "success!",
+    "subtitle": "To start the exam, enter your registry number and password.",
+    "durationLabel": "Exam duration",
+    "durationValue": "60 minutes",
+    "prompt": "Enter your registry number and password",
+    "registryNo": "Registry number",
+    "password": "Password",
+    "error": "Login failed"
   }
 }

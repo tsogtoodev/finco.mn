@@ -1,0 +1,26 @@
+locale: en
+key: careers
+hero:
+  eyebrow: Careers
+  headline: More than a job — a place to grow and build
+  subheadline: At Finco Capital you can unlock your talent and make a meaningful impact.
+timeline:
+  - year: "1"
+    title: Submit application
+  - year: "2"
+    title: Screening
+  - year: "3"
+    title: First interview
+  - year: "4"
+    title: Assessment
+  - year: "5"
+    title: Second interview
+  - year: "6"
+    title: Job offer
+perks:
+  - title: Flexible working hours
+  - title: Downtown office
+  - title: Paid time off
+  - title: Discounted fitness
+  - title: Health insurance
+  - title: Team culture & growth programs

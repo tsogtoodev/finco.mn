@@ -1,0 +1,32 @@
+locale: mn
+slug: hr-specialist
+title: Хүний нөөцийн ажилтан
+department: Хүний нөөц
+location: Улаанбаатар
+type: Бүтэн цаг
+summary: Хүний нөөцийн бодлого, ажилтан элсүүлэх үйл явцыг хариуцна.
+requirements:
+  - Холбогдох чиглэлээр бакалавр зэрэгтэй
+  - 2-оос дээш жилийн туршлагатай
+responsibilities:
+  - Ажилтан элсүүлэх үйл явцыг зохион байгуулах
+  - Гүйцэтгэлийн үнэлгээг хариуцах
+applicationSections:
+  - id: general
+    title: Ерөнхий мэдээлэл
+    fields:
+      - name: fullName
+        label: Овог нэр
+        type: text
+        required: true
+      - name: email
+        label: И-мэйл
+        type: email
+        required: true
+  - id: attachments
+    title: Хавсаргах
+    fields:
+      - name: cv
+        label: CV
+        type: file
+        required: true

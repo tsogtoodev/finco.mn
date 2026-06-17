@@ -1,0 +1,11 @@
+locale: en
+key: products
+hero:
+  eyebrow: For individuals
+  headline: Loan solutions that fit you
+  subheadline: Flexible financing tailored to consumer and business needs.
+faq:
+  - question: How do I apply for a loan?
+    answer: You can apply online through the Beep Wallet app or our website.
+  - question: How fast is a loan approved?
+    answer: Most requests are decided within one business day.

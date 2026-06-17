@@ -9,8 +9,11 @@
     "preview": "nuxt preview"
   },
   "dependencies": {
+    "@iconify-json/hugeicons": "^1.2.29",
+    "@iconify-json/lucide": "^1.2.113",
     "@nuxt/content": "^3.14.0",
     "@nuxt/fonts": "^0.14.0",
+    "@nuxt/icon": "^2.2.3",
     "@nuxt/image": "^2.0.0",
     "@nuxthub/core": "^0.10.7",
     "@nuxtjs/i18n": "^10.4.0",

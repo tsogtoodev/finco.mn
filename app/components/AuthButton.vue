@@ -32,7 +32,7 @@ async function login() {
     >
     <button
       type="button"
-      class="text-muted transition-colors hover:text-ink"
+      class="text-muted-foreground transition-colors hover:text-foreground"
       @click="logout"
     >
       {{ t('nav.logout') }}
@@ -44,7 +44,7 @@ async function login() {
     v-else
     type="button"
     :disabled="pending"
-    class="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:opacity-60"
+    class="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-primary-hover disabled:opacity-60"
     @click="login"
   >
     {{ t('nav.login') }}

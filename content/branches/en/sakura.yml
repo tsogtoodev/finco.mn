@@ -1,0 +1,8 @@
+locale: en
+slug: sakura
+name: Sakura Branch
+address: Sakura Town, Bayanzurkh District, Ulaanbaatar
+phone: "+976 7700 0001"
+hours: Mon–Fri 09:00–18:00
+coords: { lat: 47.9165, lng: 106.9405 }
+order: 2

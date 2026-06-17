@@ -1,0 +1,45 @@
+locale: en
+key: about
+hero:
+  eyebrow: About us
+  headline: Building your financial future, together
+  subheadline: Finco Capital is a non-bank financial institution behind digital products like Beep and FincoBiz.
+timeline:
+  - year: "2023"
+    title: Foundation
+    body: Finco Capital was founded and took its first steps in digital financial services.
+  - year: "2024"
+    title: Beep Wallet
+    body: The Beep Wallet app launched, bringing easy payment solutions to customers.
+  - year: "2025"
+    title: Expansion
+    body: We widened our product range and introduced the FincoBiz business financing platform.
+  - year: "2026"
+    title: Scale
+    body: We grew past 71,000 customers and made our financial services more accessible.
+leadership:
+  name: B. Bolormaa
+  role: Chief Executive Officer
+  quote: We aim to open opportunities for everyone through technology-driven, transparent financial services.
+  photo: /images/leader.jpg
+team:
+  - name: G. Batbayar
+    role: Chief Financial Officer
+    bio: 15 years of experience in finance and risk management.
+    avatar: /images/team-1.jpg
+  - name: D. Enkhtor
+    role: Chief Technology Officer
+    bio: Leads digital product and platform development.
+    avatar: /images/team-2.jpg
+  - name: S. Munkhzul
+    role: Chief Marketing Officer
+    bio: Drives brand and customer growth strategy.
+    avatar: /images/team-3.jpg
+  - name: T. Ganbaatar
+    role: Chief Operating Officer
+    bio: Oversees branches and service quality.
+    avatar: /images/team-4.jpg
+  - name: N. Temuulen
+    role: Chief People Officer
+    bio: Champions team culture and talent development.
+    avatar: /images/team-5.jpg

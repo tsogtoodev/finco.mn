@@ -15,7 +15,7 @@ const available = computed(() =>
       v-for="l in available"
       :key="l.code"
       type="button"
-      class="rounded px-2 py-1 text-muted transition-colors hover:text-brand-600"
+      class="rounded px-2 py-1 text-muted-foreground transition-colors hover:text-primary"
       @click="setLocale(l.code)"
     >
       {{ l.name ?? l.code }}

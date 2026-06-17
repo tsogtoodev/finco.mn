@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     '@nuxthub/core',
     '@nuxt/content',
     '@nuxt/fonts',
+    '@nuxt/icon',
     '@nuxt/image',
     '@nuxtjs/i18n',
     '@nuxtjs/seo',
@@ -38,6 +39,13 @@ export default defineNuxtConfig({
     url: 'https://finco.mn',
     name: 'finco.mn',
     defaultLocale: 'mn',
+  },
+
+  // Feed content-driven detail routes (products/services/jobs) to the sitemap;
+  // keep the noindex exam login out of it.
+  sitemap: {
+    sources: ['/api/__sitemap__/urls'],
+    exclude: ['/**/careers/exam'],
   },
 
   // Both locales prefixed (/mn, /en); root path resolves via detection.

@@ -1,0 +1,23 @@
+locale: mn
+slug: financial-analyst
+title: Санхүүгийн шинжээч
+department: Санхүү
+location: Улаанбаатар
+type: Бүтэн цаг
+summary: Санхүүгийн шинжилгээ, тайлагналыг хариуцна.
+requirements:
+  - Санхүү, эдийн засгийн чиглэлээр бакалавр
+  - Шинжээчийн 2-оос дээш жилийн туршлага
+responsibilities:
+  - Санхүүгийн загвар, шинжилгээ хийх
+  - Удирдлагад тайлан бэлтгэх
+applicationSections:
+  - id: general
+    title: Ерөнхий мэдээлэл
+    fields:
+      - { name: fullName, label: Овог нэр, type: text, required: true }
+      - { name: email, label: И-мэйл, type: email, required: true }
+  - id: attachments
+    title: Хавсаргах
+    fields:
+      - { name: cv, label: CV, type: file, required: true }

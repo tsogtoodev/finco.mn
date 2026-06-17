@@ -1,0 +1,23 @@
+locale: en
+slug: financial-analyst
+title: Financial Analyst
+department: Finance
+location: Ulaanbaatar
+type: Full-time
+summary: Owns financial analysis and reporting.
+requirements:
+  - Bachelor's in finance or economics
+  - 2+ years as an analyst
+responsibilities:
+  - Build financial models and analysis
+  - Prepare reports for management
+applicationSections:
+  - id: general
+    title: General information
+    fields:
+      - { name: fullName, label: Full name, type: text, required: true }
+      - { name: email, label: Email, type: email, required: true }
+  - id: attachments
+    title: Attachments
+    fields:
+      - { name: cv, label: CV, type: file, required: true }

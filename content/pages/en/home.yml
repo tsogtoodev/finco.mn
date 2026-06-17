@@ -1,0 +1,60 @@
+locale: en
+key: home
+hero:
+  eyebrow: Beep Wallet
+  headline: The digital wallet to manage money your way
+  subheadline: Pay, transfer and borrow — all in one place with Beep Wallet.
+  image: /images/beep-hero.png
+  cta:
+    label: Learn more
+    to: /products
+  secondaryCta:
+    label: About us
+    to: /about
+valueProps:
+  heading: Build the future you imagine —
+  accent: let's finance it!
+  subheading: We centralize financial solutions and power your next stage of growth.
+  items:
+    - title: Fast decisions
+      icon: hugeicons:time-quarter-pass
+      body: We resolve financing requests quickly through data-driven assessment and a streamlined process, keeping your business running without interruption.
+    - title: Flexible terms
+      icon: hugeicons:usb-connected-01
+      body: We offer financing on flexible terms tailored to your business profile, cash flow and financial needs.
+    - title: Data-driven scoring
+      icon: hugeicons:cpu
+      body: A behaviour-based scoring system assesses your financial capacity realistically and delivers better-fit decisions, faster.
+statsHeading: Financial solutions built on trust
+stats:
+  - value: 71000
+    suffix: "+"
+    label: Customers using our financial services
+  - value: 70
+    suffix: B+₮
+    label: Total financing issued
+  - value: 26000
+    suffix: "+"
+    label: App users
+showcases:
+  - theme: dark
+    eyebrow: Beep Wallet
+    title: Faster than a bank
+    body: Submit your loan request online and get a fast decision without the traditional lengthy process.
+    image: /images/beep-showcase.png
+    cta:
+      label: Learn more
+      to: /products
+  - theme: light
+    eyebrow: FincoBiz
+    title: A new level of business financing
+    body: The FincoBiz platform makes the journey from request to decision simpler and faster.
+    cta:
+      label: Learn more
+      to: /business
+cta:
+  heading: Get in touch
+  body: Reach out about partnerships, products and services, feedback or anything else.
+  button:
+    label: Contact us
+    to: /branches

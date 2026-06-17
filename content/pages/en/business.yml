@@ -1,0 +1,11 @@
+locale: en
+key: business
+hero:
+  eyebrow: For business
+  headline: Let's finance your growth
+  subheadline: Solutions for working capital, expansion and investment.
+faq:
+  - question: What documents does a business loan require?
+    answer: A company registration certificate, financial statements and related documents are required.
+  - question: Can I get an unsecured loan?
+    answer: Some products are unsecured, granted based on cash-flow assessment.
