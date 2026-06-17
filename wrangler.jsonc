@@ -1,0 +1,19 @@
+{
+  // Cloudflare Workers config for direct deploy (NuxtHub v0.10, no NuxtHub Admin).
+  // `nuxt build` merges these bindings into .output/server/wrangler.json.
+  // Fill in <YOUR_D1_DATABASE_ID> after creating the D1 database:
+  //   npx wrangler d1 create finco-mn   → copy the returned database_id here.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "finco-mn",
+  "compatibility_date": "2025-01-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Raw D1 binding queried by @nuxt/content (content.database.bindingName: 'DB').
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "finco-mn",
+      "database_id": "7e1a182c-6b21-4c4e-a3bc-3d9f464f6fca"
+    }
+  ]
+}

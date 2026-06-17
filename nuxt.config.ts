@@ -73,7 +73,9 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   compatibilityDate: '2024-04-03',
 
-  // NuxtHub (Cloudflare) — D1 database backs @nuxt/content in production.
+  // NuxtHub — enables the raw Cloudflare D1 binding (`DB`) that @nuxt/content
+  // queries. (Not hub.db, which is NuxtHub's Drizzle ORM layer we don't use.)
+  // The remote D1 binding/id is declared in wrangler.jsonc for direct deploys.
   hub: {
     database: true,
   },
