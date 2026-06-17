@@ -1,12 +1,21 @@
 {
   // Cloudflare Workers config for direct deploy (NuxtHub v0.10, no NuxtHub Admin).
-  // `nuxt build` merges these bindings into .output/server/wrangler.json.
-  // Fill in <YOUR_D1_DATABASE_ID> after creating the D1 database:
-  //   npx wrangler d1 create finco-mn   → copy the returned database_id here.
+  // Nuxt's nitro `cloudflare-module` preset (v2.13) emits a Workers-Sites layout:
+  // worker entry at .output/server/index.mjs + static files served from a
+  // __STATIC_CONTENT KV that wrangler auto-creates from `site.bucket` on deploy.
+  // (Workers Sites is "legacy" but still deploys; modern Static Assets needs a
+  // newer nitro — revisit on upgrade.)
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "finco-mn",
+  "main": ".output/server/index.mjs",
   "compatibility_date": "2025-01-01",
   "compatibility_flags": ["nodejs_compat"],
+  "site": {
+    "bucket": "./.output/public"
+  },
+  "observability": {
+    "enabled": true
+  },
 
   // Raw D1 binding queried by @nuxt/content (content.database.bindingName: 'DB').
   "d1_databases": [

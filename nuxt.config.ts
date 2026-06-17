@@ -36,8 +36,8 @@ export default defineNuxtConfig({
   // Canonical site identity — drives @nuxtjs/seo (sitemap, canonical, og,
   // hreflang) and i18n baseUrl. URL is overridable via NUXT_PUBLIC_SITE_URL.
   site: {
-    url: 'https://finco.mn',
-    name: 'finco.mn',
+    url: 'https://finco.design',
+    name: 'finco.design',
     defaultLocale: 'mn',
   },
 
@@ -53,7 +53,7 @@ export default defineNuxtConfig({
     strategy: 'prefix',
     defaultLocale: 'mn',
     // Absolute base for hreflang/canonical alternates (mirrors site.url).
-    baseUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://finco.mn',
+    baseUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://finco.design',
     locales: [
       { code: 'mn', language: 'mn-MN', name: 'Монгол', file: 'mn.json' },
       { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
@@ -72,6 +72,14 @@ export default defineNuxtConfig({
 
   devtools: { enabled: true },
   compatibilityDate: '2024-04-03',
+
+  // Pin the modern Cloudflare Workers preset (Static Assets, ASSETS binding) so
+  // `npm run build` in CI produces .output/server/index.mjs + .output/public for
+  // `wrangler deploy`. NB: must be 'cloudflare-module' (hyphen) — the underscore
+  // form 'cloudflare_module' aliases to the legacy Workers Sites/KV preset.
+  nitro: {
+    preset: 'cloudflare-module',
+  },
 
   // NuxtHub — enables the raw Cloudflare D1 binding (`DB`) that @nuxt/content
   // queries. (Not hub.db, which is NuxtHub's Drizzle ORM layer we don't use.)
