@@ -22,10 +22,6 @@ logs
 .fleet
 .idea
 
-# Figma source image library (~200 MB). Used/optimized images live in
-# public/images/ which IS committed. Keep this local-only source dump out of git.
-app/assets/images/
-
 # Local env files
 .env
 .env.*

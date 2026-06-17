@@ -9,9 +9,9 @@
 //
 // The transparent overlay nav floats over this section — the page opts in via
 // `definePageMeta({ transparentHeader: true })`.
-import heroBg from '~/assets/images/fig-a2f5b55cd8.png'
-import beepWordmark from '~/assets/images/beep-wordmark.png'
-
+//
+// Assets live in public/ (not ~/assets): @nuxt/image's IPX dev transform 404s on
+// bundled ~/assets images. hero-beep.jpg is the resized/optimised photo.
 const { t } = useI18n()
 const localePath = useLocalePath()
 
@@ -26,13 +26,6 @@ const tabs = [
   { key: 'trust', label: 'hero.tabs.trust' },
 ] as const
 const activeTab = 'beepWallet'
-
-// Entrance reveal — staggered fade-up on mount (above the fold, so not scroll-tied).
-const reveal = (delay: number) => ({
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] as const },
-})
 </script>
 
 <template>
@@ -41,9 +34,10 @@ const reveal = (delay: number) => ({
   >
     <!-- Background photo (phone + Beep app), full bleed -->
     <NuxtImg
-      :src="heroBg"
+      src="/images/hero-beep.jpg"
       :alt="t('hero.headline')"
-      sizes="100vw"
+      width="1920"
+      height="1241"
       fetchpriority="high"
       class="absolute inset-0 -z-20 size-full object-cover object-center"
     />
@@ -58,43 +52,47 @@ const reveal = (delay: number) => ({
     <div class="flex flex-1 items-center pb-28 pt-24 sm:pt-28">
       <div class="mx-auto w-full max-w-7xl px-4">
         <div class="max-w-[624px]">
-          <Motion as="img" :src="beepWordmark" :alt="t('hero.wordmarkAlt')" class="h-9 w-auto sm:h-10" v-bind="reveal(0)" />
+          <NuxtImg
+            src="/images/beep-wordmark.png"
+            :alt="t('hero.wordmarkAlt')"
+            width="108"
+            height="40"
+            class="hero-rise h-9 w-auto sm:h-10"
+          />
 
-          <Motion
-            as="h1"
-            class="mt-6 font-display text-[2rem] font-semibold leading-[1.2] tracking-tight sm:text-[2.5rem] lg:text-[3rem] lg:leading-[4rem]"
-            v-bind="reveal(0.08)"
+          <h1
+            class="hero-rise mt-6 font-display text-[2rem] font-semibold leading-[1.2] tracking-tight sm:text-[2.5rem] lg:text-[3rem] lg:leading-[4rem]"
+            style="animation-delay: 80ms"
           >
             {{ t('hero.headline') }}
-          </Motion>
+          </h1>
 
-          <Motion
-            as="p"
-            class="mt-6 max-w-[640px] text-base font-light leading-7 text-white/90 sm:text-xl sm:leading-8"
-            v-bind="reveal(0.16)"
+          <p
+            class="hero-rise mt-6 max-w-[640px] text-base font-light leading-7 text-white/90 sm:text-xl sm:leading-8"
+            style="animation-delay: 160ms"
           >
             {{ t('hero.subtextLine1') }}<br>{{ t('hero.subtextLine2') }}
-          </Motion>
+          </p>
 
-          <Motion v-bind="reveal(0.24)">
+          <div class="hero-rise" style="animation-delay: 240ms">
             <NuxtLink
               :to="localePath('/products')"
-              class="mt-10 inline-flex h-10 items-center justify-center gap-2 rounded-[--radius] bg-lime px-4 text-sm font-medium text-dark shadow-2xs transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
+              class="mt-10 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-lime px-4 text-sm font-medium text-dark shadow-2xs transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
             >
               {{ t('hero.cta') }}
               <svg viewBox="0 0 16 16" class="size-4" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                 <path d="M3.33 8h9.34M9 4.33 12.67 8 9 11.67" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </NuxtLink>
-          </Motion>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Segmented tab bar, overlapping the bottom edge -->
     <nav :aria-label="t('hero.tabs.beepWallet')" class="relative z-10">
-      <ul class="mx-auto flex w-full max-w-7xl gap-4 px-4 pb-8 sm:gap-8 lg:gap-10">
-        <li v-for="tab in tabs" :key="tab.key" class="min-w-0 flex-1">
+      <ul class="mx-auto flex w-full max-w-7xl gap-6 overflow-x-auto px-4 pb-8 sm:gap-8 lg:gap-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <li v-for="tab in tabs" :key="tab.key" class="w-40 shrink-0 lg:w-auto lg:min-w-0 lg:flex-1">
           <button
             type="button"
             :aria-current="tab.key === activeTab ? 'true' : undefined"
