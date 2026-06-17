@@ -1,10 +1,22 @@
 <script setup lang="ts">
-const { loggedIn, user, clear } = useUserSession()
+const { loggedIn, user } = useUserSession()
+const { signInWithGoogle, logout } = useFirebaseAuth()
 const { t } = useI18n()
 
-async function logout() {
-  await $fetch('/api/auth/logout', { method: 'POST' })
-  await clear()
+const pending = ref(false)
+
+async function login() {
+  pending.value = true
+  try {
+    await signInWithGoogle()
+  }
+  catch (e) {
+    // Popup closed/blocked or network error — surface quietly for now.
+    console.error('Sign-in failed:', e)
+  }
+  finally {
+    pending.value = false
+  }
 }
 </script>
 
@@ -27,12 +39,14 @@ async function logout() {
     </button>
   </div>
 
-  <!-- Logged out: full-page nav to the server OAuth route -->
-  <a
+  <!-- Logged out: trigger Firebase sign-in -->
+  <button
     v-else
-    href="/auth/google"
-    class="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+    type="button"
+    :disabled="pending"
+    class="rounded-md bg-brand-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-brand-700 disabled:opacity-60"
+    @click="login"
   >
     {{ t('nav.login') }}
-  </a>
+  </button>
 </template>

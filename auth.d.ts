@@ -5,6 +5,8 @@ declare module '#auth-utils' {
     name: string
     email: string
     avatar?: string
+    /** Firebase sign-in provider, e.g. 'google.com', 'password', 'phone'. */
+    provider?: string
   }
   interface UserSession {
     loggedInAt?: number

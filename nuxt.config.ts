@@ -13,13 +13,19 @@ export default defineNuxtConfig({
     'motion-v/nuxt',
   ],
 
-  // nuxt-auth-utils reads OAuth creds from NUXT_OAUTH_GOOGLE_* and the session
-  // secret from NUXT_SESSION_PASSWORD (set as Cloudflare secrets in prod).
+  // Firebase = identity provider (client SDK). The server verifies its ID
+  // tokens with `jose` and mints a sealed-cookie session via nuxt-auth-utils
+  // (session secret = NUXT_SESSION_PASSWORD, a Cloudflare secret in prod).
+  // Firebase web config is public; values come from NUXT_PUBLIC_FIREBASE_*.
   runtimeConfig: {
-    oauth: {
-      google: {
-        clientId: '',
-        clientSecret: '',
+    public: {
+      firebase: {
+        apiKey: '',
+        authDomain: '',
+        projectId: '',
+        storageBucket: '',
+        messagingSenderId: '',
+        appId: '',
       },
     },
   },
