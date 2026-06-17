@@ -6,6 +6,10 @@
 .cache
 dist
 
+# NuxtHub / Cloudflare local
+.wrangler
+.nuxthub
+
 # Node dependencies
 node_modules
 

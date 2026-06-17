@@ -1,0 +1,16 @@
+{
+  "nav": {
+    "home": "Нүүр",
+    "about": "Бидний тухай",
+    "login": "Нэвтрэх",
+    "logout": "Гарах"
+  },
+  "locale": {
+    "switch": "Хэл",
+    "mn": "Монгол",
+    "en": "English"
+  },
+  "common": {
+    "getStarted": "Эхлэх"
+  }
+}

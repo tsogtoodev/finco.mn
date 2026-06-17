@@ -1,0 +1,16 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "login": "Log in",
+    "logout": "Log out"
+  },
+  "locale": {
+    "switch": "Language",
+    "mn": "Монгол",
+    "en": "English"
+  },
+  "common": {
+    "getStarted": "Get started"
+  }
+}
