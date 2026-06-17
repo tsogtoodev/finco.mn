@@ -28,6 +28,19 @@
     "cta": "Дэлгэрэнгүй",
     "dismiss": "Хаах"
   },
+  "hero": {
+    "wordmarkAlt": "Beep",
+    "headline": "Санхүүгээ хүссэнээрээ удирдах дижитал хэтэвч",
+    "subtextLine1": "Төлбөр, гүйлгээ, кредит, урамшуулал—all in one.",
+    "subtextLine2": "Хэзээ ч, хаанаас ч санхүүгээ хянах боломж.",
+    "cta": "Дэлгэрэнгүй",
+    "tabs": {
+      "fincoBiz": "FincoBiz",
+      "beepWallet": "BeepWallet",
+      "loans": "Зээлийн үйлчилгээ",
+      "trust": "Итгэлцэлийн үйлчилгээ"
+    }
+  },
   "footer": {
     "about": "Бидний тухай",
     "individuals": "Иргэнд",

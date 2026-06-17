@@ -28,6 +28,19 @@
     "cta": "Learn more",
     "dismiss": "Close"
   },
+  "hero": {
+    "wordmarkAlt": "Beep",
+    "headline": "Manage your finances your way with a digital wallet",
+    "subtextLine1": "Payments, transfers, credit, rewards—all in one.",
+    "subtextLine2": "Track your finances anytime, anywhere.",
+    "cta": "Learn more",
+    "tabs": {
+      "fincoBiz": "FincoBiz",
+      "beepWallet": "BeepWallet",
+      "loans": "Loan services",
+      "trust": "Trust services"
+    }
+  },
   "footer": {
     "about": "About",
     "individuals": "Individuals",

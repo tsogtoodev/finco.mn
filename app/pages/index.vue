@@ -1,5 +1,8 @@
 <script setup lang="ts">
 // Home — assembled from section components, data-driven via @nuxt/content.
+// The Beep hero is a dark image hero, so opt into the transparent overlay nav.
+definePageMeta({ transparentHeader: true })
+
 const { locale } = useI18n()
 
 const page = await usePageContent('home')
@@ -33,7 +36,7 @@ useSeoMeta({
 
 <template>
   <div>
-    <HeroBeep :hero="page?.hero" />
+    <HeroBeep />
     <ValuePropRow :value="page?.valueProps" />
     <StatStrip :heading="page?.statsHeading" :stats="page?.stats" />
     <ProductHighlights :products="products ?? []" />
