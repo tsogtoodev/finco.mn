@@ -10,7 +10,7 @@
   --color-primary-hover: #1a3a6c;  /* derived darker step for hover/pressed */
   --color-teal: #13cfb9;           /* Beep accent / highlights */
   --color-lime: #caff00;           /* Beep CTA button (Figma 1:3088) — lime, dark text */
-  --color-accent: #5b5bd6;         /* blurple — CTAs, map pins — CONFIRM hex */
+  --color-accent: #4c41d8;         /* blurple — section headings accent, CTAs (Figma 1:14125) */
   --color-dark: #28303f;           /* dark hero/footer backgrounds + nav text */
   --color-announcement: #080a12;   /* near-black announcement bar (Figma 1:12280) */
 
