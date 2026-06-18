@@ -71,18 +71,29 @@ body {
   }
 }
 
-/* Nav mega-menu panel + dimming scrim open animation. CSS @keyframes (compositor-
+/* Nav mega-menu panel + dimming scrim open/close. CSS @keyframes (compositor-
    driven) rather than motion-v / Vue <Transition> — JS/rAF-driven presence
    animations can strand a toggling panel mid-opacity, same reason the hero uses a
-   CSS animation above. Runs on mount; close is an instant unmount. */
+   CSS animation above. Enter on mount; exit plays via the `-out` class for ~0.15s
+   before the element unmounts (driven by a `closing` flag + timer in SiteHeader). */
 @keyframes mega-pop {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-6px) scale(0.99);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
+  }
+}
+@keyframes mega-pop-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.99);
   }
 }
 @keyframes scrim-fade {
@@ -93,15 +104,33 @@ body {
     opacity: 1;
   }
 }
+@keyframes scrim-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
 .mega-pop {
-  animation: mega-pop 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top center;
+  animation: mega-pop 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.mega-pop-out {
+  transform-origin: top center;
+  animation: mega-pop-out 0.15s cubic-bezier(0.4, 0, 1, 1) both;
 }
 .scrim-fade {
-  animation: scrim-fade 0.18s ease both;
+  animation: scrim-fade 0.22s ease both;
+}
+.scrim-fade-out {
+  animation: scrim-fade-out 0.15s ease both;
 }
 @media (prefers-reduced-motion: reduce) {
   .mega-pop,
-  .scrim-fade {
-    animation: none;
+  .mega-pop-out,
+  .scrim-fade,
+  .scrim-fade-out {
+    animation-duration: 0.01ms;
   }
 }

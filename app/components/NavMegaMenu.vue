@@ -32,7 +32,7 @@ const columns = computed<MenuLink[][]>(() => {
 
 <template>
   <div
-    class="flex gap-10 overflow-hidden rounded-[24px] bg-white p-6 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.28)] ring-1 ring-black/[0.04]"
+    class="flex gap-10 overflow-hidden rounded-[24px] bg-white p-6 shadow-[0_16px_44px_-24px_rgba(0,0,0,0.22)] ring-1 ring-black/[0.05]"
   >
     <NavPromoCard
       v-if="promoSide === 'left'"

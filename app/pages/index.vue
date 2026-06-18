@@ -1,8 +1,7 @@
 <script setup lang="ts">
-// Home — Beep landing. Hero + the section components below it (Figma 1:14110).
-// The Beep hero is a dark image hero, so opt into the transparent overlay nav.
-definePageMeta({ transparentHeader: true })
-
+// Home — Beep landing. Hero + the section components below it (Figma 1:11546).
+// The hero is now a light section with a rounded card carousel, so the nav stays
+// solid (no transparent overlay).
 const page = await usePageContent('home')
 
 useSeoMeta({

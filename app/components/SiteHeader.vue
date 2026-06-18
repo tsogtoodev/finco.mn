@@ -64,34 +64,65 @@ const menus = computed(() => ({
 }))
 
 // ── mega-menu open/close with hover intent ─────────────────────────────────
+// `openMenu` holds the visible menu; `closing` plays the exit animation for
+// EXIT_MS before the panel actually unmounts (so close is animated, not abrupt).
 const openMenu = ref<NavAudience | null>(null)
+const closing = ref(false)
 let openTimer: ReturnType<typeof setTimeout> | undefined
 let closeTimer: ReturnType<typeof setTimeout> | undefined
+let exitTimer: ReturnType<typeof setTimeout> | undefined
 const OPEN_DELAY = 110
 const CLOSE_DELAY = 150
+const EXIT_MS = 150
 
 function clearTimers() {
   clearTimeout(openTimer)
   clearTimeout(closeTimer)
 }
+// Show a menu now: cancels any pending close/exit and swaps content instantly.
+function showMenu(a: NavAudience) {
+  clearTimers()
+  clearTimeout(exitTimer)
+  closing.value = false
+  openMenu.value = a
+}
+// Begin the exit animation, then unmount once it finishes.
+function hideMenu() {
+  clearTimers()
+  if (!openMenu.value || closing.value) return
+  closing.value = true
+  exitTimer = setTimeout(() => {
+    openMenu.value = null
+    closing.value = false
+  }, EXIT_MS)
+}
 function scheduleOpen(a: NavAudience) {
   clearTimers()
-  // already showing a panel → switch instantly; otherwise wait out the intent delay
+  clearTimeout(exitTimer)
+  // already showing (or mid-exit) → switch/cancel-exit instantly; else intent delay
   if (openMenu.value) {
-    openMenu.value = a
+    showMenu(a)
     return
   }
-  openTimer = setTimeout(() => (openMenu.value = a), OPEN_DELAY)
+  openTimer = setTimeout(() => showMenu(a), OPEN_DELAY)
 }
 function scheduleClose() {
   clearTimers()
-  closeTimer = setTimeout(() => (openMenu.value = null), CLOSE_DELAY)
+  closeTimer = setTimeout(hideMenu, CLOSE_DELAY)
 }
 function cancelClose() {
   clearTimers()
+  // pointer returned while exiting → cancel the exit and keep it open
+  if (closing.value && openMenu.value) showMenu(openMenu.value)
 }
 function closeNow() {
+  hideMenu()
+}
+// Route change: drop the panel immediately (no exit animation mid-navigation).
+function hardClose() {
   clearTimers()
+  clearTimeout(exitTimer)
+  closing.value = false
   openMenu.value = null
 }
 
@@ -102,12 +133,11 @@ function setTrigger(a: NavAudience, el: unknown) {
 }
 
 function toggleMenu(a: NavAudience) {
-  clearTimers()
-  openMenu.value = openMenu.value === a ? null : a
+  if (openMenu.value === a && !closing.value) hideMenu()
+  else showMenu(a)
 }
 function openAndFocus(a: NavAudience) {
-  clearTimers()
-  openMenu.value = a
+  showMenu(a)
   nextTick(() =>
     document.getElementById(`mega-${a}`)?.querySelector<HTMLAnchorElement>('a')?.focus(),
   )
@@ -115,7 +145,7 @@ function openAndFocus(a: NavAudience) {
 function escClose() {
   const a = openMenu.value
   if (!a) return
-  closeNow()
+  hideMenu()
   triggerEls.value[a]?.focus()
 }
 // Close when keyboard focus leaves the whole nav cluster (Tab past the last link).
@@ -146,6 +176,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)
   window.removeEventListener('keydown', onKeydown)
   clearTimers()
+  clearTimeout(exitTimer)
 })
 
 // ── mobile menu ──────────────────────────────────────────────────────────
@@ -153,8 +184,11 @@ const mobileOpen = ref(false)
 const mobileExpanded = ref<NavAudience | null>(null)
 watch(() => route.fullPath, () => {
   mobileOpen.value = false
-  closeNow()
+  hardClose()
 })
+
+// A mega-menu is visually present while open OR mid-exit animation.
+const menuVisible = computed(() => openMenu.value !== null)
 
 // Solid *appearance* = white bg + dark content. Overlay flips to it once the user
 // scrolls past the hero, whenever the mobile menu is open, or while a mega-menu
@@ -173,10 +207,13 @@ const showShadow = computed(() => condensed.value)
 
 <template>
   <header
-    class="sticky top-0 z-50 transition-[background-color,border-color,box-shadow,margin] duration-200"
+    class="sticky top-0 z-50 border-b transition-[background-color,border-color,box-shadow,margin] duration-200"
     :class="[
-      solid ? 'border-b border-black/10 bg-white' : 'border-b border-transparent bg-transparent',
-      showShadow ? 'shadow-2xs' : 'shadow-none',
+      solid ? 'bg-white' : 'bg-transparent',
+      // hide the hairline + shadow while a panel is open so the bar reads as one
+      // clean surface with the floating panel instead of a stranded line
+      menuVisible ? 'border-transparent' : solid ? 'border-black/10' : 'border-transparent',
+      showShadow && !menuVisible ? 'shadow-2xs' : 'shadow-none',
       transparent ? (condensed ? '-mb-[52px]' : '-mb-[60px]') : '',
     ]"
     @keydown.esc="escClose"
@@ -188,10 +225,13 @@ const showShadow = computed(() => condensed.value)
       :class="showScrim ? 'opacity-100' : 'opacity-0'"
     />
 
-    <!-- dimming scrim behind an open mega-menu panel; click anywhere to close -->
+    <!-- dimming scrim behind an open mega-menu panel; click anywhere to close.
+         Starts at the bar's bottom edge (top-full) so the nav + announcement bar
+         above it stay crisp — matching Figma, the dim/blur only affects the page. -->
     <div
       v-if="openMenu"
-      class="scrim-fade fixed inset-0 z-40 hidden bg-black/10 backdrop-blur-[2px] lg:block"
+      class="absolute inset-x-0 top-full z-40 hidden h-screen bg-black/10 backdrop-blur-[2px] lg:block"
+      :class="closing ? 'scrim-fade-out' : 'scrim-fade'"
       aria-hidden="true"
       @click="closeNow"
     />
@@ -290,7 +330,8 @@ const showShadow = computed(() => condensed.value)
           :id="`mega-${openMenu}`"
           role="region"
           :aria-label="menus[openMenu].sectionLabel"
-          class="mega-pop pointer-events-auto mt-2"
+          class="pointer-events-auto mt-1.5"
+          :class="closing ? 'mega-pop-out' : 'mega-pop'"
           @mouseenter="cancelClose"
           @mouseleave="scheduleClose"
         >

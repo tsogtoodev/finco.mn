@@ -95,15 +95,32 @@
   },
   "hero": {
     "wordmarkAlt": "Beep",
-    "headline": "Manage your finances your way with a digital wallet",
-    "subtextLine1": "Payments, transfers, credit, rewards—all in one.",
-    "subtextLine2": "Track your finances anytime, anywhere.",
     "cta": "Learn more",
+    "carouselLabel": "Featured products and services",
+    "marqueeLabel": "Partner organisations",
     "tabs": {
       "fincoBiz": "FincoBiz",
       "beepWallet": "BeepWallet",
       "loans": "Loan services",
       "trust": "Trust services"
+    },
+    "slides": {
+      "fincoBiz": {
+        "headline": "Finance your business faster and easier",
+        "subtext": "A digital platform that delivers business loans and flexible financing for companies in the fastest, simplest way possible."
+      },
+      "beepWallet": {
+        "headline": "Manage your finances your way with a digital wallet",
+        "subtext": "Payments, transfers, credit, rewards—all in one. Track your finances anytime, anywhere."
+      },
+      "loans": {
+        "headline": "Financial solutions tailored to your needs",
+        "subtext": "Manage your money more easily and smartly with products built for both individuals and businesses."
+      },
+      "trust": {
+        "headline": "Grow your wealth through trust services",
+        "subtext": "Put your assets to work under professional management and build steady, long-term returns."
+      }
     }
   },
   "home": {
