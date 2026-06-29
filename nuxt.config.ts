@@ -87,6 +87,11 @@ export default defineNuxtConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    // Pre-bundle the Spline WebGL runtime so its first lazy import doesn't
+    // trigger a dev-server dep re-optimization + full reload mid-session.
+    optimizeDeps: {
+      include: ['@splinetool/runtime'],
+    },
   },
 
   devtools: { enabled: true },
