@@ -22,6 +22,10 @@ logs
 .fleet
 .idea
 
+# Raw video masters — heavy source files. Optimized web-ready encodes live in
+# public/videos/ (committed); nothing imports from here at build time.
+app/assets/videos/
+
 # Local env files
 .env
 .env.*

@@ -112,8 +112,35 @@ function unbindMotionGuard() {
   window.removeEventListener('touchend', onPressEnd, true)
 }
 // ---------------------------------------------------------------------------
+function onWheelGuard(e: WheelEvent) {
+  if (isOverCanvas(e)) e.stopPropagation()
+}
+function onPinchGuard(e: TouchEvent) {
+  // Two-finger touch = pinch; single-finger passes through (page scroll).
+  if (e.touches.length >= 2 && isOverCanvas(e)) e.stopPropagation()
+}
+function onGestureGuard(e: Event) {
+  // Safari trackpad pinch (gesture* events).
+  if (isOverCanvas(e)) e.stopPropagation()
+}
+function bindScrollPinchGuard() {
+  window.addEventListener('wheel', onWheelGuard, true)
+  window.addEventListener('touchmove', onPinchGuard, true)
+  window.addEventListener('gesturestart', onGestureGuard, true)
+  window.addEventListener('gesturechange', onGestureGuard, true)
+  window.addEventListener('gestureend', onGestureGuard, true)
+}
+function unbindScrollPinchGuard() {
+  window.removeEventListener('wheel', onWheelGuard, true)
+  window.removeEventListener('touchmove', onPinchGuard, true)
+  window.removeEventListener('gesturestart', onGestureGuard, true)
+  window.removeEventListener('gesturechange', onGestureGuard, true)
+  window.removeEventListener('gestureend', onGestureGuard, true)
+}
+// ---------------------------------------------------------------------------
 
 onMounted(() => {
+  bindScrollPinchGuard()
   if (props.noDrag) bindMotionGuard()
   if (inView()) {
     loadScene()
@@ -126,6 +153,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   teardownScroll()
   unbindMotionGuard()
+  unbindScrollPinchGuard()
   app.value?.dispose()
   app.value = null
 })
@@ -136,5 +164,6 @@ onBeforeUnmount(() => {
     ref="canvas"
     class="block size-full transition-opacity duration-700 ease-out"
     :class="loaded ? 'opacity-100' : 'opacity-0'"
+    style="touch-action: pan-x pan-y"
   />
 </template>

@@ -159,10 +159,20 @@ function onFocusOut(e: FocusEvent) {
 // ── scroll state ───────────────────────────────────────────────────────────
 const scrolled = ref(false) // past a small offset → drop shadow
 const pastHero = ref(false) // past the hero top → overlay flips to solid
+const hidden = ref(false) // scrolling down past the bar → slide the row off-screen
+let lastY = 0
+const DIR_THRESHOLD = 4 // ignore sub-pixel/momentum jitter
 function onScroll() {
   const y = window.scrollY
   scrolled.value = y > 8
   pastHero.value = y > 80
+  // Hide on scroll-down (once past the bar's own height), reveal on scroll-up.
+  // Always reveal near the top so the bar never hides over the hero/announcement.
+  const delta = y - lastY
+  if (y < 80) hidden.value = false
+  else if (delta > DIR_THRESHOLD && y > 120) hidden.value = true
+  else if (delta < -DIR_THRESHOLD) hidden.value = false
+  lastY = y
 }
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && openMenu.value) escClose()
@@ -198,23 +208,29 @@ const solid = computed(
 )
 const showScrim = computed(() => props.transparent && !solid.value)
 
-// Shrink-on-scroll. The open mobile menu keeps the bar at full height.
-const condensed = computed(
+// Drop a shadow once scrolled (overlay: past the hero; solid: any nudge) as the
+// separation cue. The bar height stays fixed at 60px — no shrink-on-scroll.
+const showShadow = computed(
   () => !mobileOpen.value && (props.transparent ? pastHero.value : scrolled.value),
 )
-const showShadow = computed(() => condensed.value)
+
+// Slide the bar away on scroll-down, but never while a mega-menu or the mobile
+// menu is open (it must stay anchored for the panel to read correctly).
+const barHidden = computed(
+  () => hidden.value && openMenu.value === null && !mobileOpen.value,
+)
 </script>
 
 <template>
   <header
-    class="sticky top-0 z-50 border-b transition-[background-color,border-color,box-shadow,margin] duration-200"
+    class="sticky top-0 z-50 [transition:background-color_200ms_ease-out,box-shadow_200ms_ease-out,translate_400ms_cubic-bezier(0.22,1,0.36,1)] [will-change:translate] motion-reduce:transition-none"
     :class="[
+      barHidden ? '-translate-y-full' : 'translate-y-0',
       solid ? 'bg-white' : 'bg-transparent',
-      // hide the hairline + shadow while a panel is open so the bar reads as one
-      // clean surface with the floating panel instead of a stranded line
-      menuVisible ? 'border-transparent' : solid ? 'border-black/10' : 'border-transparent',
+      // shadow conveys separation on scroll; suppressed while a panel is open so the
+      // bar reads as one clean surface with the floating panel
       showShadow && !menuVisible ? 'shadow-2xs' : 'shadow-none',
-      transparent ? (condensed ? '-mb-[52px]' : '-mb-[60px]') : '',
+      transparent ? '-mb-[60px]' : '',
     ]"
     @keydown.esc="escClose"
   >
@@ -238,16 +254,14 @@ const showShadow = computed(() => condensed.value)
 
     <div
       ref="navWrap"
-      class="relative z-50 mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 transition-[height] duration-200"
-      :class="condensed ? 'h-[52px]' : 'h-[60px]'"
+      class="relative z-50 mx-auto flex h-[60px] max-w-7xl items-center justify-between gap-6 px-4"
       @focusout="onFocusOut"
     >
       <!-- left: logo + desktop nav -->
       <div class="flex items-center gap-8 xl:gap-16">
         <NuxtLink
           :to="localePath('/')"
-          class="relative block shrink-0 transition-[width,height] duration-200"
-          :class="condensed ? 'h-6 w-[120px]' : 'h-7 w-[140px]'"
+          class="relative block h-7 w-[140px] shrink-0"
           aria-label="Finco Capital"
         >
           <FincoLogo

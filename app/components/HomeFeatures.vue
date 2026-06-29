@@ -5,21 +5,18 @@ const { t } = useI18n()
 
 const cards = computed(() => [
   {
-    icon: 'f:fast-time',
     title: t('home.features.fast.title'),
     body: t('home.features.fast.body'),
     image: '/images/home/feature-blob-1.png',
     class: 'lg:row-span-2 lg:min-h-[533px]',
   },
   {
-    icon: 'f:usb',
     title: t('home.features.secure.title'),
     body: t('home.features.secure.body'),
     image: '/images/home/feature-blob-2.png',
     class: '',
   },
   {
-    icon: 'f:cpu',
     title: t('home.features.smart.title'),
     body: t('home.features.smart.body'),
     image: '/images/home/feature-blob-3.png',
@@ -40,20 +37,21 @@ const cards = computed(() => [
         </p>
       </MotionReveal>
 
-      <MotionReveal
-        :delay="0.1"
-        class="mt-16 grid gap-6 lg:grid-cols-[453.33fr_722.67fr] lg:grid-rows-2"
-      >
-        <FeatureCard
+      <div class="mt-16 grid gap-6 lg:grid-cols-[453.33fr_722.67fr] lg:grid-rows-2">
+        <MotionReveal
           v-for="(c, i) in cards"
           :key="i"
-          :icon="c.icon"
-          :title="c.title"
-          :body="c.body"
-          :image="c.image"
+          :delay="0.1 + i * 0.12"
           :class="c.class"
-        />
-      </MotionReveal>
+        >
+          <FeatureCard
+            :title="c.title"
+            :body="c.body"
+            :image="c.image"
+            class="h-full"
+          />
+        </MotionReveal>
+      </div>
     </div>
   </section>
 </template>

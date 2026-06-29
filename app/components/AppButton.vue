@@ -33,7 +33,7 @@ const sizes: Record<NonNullable<typeof props.size>, string> = {
 }
 
 const classes = computed(() => [
-  'inline-flex items-center justify-center gap-2 font-display font-medium transition-colors disabled:opacity-60 disabled:pointer-events-none',
+  'inline-flex items-center justify-center gap-2 font-display font-medium transition duration-150 ease-[cubic-bezier(0.25,1,0.5,1)] active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none motion-reduce:transition-none motion-reduce:active:scale-100',
   props.pill ? 'rounded-full' : 'rounded-[var(--radius)]',
   variants[props.variant],
   sizes[props.size],

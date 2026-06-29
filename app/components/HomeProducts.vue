@@ -32,22 +32,28 @@ const products = computed(() =>
           {{ t('home.products.subtext') }}
         </p>
 
-        <!-- Audience toggle (filters the carousel) -->
-        <div class="mt-9 inline-flex items-center rounded-full bg-teal/10 p-1.5" role="group" :aria-label="t('home.products.heading')">
-          <button
-            v-for="o in options"
-            :key="o.key"
-            type="button"
-            :aria-pressed="audience === o.key"
-            class="rounded-full px-8 py-2 text-lg transition-colors"
-            :class="audience === o.key
-              ? 'bg-teal font-medium text-white'
-              : 'font-light text-[#1a1a1a]/80 hover:text-foreground'"
-            @click="audience = o.key"
-          >
-            {{ o.label }}
-          </button>
-        </div>
+        <!-- Audience toggle (filters the carousel) — sliding pill -->
+        <TabPills
+          class="mt-9"
+          :model-value="audience"
+          :tabs="options.map((o) => ({ value: o.key, label: o.label }))"
+          :aria-label="t('home.products.heading')"
+          :style="{
+            '--tabs-bar-bg': 'rgba(19, 207, 185, 0.1)',
+            '--tabs-pill-bg': 'var(--color-teal)',
+            '--tabs-text-muted': 'rgba(26, 26, 26, 0.8)',
+            '--tabs-text-active': '#ffffff',
+            '--tabs-text-hover': 'var(--color-foreground)',
+            '--tabs-radius': '9999px',
+            '--tabs-pad': '6px',
+            '--tabs-tab-h': '44px',
+            '--tabs-tab-px': '32px',
+            '--tabs-font': '18px',
+            '--tabs-weight': '300',
+            '--tabs-weight-active': '500',
+          }"
+          @update:model-value="(v) => (audience = v as 'individual' | 'business')"
+        />
       </MotionReveal>
 
       <MotionReveal :delay="0.1" class="mt-12">

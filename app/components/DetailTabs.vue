@@ -18,19 +18,25 @@ const active = ref(available.value[0]?.key ?? 'info')
 
 <template>
   <div v-if="available.length">
-    <!-- Tablist -->
-    <div class="flex gap-1 rounded-full bg-secondary p-1">
-      <button
-        v-for="tab in available"
-        :key="tab.key"
-        type="button"
-        class="rounded-full px-4 py-2 text-sm font-medium transition-colors"
-        :class="active === tab.key ? 'bg-white text-primary shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
-        @click="active = tab.key"
-      >
-        {{ tab.label }}
-      </button>
-    </div>
+    <!-- Tablist (sliding pill) -->
+    <TabPills
+      v-model="active"
+      :tabs="available.map((tab) => ({ value: tab.key, label: tab.label }))"
+      :aria-label="t('tabs.info')"
+      :style="{
+        '--tabs-bar-bg': 'var(--color-secondary)',
+        '--tabs-pill-bg': '#ffffff',
+        '--tabs-text-muted': 'var(--color-muted-foreground)',
+        '--tabs-text-active': 'var(--color-primary)',
+        '--tabs-text-hover': 'var(--color-foreground)',
+        '--tabs-radius': '9999px',
+        '--tabs-pad': '4px',
+        '--tabs-tab-h': '36px',
+        '--tabs-tab-px': '16px',
+        '--tabs-font': '14px',
+        '--tabs-weight': '500',
+      }"
+    />
 
     <!-- Panels -->
     <div class="mt-6">

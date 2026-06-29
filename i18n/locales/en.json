@@ -1,4 +1,20 @@
 {
+  "fab": {
+    "close": "Close",
+    "calculator": {
+      "label": "Calculator",
+      "title": "Loan calculator",
+      "amount": "Loan amount",
+      "rate": "Monthly interest",
+      "term": "Loan term (months)",
+      "calculate": "Calculate",
+      "monthly": "Monthly payment",
+      "total": "Total payment"
+    },
+    "chat": {
+      "label": "Contact us"
+    }
+  },
   "nav": {
     "home": "Home",
     "about": "About",

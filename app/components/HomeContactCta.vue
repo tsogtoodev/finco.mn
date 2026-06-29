@@ -9,7 +9,7 @@ const { t } = useI18n()
     <!-- Far-left blue glow -->
     <div class="pointer-events-none absolute inset-y-0 left-0 w-1/3 [background:radial-gradient(60%_80%_at_0%_50%,rgba(33,71,132,0.35),transparent_70%)]" />
     <div
-      class="absolute right-0 top-1/2 hidden h-[120%] w-[55%] max-w-[820px] -translate-y-1/2 md:block"
+      class="absolute right-0 top-1/2 hidden h-[100%] w-[65%] max-w-[820px] -translate-y-1/2 md:block"
     >
       <ClientOnly>
         <SplineScene scene="https://prod.spline.design/6bxFpxfyo8fzISFt/scene.splinecode" no-drag />
@@ -23,6 +23,13 @@ const { t } = useI18n()
         </template>
       </ClientOnly>
     </div>
+
+    <!-- Blend scrim: fades the panel colour over the scene's left edge so the
+         3D scene emerges from the dark instead of meeting it at a hard seam.
+         Solid through the text column, transparent over the cards on the right. -->
+    <div
+      class="pointer-events-none absolute inset-0 [background:linear-gradient(90deg,#080a12_0%,#080a12_38%,rgba(8,10,18,0.85)_50%,rgba(8,10,18,0)_72%)]"
+    />
 
     <!-- pointer-events-none lets mouse drag/click pass through to the Spline
          canvas on the right; the text column re-enables events for the CTA. -->

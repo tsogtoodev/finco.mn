@@ -11,8 +11,8 @@
 // Only the BeepWallet slide is fully designed in Figma; FincoBiz / Зээл / Итгэлцэл
 // reuse their product/service page photos + copy (sourced from i18n), flagged here.
 //
-// Header note: this design ships a SOLID white header (not the transparent overlay
-// the old dark hero used), so index.vue no longer sets `transparentHeader`.
+// Header note: the full-bleed dark slides sit under the transparent overlay nav
+// (white logo/links + scrim), so index.vue sets `transparentHeader: true`.
 import beepWordmark from '~/assets/icons/beep-wordmark-white.svg?url'
 
 const { t } = useI18n()
@@ -52,7 +52,6 @@ const slides = [
 const SLIDE_MS = 6000
 const current = ref(0) // start on the first tab (FincoBiz); cycles in tab order
 const reduced = ref(false)
-const mounted = ref(false)
 
 function go(i: number) {
   current.value = (i + slides.length) % slides.length
@@ -92,20 +91,91 @@ function focusTab(i: number) {
   nextTick(() => tabRefs.value[i]?.focus())
 }
 
+// ── Fullscreen-on-top scrub (desktop only) ───────────────────────────────
+// At the top of the page the hero card fills the viewport; as the user scrolls
+// it morphs into the settled card. The hero section reserves a runway (`180vh`,
+// see template) so the card can stay PINNED while it shrinks, then releases —
+// avoiding the layout jump a normal-flow resize would cause.
+//
+// `p` is the scrub progress: 0 = fullscreen (default — so SSR/first paint renders
+// fullscreen, no flash), 1 = settled card. It drives the `--hero-p` CSS var the
+// card interpolates off. The fullscreen LAYOUT (runway, sticky, fullscreen card) is
+// CSS-gated via `motion-safe:lg` + the `.is-scrub` media query — present from the
+// first paint. `scrub` here only gates the JS that updates `p` on scroll, so mobile
+// / reduced-motion skip the scroll work and keep the plain static card.
+const p = ref(0)
+const settledW = ref(1440) // settled card width (px) — see computeP
+const scrub = ref(false)
+const DESKTOP = '(min-width: 1024px)'
+// Scrub runway as a fraction of viewport height: p reaches 1 (settled) after the
+// user scrolls 80vh. The section reserves 180vh (template) so the card stays
+// pinned for the whole runway before releasing.
+const RUNWAY_VH = 0.8
+
+let rafId = 0
+let scrollAttached = false
+function computeP() {
+  rafId = 0
+  if (typeof window === 'undefined') return
+  // Settled width matches the non-scrub `lg` card: capped at 1440 with a 4.5rem
+  // (lg:px-9) gutter. Computed in JS and fed to CSS as `--hero-settled-w` because
+  // a `min()`-with-percentage inside the width calc's multiplied term mis-evaluates
+  // to 0 in some engines — a fixed px reference there is reliable.
+  settledW.value = Math.min(1440, window.innerWidth - 72)
+  const runway = window.innerHeight * RUNWAY_VH
+  p.value = runway > 0 ? Math.min(1, Math.max(0, window.scrollY / runway)) : 1
+}
+function onScroll() {
+  if (!rafId) rafId = requestAnimationFrame(computeP)
+}
+function setupScrub() {
+  const on = !reduced.value && window.matchMedia(DESKTOP).matches
+  if (on === scrub.value) { if (on) computeP(); return }
+  scrub.value = on
+  if (on && !scrollAttached) {
+    scrollAttached = true
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+    computeP()
+  }
+  else if (!on && scrollAttached) {
+    scrollAttached = false
+    window.removeEventListener('scroll', onScroll)
+    window.removeEventListener('resize', onScroll)
+    p.value = 1
+  }
+}
+
 onMounted(() => {
-  mounted.value = true
   const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
   reduced.value = mq.matches
-  mq.addEventListener('change', (e) => { reduced.value = e.matches })
+  mq.addEventListener('change', (e) => { reduced.value = e.matches; setupScrub() })
+
+  window.matchMedia(DESKTOP).addEventListener('change', setupScrub)
+  setupScrub()
+})
+
+onBeforeUnmount(() => {
+  if (scrollAttached) {
+    window.removeEventListener('scroll', onScroll)
+    window.removeEventListener('resize', onScroll)
+  }
+  if (rafId) cancelAnimationFrame(rafId)
 })
 </script>
 
 <template>
-  <section class="bg-[#fcfcff] pt-5 pb-5 sm:pt-6 lg:pt-7">
-    <div class="mx-auto max-w-[1512px] px-4 sm:px-6 lg:px-9">
-      <!-- ── Hero card / carousel ───────────────────────────────────────── -->
+  <!-- ── Hero card / carousel ─────────────────────────────────────────────
+       Two-section layout: this first section reserves the scroll runway and
+       pins the card while it scrubs (desktop scrub only — see `scrub`); the
+       partner marquee lives in its own normal-flow section below. -->
+  <section class="bg-[#fcfcff] motion-safe:lg:h-[180vh]">
+    <div
+      class="px-4 pt-5 sm:px-6 sm:pt-6 lg:px-9 lg:pt-7 motion-safe:lg:sticky motion-safe:lg:top-0 motion-safe:lg:flex motion-safe:lg:h-screen motion-safe:lg:items-center motion-safe:lg:justify-center motion-safe:lg:!px-0 motion-safe:lg:!pt-0"
+    >
       <div
-        class="hero-card relative isolate mx-auto h-[540px] max-w-[1440px] overflow-clip rounded-[28px] bg-white text-white sm:h-[640px] sm:rounded-[40px] lg:h-[737px]"
+        class="hero-card is-scrub relative isolate mx-auto h-[540px] w-full max-w-[1440px] overflow-clip rounded-[28px] bg-white text-white sm:h-[640px] sm:rounded-[40px] lg:h-[737px]"
+        :style="{ '--hero-p': p, '--hero-settled-w': `${settledW}px` }"
         @pointerdown="onPointerDown"
         @pointerup="onPointerUp"
         @pointercancel="swiping = false"
@@ -132,20 +202,18 @@ onMounted(() => {
           />
         </div>
 
-        <!-- Slide copy. A single keyed <Motion> remounts on slide change so the copy
-             always matches the active tab/bg (no exit-lag). `:initial` is disabled
-             until mounted, so the SSR/first paint renders visible (motion-v enter
-             animations strand server-hydrated nodes at opacity:0 otherwise). -->
+        <!-- Slide copy. The keyed wrapper remounts on slide change so the copy
+             always matches the active tab/bg (no exit-lag) and the stagger replays. -->
         <div class="absolute inset-0 flex items-center">
           <div class="mx-auto w-full max-w-[1200px] px-6 lg:px-0">
-            <Motion
+            <!-- Slide copy staggers in via `.hero-rise` (SSR-safe CSS, reduced-motion
+                 aware). The wrapper is keyed by slide so it remounts on every change,
+                 replaying the stagger for the new copy. -->
+            <div
                 :key="slides[current].key"
                 role="tabpanel"
                 :id="`hero-panel-${slides[current].key}`"
                 :aria-labelledby="`hero-tab-${slides[current].key}`"
-                :initial="mounted ? { opacity: 0, y: 16 } : false"
-                :animate="{ opacity: 1, y: 0 }"
-                :transition="{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }"
                 class="flex max-w-[640px] flex-col gap-8 lg:gap-10"
               >
                 <div class="flex flex-col gap-5 lg:gap-6">
@@ -156,34 +224,43 @@ onMounted(() => {
                     :alt="t('hero.wordmarkAlt')"
                     width="109"
                     height="40"
-                    class="h-9 w-auto self-start sm:h-10"
+                    class="hero-rise h-9 w-auto self-start sm:h-10"
+                    style="animation-delay: 0.04s"
                   >
                   <span
                     v-else
-                    class="font-display text-lg font-semibold tracking-tight text-white/95 sm:text-xl"
+                    class="hero-rise font-display text-lg font-semibold tracking-tight text-white/95 sm:text-xl"
+                    style="animation-delay: 0.04s"
                   >
                     {{ t(`hero.tabs.${slides[current].key}`) }}
                   </span>
 
-                  <h1 class="font-display text-[1.75rem] font-semibold leading-tight tracking-tight text-white sm:text-[2.25rem] sm:leading-[1.18] lg:text-[2.5rem] lg:leading-[3rem]">
+                  <h1
+                    class="hero-rise font-display text-[1.75rem] font-semibold leading-tight tracking-tight text-white sm:text-[2.25rem] sm:leading-[1.18] lg:text-[2.5rem] lg:leading-[3rem]"
+                    style="animation-delay: 0.12s"
+                  >
                     {{ t(`hero.slides.${slides[current].key}.headline`) }}
                   </h1>
 
-                  <p class="max-w-[620px] text-base font-light leading-7 text-white/90 sm:text-lg lg:text-xl lg:leading-8">
+                  <p
+                    class="hero-rise max-w-[620px] text-base font-light leading-7 text-white/90 sm:text-lg lg:text-xl lg:leading-8"
+                    style="animation-delay: 0.2s"
+                  >
                     {{ t(`hero.slides.${slides[current].key}.subtext`) }}
                   </p>
                 </div>
 
                 <NuxtLink
                   :to="localePath(slides[current].to)"
-                  class="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl bg-lime px-4 py-2 text-sm font-medium text-dark shadow-2xs transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
+                  class="hero-rise inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl bg-lime px-4 py-2 text-sm font-medium text-dark shadow-2xs transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
+                  style="animation-delay: 0.28s"
                 >
                   {{ t('hero.cta') }}
                   <svg viewBox="0 0 16 16" class="size-4" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                     <path d="M3.33 8h9.34M9 4.33 12.67 8 9 11.67" stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
                 </NuxtLink>
-            </Motion>
+            </div>
           </div>
         </div>
 
@@ -191,7 +268,7 @@ onMounted(() => {
         <div
           role="tablist"
           :aria-label="t('hero.carouselLabel')"
-          class="absolute inset-x-0 bottom-0 lg:bottom-9"
+          class="hero-tabs absolute inset-x-0 bottom-0 lg:bottom-9"
         >
           <ul class="mx-auto flex w-full max-w-[1200px] gap-4 overflow-x-auto px-6 pb-6 lg:justify-between lg:gap-0 lg:px-0 lg:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <li
@@ -233,21 +310,25 @@ onMounted(() => {
           </ul>
         </div>
       </div>
+    </div>
+  </section>
 
-      <!-- ── Partner-logo marquee ──────────────────────────────────────── -->
+  <!-- ── Partner-logo marquee (own normal-flow section, below the pin) ───── -->
+  <section class="bg-[#fcfcff] pt-5 pb-5 sm:pt-6 sm:pb-6 lg:pb-7">
+    <div class="mx-auto max-w-[1512px] px-4 sm:px-6 lg:px-9">
       <div
-        class="marquee relative mt-5 flex h-[101px] items-center overflow-hidden"
+        class="marquee relative flex h-[101px] items-center overflow-hidden"
         role="group"
         :aria-label="t('hero.marqueeLabel')"
       >
         <div class="marquee-track flex w-max shrink-0 items-center gap-12 pr-12 sm:gap-14 sm:pr-14">
           <img
-            v-for="(p, i) in [...partners, ...partners]"
-            :key="`${p.name}-${i}`"
-            :src="partnerSrc(p.name)"
-            :alt="i < partners.length ? p.name : ''"
+            v-for="(partner, i) in [...partners, ...partners]"
+            :key="`${partner.name}-${i}`"
+            :src="partnerSrc(partner.name)"
+            :alt="i < partners.length ? partner.name : ''"
             :aria-hidden="i >= partners.length ? 'true' : undefined"
-            :style="{ height: `${p.h}px` }"
+            :style="{ height: `${partner.h}px` }"
             class="w-auto shrink-0 object-contain opacity-50 [filter:brightness(0)]"
             loading="lazy"
           >
@@ -258,6 +339,23 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Fullscreen-on-top scrub. The card interpolates from fullscreen (--hero-p:0) to
+   the settled card (--hero-p:1). Gated by CSS — desktop + motion-ok — NOT by a JS
+   class, so the very first SSR paint already renders fullscreen and there's no
+   settled→fullscreen flash on refresh. `--hero-p` defaults to 0 (fullscreen) until
+   JS drives it on scroll; mobile / reduced-motion keep the Tailwind sizing. 100%
+   resolves against the pinned wrapper (full-bleed, h-screen) — avoids the 100vw
+   horizontal-scrollbar gotcha. */
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .hero-card.is-scrub {
+    max-width: none;
+    width: calc(100% - (100% - var(--hero-settled-w, 1368px)) * var(--hero-p, 0));
+    height: calc(100% - (100% - 737px) * var(--hero-p, 0));
+    border-radius: calc(40px * var(--hero-p, 0));
+    will-change: width, height;
+  }
+}
+
 /* Active-tab progress bar: fills left→right over the slide duration, then its
    animationend advances the carousel. Pause via inline animation-play-state. */
 .hero-progress {
@@ -271,17 +369,18 @@ onMounted(() => {
   to { transform: scaleX(1); }
 }
 
-/* Pause auto-advance while hovering, or while a control is KEYBOARD-focused
-   (`:focus-visible`, not plain `:focus`) — so clicking a tab doesn't leave the
-   bar stuck-paused on the now-focused button. Browser-managed, so resume is
-   guaranteed the moment the pointer/keyboard focus leaves. */
-.hero-card:hover .hero-progress {
+/* Pause auto-advance only while interacting with the carousel CONTROLS (the tab
+   switcher) — hovering the rest of the card/section keeps it advancing. Also pause
+   while a control is KEYBOARD-focused (`:focus-visible`, not plain `:focus`) — so
+   clicking a tab doesn't leave the bar stuck-paused on the now-focused button.
+   Browser-managed, so resume is guaranteed the moment hover/focus leaves. */
+.hero-tabs:hover .hero-progress {
   animation-play-state: paused;
 }
 /* Separate rule: if a browser lacks :has(), only this rule is dropped — hover
    pause above still works. :focus-visible (not :focus) so a mouse CLICK on a tab
    doesn't leave the bar paused on the now-focused button. */
-.hero-card:has(:focus-visible) .hero-progress {
+.hero-tabs:has(:focus-visible) .hero-progress {
   animation-play-state: paused;
 }
 

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 // Home — Beep landing. Hero + the section components below it (Figma 1:11546).
-// The hero is now a light section with a rounded card carousel, so the nav stays
-// solid (no transparent overlay).
+// The hero is a full-bleed dark image carousel, so the nav floats over it with the
+// transparent overlay treatment (white logo/links + scrim), solidifying on scroll.
+definePageMeta({ transparentHeader: true })
 const page = await usePageContent('home')
 
 useSeoMeta({
@@ -12,7 +13,7 @@ useSeoMeta({
 
 <template>
   <div>
-    <HeroBeep />
+    <HomeHero />
     <HomeFeatures />
     <HomeStats />
     <HomeProducts />

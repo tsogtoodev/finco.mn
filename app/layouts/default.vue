@@ -4,6 +4,9 @@
 // `definePageMeta({ transparentHeader: true })`; everything else stays solid.
 const route = useRoute()
 const transparentHeader = computed(() => route.meta.transparentHeader === true)
+// FAB shows everywhere unless a page opts out with
+// `definePageMeta({ floatingActions: false })`.
+const showFloatingActions = computed(() => route.meta.floatingActions !== false)
 </script>
 
 <template>
@@ -14,5 +17,6 @@ const transparentHeader = computed(() => route.meta.transparentHeader === true)
       <slot />
     </main>
     <SiteFooter />
+    <FloatingActions v-if="showFloatingActions" />
   </div>
 </template>

@@ -11,6 +11,7 @@
   --color-teal: #13cfb9;           /* Beep accent / highlights */
   --color-lime: #caff00;           /* Beep CTA button (Figma 1:3088) — lime, dark text */
   --color-accent: #4c41d8;         /* blurple — section headings accent, CTAs (Figma 1:14125) */
+  --color-accent-bright: #6b4fff;  /* brighter violet — loan-calculator total (Figma 1:11617) */
   --color-dark: #28303f;           /* dark hero/footer backgrounds + nav text */
   --color-announcement: #080a12;   /* near-black announcement bar (Figma 1:12280) */
 
@@ -131,6 +132,58 @@ body {
   .mega-pop-out,
   .scrim-fade,
   .scrim-fade-out {
+    animation-duration: 0.01ms;
+  }
+}
+
+/* Modal (loan calculator etc.) open/close — scale-up + fade with a dimmed,
+   blurred backdrop. Enter plays on mount via @keyframes (same reason as
+   .mega-pop above: transition/rAF-toggle enters can strand on hydrated/teleported
+   nodes). Exit plays via `.is-closing` for --modal-close-dur before the element
+   unmounts (driven by a `closing` flag + timer in AppDialog). */
+:root {
+  --modal-open-dur: 250ms;
+  --modal-close-dur: 150ms;
+  --modal-scale: 0.96;
+  --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(var(--modal-scale));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes modal-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(var(--modal-scale));
+  }
+}
+.t-modal {
+  transform-origin: center;
+  animation: modal-in var(--modal-open-dur) var(--modal-ease) both;
+  will-change: transform, opacity;
+}
+.t-modal.is-closing {
+  animation: modal-out var(--modal-close-dur) var(--modal-ease) both;
+}
+.t-backdrop {
+  animation: scrim-fade var(--modal-open-dur) var(--modal-ease) both;
+}
+.t-backdrop.is-closing {
+  animation: scrim-fade-out var(--modal-close-dur) var(--modal-ease) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-modal,
+  .t-backdrop {
     animation-duration: 0.01ms;
   }
 }
