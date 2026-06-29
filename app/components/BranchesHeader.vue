@@ -12,7 +12,6 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const localePath = useLocalePath()
-const router = useRouter()
 
 // Split the title so the accent substring can be coloured without retyping copy.
 const parts = computed(() => {
@@ -24,7 +23,7 @@ const parts = computed(() => {
 })
 
 function goBack() {
-  if (import.meta.client && window.history.length > 1) router.back()
+  if (import.meta.client && window.history.length > 1) window.history.back()
   else navigateTo(localePath('/'))
 }
 </script>
@@ -42,7 +41,7 @@ function goBack() {
     <div class="relative mx-auto max-w-7xl px-4 pb-14 pt-8 sm:pb-16">
       <button
         type="button"
-        class="inline-flex h-10 items-center gap-2 rounded-[var(--radius)] bg-secondary px-4 py-2 text-sm font-medium text-[#171717] transition-colors hover:bg-muted"
+        class="inline-flex h-10 items-center gap-2 rounded-[var(--radius)] bg-secondary px-4 py-2 text-sm font-medium text-[#171717] transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-muted active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none cursor-pointer"
         @click="goBack"
       >
         <Icon name="lucide:arrow-left" class="size-4" />

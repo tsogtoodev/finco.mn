@@ -362,7 +362,7 @@ const barHidden = computed(
     <!-- mobile menu — solid white panel (readable in both modes), overlays content.
          Height animates via the CSS grid-rows 0fr→1fr trick (reliable, no JS). -->
     <div
-      class="absolute inset-x-0 top-full grid border-b bg-white transition-[grid-template-rows,border-color] duration-300 ease-out motion-reduce:transition-none lg:hidden"
+      class="absolute inset-x-0 top-full grid bg-white transition-[grid-template-rows,border-color] duration-300 ease-out motion-reduce:transition-none lg:hidden"
       :class="mobileOpen ? 'grid-rows-[1fr] border-black/10 shadow-2xs' : 'grid-rows-[0fr] border-transparent'"
       :aria-hidden="!mobileOpen"
     >

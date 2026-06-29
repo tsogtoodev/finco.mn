@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
+// Product-detail tab strip (Figma 1:13353): three equal-width underline tabs
+// (Үйлчилгээний нөхцөл · Тавигдах шаардлага · Бүрдүүлэх материал), the active one
+// in medium weight with a dark underline. The requirements panel renders a numbered
+// list with full-width dividers between rows.
 const props = defineProps<{ tabs: NonNullable<Collections['products']['tabs']>; body?: unknown }>()
 const { t } = useI18n()
 
@@ -13,41 +17,53 @@ const available = computed(() => {
   return out
 })
 
-const active = ref(available.value[0]?.key ?? 'info')
+// Open on the requirements tab when present (Figma shows it active), else the first.
+const active = ref(
+  available.value.find((to) => to.key === 'requirements')?.key ?? available.value[0]?.key ?? 'info',
+)
 </script>
 
 <template>
   <div v-if="available.length">
-    <!-- Tablist (sliding pill) -->
-    <TabPills
-      v-model="active"
-      :tabs="available.map((tab) => ({ value: tab.key, label: tab.label }))"
-      :aria-label="t('tabs.info')"
-      :style="{
-        '--tabs-bar-bg': 'var(--color-secondary)',
-        '--tabs-pill-bg': '#ffffff',
-        '--tabs-text-muted': 'var(--color-muted-foreground)',
-        '--tabs-text-active': 'var(--color-primary)',
-        '--tabs-text-hover': 'var(--color-foreground)',
-        '--tabs-radius': '9999px',
-        '--tabs-pad': '4px',
-        '--tabs-tab-h': '36px',
-        '--tabs-tab-px': '16px',
-        '--tabs-font': '14px',
-        '--tabs-weight': '500',
-      }"
-    />
+    <!-- Underline tablist -->
+    <div role="tablist" :aria-label="t('tabs.requirements')" class="flex w-full">
+      <button
+        v-for="tab in available"
+        :key="tab.key"
+        type="button"
+        role="tab"
+        :aria-selected="active === tab.key"
+        class="relative flex-1 cursor-pointer px-2 pb-6 pt-2 text-center text-base leading-5 transition-colors"
+        :class="active === tab.key ? 'font-medium text-black/80' : 'font-light text-black/60 hover:text-black/80'"
+        @click="active = tab.key"
+      >
+        {{ tab.label }}
+        <span class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-black/10" />
+        <span
+          v-if="active === tab.key"
+          class="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 bg-black/80"
+        />
+      </button>
+    </div>
 
     <!-- Panels -->
     <div class="mt-6">
-      <div v-show="active === 'info'" class="prose max-w-none text-muted-foreground">
+      <div v-show="active === 'info'" class="prose max-w-none text-base font-light leading-7 text-black/80">
         <ContentRenderer v-if="body" :value="{ body } as any" />
         <p v-else-if="tabs.info">{{ tabs.info }}</p>
       </div>
-      <ul v-show="active === 'requirements'" class="list-disc space-y-2 pl-5 text-muted-foreground">
-        <li v-for="(r, i) in tabs.requirements" :key="i">{{ r }}</li>
-      </ul>
-      <p v-show="active === 'other'" class="text-muted-foreground">{{ tabs.other }}</p>
+
+      <ol v-show="active === 'requirements'" class="flex flex-col gap-3 rounded-[12px] px-3 py-6">
+        <template v-for="(r, i) in tabs.requirements" :key="i">
+          <li class="flex gap-2 text-base font-light leading-7 text-black/80">
+            <span class="shrink-0 tabular-nums">{{ i + 1 }}.</span>
+            <span>{{ r }}</span>
+          </li>
+          <div v-if="i < (tabs.requirements?.length ?? 0) - 1" class="h-px w-full bg-black/10" />
+        </template>
+      </ol>
+
+      <p v-show="active === 'other'" class="text-base font-light leading-7 text-black/80">{{ tabs.other }}</p>
     </div>
   </div>
 </template>

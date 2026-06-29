@@ -7,14 +7,17 @@ const props = defineProps<{ branches: Collections['branches'][] }>()
 const { t } = useI18n()
 
 const activeSlug = ref(props.branches[0]?.slug)
+// `branches` is always non-empty here (the page only renders the explorer when
+// branches exist), so the first entry is a guaranteed fallback — assert it so
+// `active` is non-nullable and template access (e.g. active.slug) stays typed.
 const active = computed(
-  () => props.branches.find(b => b.slug === activeSlug.value) ?? props.branches[0],
+  () => props.branches.find(b => b.slug === activeSlug.value) ?? props.branches[0]!,
 )
 </script>
 
 <template>
   <div
-    class="grid gap-6 lg:grid-cols-[minmax(0,1.94fr)_minmax(0,1fr)_minmax(0,2fr)] lg:gap-12"
+    class="grid gap-6 lg:grid-cols-[minmax(0,1.94fr)_minmax(0,1fr)_minmax(0,2fr)] lg:gap-6"
   >
     <!-- Branch list -->
     <ul class="flex flex-col gap-[19px]">

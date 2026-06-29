@@ -62,12 +62,60 @@ async function loadScene() {
     app.value = new Application(canvas.value)
     await app.value.load(props.scene)
     loaded.value = true
+    startRenderGating()
     emit('load')
   }
   catch (err) {
     console.error('[SplineScene] failed to load', err)
   }
 }
+
+// --- render gating (perf / thermals) ----------------------------------------
+// The Spline runtime renders every frame for as long as it's alive and does NOT
+// pause when scrolled offscreen, so each scene keeps the GPU busy continuously.
+// With several scenes on one page (home has two), an idle tab parked anywhere —
+// even the pure-CSS hero, where no scene is visible — still burns every scene's
+// render loop, which heats the machine over a few minutes.
+//
+// Once loaded we drive app.stop()/play() off the canvas's viewport visibility
+// (IntersectionObserver) AND the tab's visibility, so only an on-screen scene in
+// a foregrounded tab renders. stop() halts the rAF loop (0 GPU) and keeps the last
+// frame on the canvas, so resuming is seamless. If IO is unavailable the scene
+// just keeps rendering — i.e. the prior behaviour, never worse.
+let io: IntersectionObserver | null = null
+let onScreen = true
+
+function syncRender() {
+  const a = app.value
+  if (!a) return
+  const active = onScreen && !document.hidden
+  if (active && a.isStopped) a.play()
+  else if (!active && !a.isStopped) a.stop()
+}
+
+function startRenderGating() {
+  // Bail if the component unmounted during the async load (app already disposed),
+  // so we don't attach listeners that onBeforeUnmount has already torn down.
+  if (!app.value) return
+  document.addEventListener('visibilitychange', syncRender)
+  if (typeof IntersectionObserver !== 'undefined' && canvas.value) {
+    // 200px margin keeps a scene rendering just before it scrolls into view, so
+    // it's already animating by the time it's seen.
+    io = new IntersectionObserver((entries) => {
+      onScreen = entries[entries.length - 1]?.isIntersecting ?? true
+      syncRender()
+    }, { rootMargin: '200px' })
+    io.observe(canvas.value)
+  }
+  syncRender()
+}
+
+function stopRenderGating() {
+  document.removeEventListener('visibilitychange', syncRender)
+  io?.disconnect()
+  io = null
+}
+// ---------------------------------------------------------------------------
 
 // --- motion suppression -----------------------------------------------------
 // Block move events over the canvas so the scene only reacts to clicks. Caught
@@ -152,6 +200,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   teardownScroll()
+  stopRenderGating()
   unbindMotionGuard()
   unbindScrollPinchGuard()
   app.value?.dispose()

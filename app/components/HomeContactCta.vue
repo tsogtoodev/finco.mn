@@ -12,7 +12,7 @@ const { t } = useI18n()
       class="absolute right-0 top-1/2 hidden h-[100%] w-[65%] max-w-[820px] -translate-y-1/2 md:block"
     >
       <ClientOnly>
-        <SplineScene scene="https://prod.spline.design/6bxFpxfyo8fzISFt/scene.splinecode" no-drag />
+        <SplineScene scene="https://prod.spline.design/rAfqlL9pnx29yw5P/scene.splinecode" no-drag />
         <template #fallback>
           <NuxtImg
             src="/images/home/contact-cards.png"
@@ -33,7 +33,7 @@ const { t } = useI18n()
 
     <!-- pointer-events-none lets mouse drag/click pass through to the Spline
          canvas on the right; the text column re-enables events for the CTA. -->
-    <div class="pointer-events-none relative mx-auto w-full max-w-[1200px] px-6 py-24 lg:py-28">
+    <div class="pointer-events-none relative mx-auto w-full max-w-[1200px] px-6 py-24 lg:py-42">
       <MotionReveal class="pointer-events-auto flex max-w-[620px] flex-col items-start gap-16">
         <div class="flex flex-col gap-4">
           <h2 class="font-display text-3xl font-medium leading-tight text-white sm:text-[40px] sm:leading-[48px]">

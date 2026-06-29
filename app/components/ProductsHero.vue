@@ -8,10 +8,9 @@ import { heroPhoto, type Audience } from '~/data/productListing'
 const props = defineProps<{ audience: Audience }>()
 const { t } = useI18n()
 const localePath = useLocalePath()
-const router = useRouter()
 
 function goBack() {
-  if (import.meta.client && window.history.length > 1) router.back()
+  if (import.meta.client && window.history.length > 1) window.history.back()
   else navigateTo(localePath('/'))
 }
 </script>
@@ -51,7 +50,7 @@ function goBack() {
 
         <button
           type="button"
-          class="inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius)] bg-secondary px-4 text-sm font-medium text-[#171717] transition-colors hover:bg-white"
+          class="inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius)] bg-secondary px-4 text-sm font-medium text-[#171717] transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-white active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none cursor-pointer"
           @click="goBack"
         >
           <Icon name="lucide:arrow-left" class="size-4" />
@@ -63,11 +62,11 @@ function goBack() {
       <div class="flex flex-1 flex-col items-center justify-center gap-10 pb-6 pt-10 text-center sm:gap-12">
         <h1
           class="hero-rise max-w-[700px] font-display text-3xl font-bold leading-[1.2] sm:text-4xl md:text-[40px] md:leading-[48px]"
-          style="animation-delay: 0.05s"
+          style="animation-delay: 0.12s"
         >
           {{ t('productsPage.headline') }}
         </h1>
-        <div class="hero-rise" style="animation-delay: 0.12s">
+        <div class="hero-rise" style="animation-delay: 0.24s">
           <AudienceToggle :audience="props.audience" />
         </div>
       </div>

@@ -298,14 +298,18 @@
     "heading": "Frequently asked questions"
   },
   "tabs": {
-    "info": "Overview",
+    "info": "Service terms",
     "requirements": "Requirements",
-    "other": "Other"
+    "other": "Required documents"
   },
   "loanTerms": {
     "amount": "Loan amount",
-    "rate": "Rate",
-    "period": "Term"
+    "rate": "Interest rate",
+    "period": "Loan term"
+  },
+  "productHero": {
+    "location": "View locations",
+    "apply": "Submit request"
   },
   "related": {
     "heading": "Other products you may like"

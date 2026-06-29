@@ -85,20 +85,20 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
               target="_blank"
               rel="noopener"
               :aria-label="s.label"
-              class="flex size-9 items-center justify-center rounded-full bg-white text-dark shadow-2xs ring-1 ring-black/5 transition-colors hover:bg-muted"
+              class="flex size-9 items-center justify-center rounded-full bg-white text-dark transition-colors hover:bg-muted"
             >
-              <Icon :name="s.icon" class="size-5" />
+              <Icon :name="s.icon" class="text-[22px]" />
             </a>
             <a
               :href="`tel:${phone.replace(/\s/g, '')}`"
-              class="inline-flex items-center gap-2 rounded-full bg-black/5 px-4 py-2 text-sm text-black/[0.64] underline transition-colors hover:bg-black/10"
+              class="inline-flex items-center gap-2 rounded-full bg-black/5 px-4 py-2 text-sm text-black/[0.64] transition-colors hover:bg-black/10"
             >
               {{ phone }}
               <Icon name="lucide:arrow-up-right" class="size-4" />
             </a>
             <a
               :href="`mailto:${email}`"
-              class="inline-flex items-center gap-2 rounded-full bg-black/5 px-4 py-2 text-sm text-black/[0.64] underline transition-colors hover:bg-black/10"
+              class="inline-flex items-center gap-2 rounded-full bg-black/5 px-4 py-2 text-sm text-black/[0.64] transition-colors hover:bg-black/10"
             >
               {{ email }}
               <Icon name="lucide:arrow-up-right" class="size-4" />
@@ -108,7 +108,7 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
             :href="`https://maps.google.com/?q=${encodeURIComponent(t('contact.address'))}`"
             target="_blank"
             rel="noopener"
-            class="mt-4 inline-flex max-w-full items-center gap-2 rounded-full bg-black/5 px-4 py-2 text-sm text-black/[0.64] underline transition-colors hover:bg-black/10"
+            class="mt-4 inline-flex max-w-full items-center gap-2 rounded-full bg-black/5 px-4 py-2 text-sm text-black/[0.64] transition-colors hover:bg-black/10"
           >
             <span class="truncate">{{ t('contact.address') }}</span>
             <Icon name="lucide:arrow-up-right" class="size-4 shrink-0" />
@@ -138,8 +138,8 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
             class="h-12 w-auto opacity-80"
           >
           <div class="flex items-center gap-8 text-sm font-light text-white/95">
-            <NuxtLink :to="localePath('/')" class="underline hover:text-white">{{ t('footer.terms') }}</NuxtLink>
-            <NuxtLink :to="localePath('/')" class="underline hover:text-white">{{ t('footer.privacy') }}</NuxtLink>
+            <NuxtLink :to="localePath('/')" class="hover:text-white">{{ t('footer.terms') }}</NuxtLink>
+            <NuxtLink :to="localePath('/')" class="hover:text-white">{{ t('footer.privacy') }}</NuxtLink>
           </div>
         </div>
       </div>

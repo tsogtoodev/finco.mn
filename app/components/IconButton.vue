@@ -17,14 +17,14 @@ withDefaults(
     type="button"
     :aria-label="label"
     :disabled="disabled"
-    class="flex size-11 items-center justify-center rounded-full shadow-[0_0_20px_rgba(0,0,0,0.15)] transition disabled:cursor-not-allowed disabled:opacity-40"
+    class="flex size-11 items-center justify-center rounded-full shadow-[0_0_20px_rgba(0,0,0,0.15)] transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] active:scale-[0.94] active:blur-[1.5px] disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
     :class="tone === 'dark'
-      ? 'bg-white/10 text-white hover:bg-white/20'
-      : 'bg-black/[0.04] text-foreground hover:bg-black/[0.08]'"
+      ? 'bg-[#f2f2f2]/10 text-white'
+      : 'bg-[#f2f2f2]/10 text-dark'"
   >
     <Icon
       name="f:arrow-right"
-      class="size-7"
+      class="text-[30px]"
       :class="{ '-scale-x-100': direction === 'prev' }"
     />
   </button>

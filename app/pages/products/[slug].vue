@@ -47,21 +47,20 @@ useSeoMeta({
 
 <template>
   <div v-if="product">
-    <PageHero
-      dark
-      :eyebrow="product.category"
+    <ProductDetailHero
+      :image="product.heroImage"
+      :eyebrow="audienceCrumb.label"
       :title="product.title"
       :subtitle="product.summary"
-      :breadcrumb="[{ label: t('nav.home'), to: '/' }, audienceCrumb, { label: product.title }]"
+      :terms="product.loanTerms"
+      :breadcrumb="[{ label: t('common.homeBreadcrumb'), to: '/' }, audienceCrumb, { label: product.title }]"
     />
 
-    <div class="mx-auto max-w-3xl px-4 py-12">
-      <LoanTermsStats v-if="product.loanTerms" :terms="product.loanTerms" class="-mt-20 relative" />
-
-      <div class="mt-12">
+    <section class="bg-white py-16 sm:py-20">
+      <div class="mx-auto max-w-7xl px-4">
         <DetailTabs :tabs="product.tabs ?? {}" :body="product.body" />
       </div>
-    </div>
+    </section>
 
     <RelatedProductsCarousel :products="related ?? []" />
     <FaqAccordion :items="product.faq" />

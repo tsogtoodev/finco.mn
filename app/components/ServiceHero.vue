@@ -13,10 +13,9 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const localePath = useLocalePath()
-const router = useRouter()
 
 function goBack() {
-  if (import.meta.client && window.history.length > 1) router.back()
+  if (import.meta.client && window.history.length > 1) window.history.back()
   else navigateTo(localePath('/'))
 }
 </script>
@@ -60,7 +59,7 @@ function goBack() {
 
         <button
           type="button"
-          class="inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius)] border border-white/20 px-4 text-sm font-medium text-white shadow-[0_4px_4px_rgba(0,0,0,0.25)] transition-colors hover:bg-white/10"
+          class="inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius)] border border-white/20 px-4 text-sm font-medium text-white shadow-[0_4px_4px_rgba(0,0,0,0.25)] transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-white/10 active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none cursor-pointer"
           @click="goBack"
         >
           <Icon name="lucide:arrow-left" class="size-4" />
@@ -72,18 +71,18 @@ function goBack() {
       <div class="flex flex-1 flex-col items-center justify-center gap-8 pb-6 pt-10 text-center">
         <h1
           class="hero-rise max-w-[860px] font-display text-3xl font-medium leading-[1.15] sm:text-4xl md:text-[48px] md:leading-[52px]"
-          style="animation-delay: 0.05s"
+          style="animation-delay: 0.12s"
         >
           {{ props.title }}
         </h1>
         <p
           v-if="props.subtitle"
           class="hero-rise max-w-[640px] text-base font-extralight leading-7 text-white/90 sm:text-lg md:text-xl"
-          style="animation-delay: 0.1s"
+          style="animation-delay: 0.24s"
         >
           {{ props.subtitle }}
         </p>
-        <div v-if="props.cta" class="hero-rise pt-2" style="animation-delay: 0.16s">
+        <div v-if="props.cta" class="hero-rise pt-2" style="animation-delay: 0.36s">
           <AppButton :to="props.cta.to" variant="light" size="lg" arrow>
             {{ props.cta.label }}
           </AppButton>

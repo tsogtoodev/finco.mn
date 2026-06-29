@@ -12,7 +12,7 @@ const telHref = computed(() => props.branch.phone?.replace(/[^\d+]/g, ''))
 
 <template>
   <li
-    class="relative rounded-[24px] border border-[#8a5df2]/20 bg-white p-6 transition-colors"
+    class="relative rounded-[24px] border border-[#8a5df2]/20 bg-white p-6 transition-[border-color,box-shadow] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none"
     :class="active ? 'shadow-[0_8px_24px_-12px_rgba(76,65,216,0.25)]' : 'hover:border-[#8a5df2]/40'"
   >
     <!-- Stretched select button (sits under the content so the whole card is clickable) -->
@@ -28,7 +28,7 @@ const telHref = computed(() => props.branch.phone?.replace(/[^\d+]/g, ''))
     <div class="pointer-events-none relative z-10 flex items-center justify-between gap-3">
       <div class="min-w-0 flex-1">
         <p
-          class="truncate"
+          class="truncate transition-colors duration-200 motion-reduce:transition-none"
           :class="active
             ? 'text-xl font-semibold leading-7 tracking-[0.2px] text-accent'
             : 'text-lg font-normal leading-7 tracking-[0.18px] text-black/80'"
@@ -36,47 +36,38 @@ const telHref = computed(() => props.branch.phone?.replace(/[^\d+]/g, ''))
           {{ branch.name }}
         </p>
 
-        <Transition name="branch-details">
+        <!-- grid-rows 0fr→1fr animates the card height smoothly (no layout jump);
+             inner opacity fades the content; `inert` keeps the collapsed panel
+             out of tab order / a11y tree. -->
+        <div
+          class="grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none"
+          :class="active ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"
+        >
           <div
-            v-if="active"
             :id="detailsId"
-            class="mt-3 space-y-2 text-base leading-[22px] tracking-[0.16px] text-black/80"
+            :inert="!active"
+            class="min-h-0 overflow-hidden transition-opacity duration-200 ease-out motion-reduce:transition-none"
+            :class="active ? 'opacity-100 delay-75' : 'opacity-0'"
           >
-            <p v-if="branch.hours">{{ branch.hours }}</p>
-            <p v-if="branch.phone">
-              <a
-                :href="`tel:${telHref}`"
-                class="pointer-events-auto relative z-20 transition-colors hover:text-accent"
-              >{{ branch.phone }}</a>
-            </p>
-            <p>{{ branch.address }}</p>
+            <div class="mt-3 space-y-2 text-base leading-[22px] tracking-[0.16px] text-black/80">
+              <p v-if="branch.hours">{{ branch.hours }}</p>
+              <p v-if="branch.phone">
+                <a
+                  :href="`tel:${telHref}`"
+                  class="pointer-events-auto relative z-20 transition-colors hover:text-accent"
+                >{{ branch.phone }}</a>
+              </p>
+              <p>{{ branch.address }}</p>
+            </div>
           </div>
-        </Transition>
+        </div>
       </div>
 
       <Icon
         name="lucide:arrow-right"
-        class="size-4 shrink-0"
+        class="size-4 shrink-0 transition-colors duration-200 motion-reduce:transition-none"
         :class="active ? 'text-accent' : 'text-black/40'"
       />
     </div>
   </li>
 </template>
-
-<style scoped>
-.branch-details-enter-active,
-.branch-details-leave-active {
-  transition: opacity 0.25s ease, transform 0.25s ease;
-}
-.branch-details-enter-from,
-.branch-details-leave-to {
-  opacity: 0;
-  transform: translateY(-4px);
-}
-@media (prefers-reduced-motion: reduce) {
-  .branch-details-enter-active,
-  .branch-details-leave-active {
-    transition: none;
-  }
-}
-</style>
