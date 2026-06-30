@@ -19,6 +19,16 @@ const products = computed(() =>
     (p) => p.audience === audience.value,
   ),
 )
+
+// Toggle accent follows the active product line: teal for Beep/individual
+// (Иргэнд), FincoBiz brand blue for business (Бизнест). The Figma only ever
+// shows the individual/green state, so the business palette mirrors the
+// FincoBiz brand colour used elsewhere (--color-primary #214784).
+const tabTheme = computed(() =>
+  audience.value === 'business'
+    ? { bar: 'rgba(33, 71, 132, 0.1)', pill: 'var(--color-primary)' }
+    : { bar: 'rgba(19, 207, 185, 0.1)', pill: 'var(--color-teal)' },
+)
 </script>
 
 <template>
@@ -39,8 +49,8 @@ const products = computed(() =>
           :tabs="options.map((o) => ({ value: o.key, label: o.label }))"
           :aria-label="t('home.products.heading')"
           :style="{
-            '--tabs-bar-bg': 'rgba(19, 207, 185, 0.1)',
-            '--tabs-pill-bg': 'var(--color-teal)',
+            '--tabs-bar-bg': tabTheme.bar,
+            '--tabs-pill-bg': tabTheme.pill,
             '--tabs-text-muted': 'rgba(26, 26, 26, 0.8)',
             '--tabs-text-active': '#ffffff',
             '--tabs-text-hover': 'var(--color-foreground)',

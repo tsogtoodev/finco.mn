@@ -55,8 +55,11 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
 
 <template>
   <footer>
-    <!-- Link columns + contact -->
-    <div class="bg-white">
+    <!-- Link columns + contact — pinned (sticky) so the dark legal strip below
+         rises over it on scroll, leaving it behind the strip (curtain parallax).
+         Lower z than the strip; gated on motion-safe → reduced-motion users get
+         a normal stacked footer. -->
+    <div class="z-0 bg-white motion-safe:sticky motion-safe:top-0">
       <div class="mx-auto w-full max-w-[1200px] px-6 py-20 lg:py-28">
         <div class="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4">
           <div v-for="col in columns" :key="col.heading">
@@ -117,8 +120,9 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
       </div>
     </div>
 
-    <!-- Legal strip -->
-    <div class="relative isolate overflow-hidden bg-[#0a0a1a]">
+    <!-- Legal strip — higher z than the link columns so it slides over them as
+         the page scrolls past the pinned columns (the curtain). -->
+    <div class="relative isolate z-10 overflow-hidden bg-[#0a0a1a]">
       <img
         src="/images/home/footer-glow.svg"
         alt=""

@@ -38,7 +38,7 @@ const { t } = useI18n()
     <div class="relative mx-auto flex w-full max-w-[1200px] flex-col items-center">
       <MotionReveal
         as="h2"
-        class="max-w-[1015px] text-center font-display text-2xl font-semibold leading-tight tracking-wide text-white sm:text-[32px]"
+        class="max-w-[1015px] text-center font-display text-[24px] font-semibold leading-tight tracking-wide text-white"
       >
         {{ t('home.stats.heading') }}
       </MotionReveal>

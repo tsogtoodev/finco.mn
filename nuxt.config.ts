@@ -46,6 +46,22 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  // Geologica is a variable font (Thin 100 → Black 900). @nuxt/fonts otherwise
+  // auto-fetches only weight 400, so font-light/medium/semibold/bold rendered as
+  // faux-bolded 400 and looked off vs Figma. Fetch the full weight family so each
+  // utility maps to a real cut. Subsets are left to the module defaults (latin +
+  // cyrillic etc.) — cyrillic matters for the Mongolian (default) locale.
+  fonts: {
+    families: [
+      {
+        name: 'Geologica',
+        provider: 'google',
+        weights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
+        styles: ['normal'],
+      },
+    ],
+  },
+
   // Local SVG icon set exported from Figma (cleaned, currentColor). Use as
   // <Icon name="f:fast-time" />. Bundled server-side by @nuxt/icon.
   icon: {
