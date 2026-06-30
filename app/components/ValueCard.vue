@@ -64,10 +64,11 @@ const glowBp = computed(() =>
     class="relative flex h-full min-h-[320px] flex-col overflow-hidden rounded-[12px] bg-white p-8 lg:h-[400px]"
     :class="row === 'top' ? 'justify-start' : 'justify-end'"
   >
-    <!-- Soft teal halo + shared cube cluster, both clipped to this card -->
+    <!-- Soft teal halo + shared cube cluster, both clipped to this card. Desktop
+         only (lg+) — hidden on tablet/mobile where the cards stack. -->
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute left-1/2 aspect-square w-[170%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal/35 blur-[90px]"
+      class="pointer-events-none absolute left-1/2 hidden aspect-square w-[170%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal/35 blur-[90px] lg:block"
       :class="[topClass, glowBp]"
       :style="vars"
     />
@@ -75,7 +76,7 @@ const glowBp = computed(() =>
       :src="cube"
       aria-hidden="true"
       alt=""
-      class="pointer-events-none absolute left-1/2 w-[260%] max-w-none -translate-x-1/2 -translate-y-1/2 mix-blend-multiply"
+      class="pointer-events-none absolute left-1/2 hidden w-[260%] max-w-none -translate-x-1/2 -translate-y-1/2 mix-blend-multiply lg:block"
       :class="[topClass, cubeBp]"
       :style="vars"
     >
