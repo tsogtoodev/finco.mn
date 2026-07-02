@@ -34,6 +34,14 @@ const { t } = useI18n()
       aria-hidden="true"
       class="pointer-events-none absolute inset-0 size-full object-cover sm:hidden"
     />
+    <!-- Edge fade masks: blend the scene into the panel at the left/right edges.
+         Above the background, below the content (no z so DOM order keeps text on
+         top). Two layers per side: a TRANSPARENT backdrop-blur (masked to fade
+         inward — a solid fill would hide the blur) + a darkening gradient. -->
+    <div class="pointer-events-none absolute inset-y-0 left-0 w-[28%] backdrop-blur-[4px] [mask-image:linear-gradient(to_right,black,transparent)] [-webkit-mask-image:linear-gradient(to_right,black,transparent)]" />
+    <div class="pointer-events-none absolute inset-y-0 right-0 w-[28%] backdrop-blur-[4px] [mask-image:linear-gradient(to_left,black,transparent)] [-webkit-mask-image:linear-gradient(to_left,black,transparent)]" />
+    <div class="pointer-events-none absolute inset-y-0 left-0 w-[28%] bg-gradient-to-r from-[#0a0a1a] to-transparent" />
+    <div class="pointer-events-none absolute inset-y-0 right-0 w-[28%] bg-gradient-to-l from-[#0a0a1a] to-transparent" />
 
     <div class="relative mx-auto flex w-full max-w-[1200px] flex-col items-center">
       <MotionReveal
