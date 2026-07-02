@@ -48,7 +48,7 @@ defineProps<{ blocks: BadgeBlock[] }>()
         <ClientOnly>
           <SplineScene
             scene="https://prod.spline.design/5QI6kS8kPdn7j7Y3/scene.splinecode"
-            :reveal-delay="2000"
+            :reveal-delay="1000"
             class="scale-180"
           />
           <template #fallback>

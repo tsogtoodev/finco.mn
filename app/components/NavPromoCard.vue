@@ -53,10 +53,10 @@ const localePath = useLocalePath()
       />
     </template>
 
-    <!-- FincoBiz: platform UI mockup + dark-blue base -->
+    <!-- FincoBiz: laptop render + dark-blue base -->
     <template v-else>
       <NuxtImg
-        src="/images/nav/fincobiz-mockup.png"
+        src="/images/nav/fincobiz-laptop.png"
         alt=""
         aria-hidden="true"
         width="1146"
@@ -71,7 +71,7 @@ const localePath = useLocalePath()
     </template>
 
     <!-- foreground: logo + tagline (top) and CTA (bottom) -->
-    <div class="relative flex h-full min-h-[391px] flex-col justify-between p-5">
+    <div class="relative flex h-full min-h-[448px] flex-col justify-between p-5">
       <div class="flex flex-col gap-3">
         <NuxtImg
           :src="logo"
@@ -79,8 +79,8 @@ const localePath = useLocalePath()
           :width="variant === 'beep' ? 356 : 456"
           :height="variant === 'beep' ? 128 : 88"
           :sizes="variant === 'beep' ? '90px' : '115px'"
-          class="h-auto w-auto"
-          :class="variant === 'beep' ? 'max-h-8' : 'max-h-6'"
+          class="h-auto w-auto self-start"
+          :class="variant === 'beep' ? 'max-h-7' : 'max-h-6'"
         />
         <p
           class="text-sm font-extralight leading-5"

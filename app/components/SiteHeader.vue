@@ -38,11 +38,11 @@ const navItems = computed<NavItem[]>(() => [
 
 // Resolve a menu's i18n copy into the shape NavMegaMenu expects. Slugs + promo
 // structure come from data; titles/descriptions/taglines come from i18n.
+// `label` names the panel for assistive tech (matches the trigger's label).
 function buildMenu(audience: NavAudience) {
   const cfg = navMenus[audience]
   return {
-    sectionLabel: t(cfg.labelKey),
-    promoSide: cfg.promoSide,
+    label: t(audience === 'individual' ? 'nav.products' : 'nav.business'),
     links: cfg.slugs.map((slug) => ({
       to: `/products/${slug}`,
       title: t(`megaMenu.items.${slug}.title`),
@@ -246,7 +246,7 @@ const barHidden = computed(
          above it stay crisp — matching Figma, the dim/blur only affects the page. -->
     <div
       v-if="openMenu"
-      class="absolute inset-x-0 top-full z-40 hidden h-screen bg-black/10 backdrop-blur-[2px] lg:block"
+      class="absolute inset-x-0 top-full z-40 hidden h-screen bg-black/10 backdrop-blur-[2.5px] lg:block"
       :class="closing ? 'scrim-fade-out' : 'scrim-fade'"
       aria-hidden="true"
       @click="closeNow"
@@ -292,10 +292,10 @@ const barHidden = computed(
               v-else
               :ref="(el) => setTrigger(item.audience, el)"
               type="button"
-              class="flex items-center gap-1 rounded-full py-2 pl-4 pr-3 text-sm font-light transition-colors"
+              class="rounded-full px-4 py-2 text-sm font-light transition-colors"
               :class="[
                 solid ? 'text-dark hover:bg-black/5' : 'text-white hover:bg-white/10',
-                openMenu === item.audience ? 'bg-black/[0.06] font-normal' : '',
+                openMenu === item.audience ? 'bg-black/5 font-medium' : '',
               ]"
               :aria-expanded="openMenu === item.audience"
               aria-haspopup="true"
@@ -306,12 +306,6 @@ const barHidden = computed(
               @keydown.down.prevent="openAndFocus(item.audience)"
             >
               {{ item.label }}
-              <Icon
-                name="lucide:chevron-down"
-                class="size-3.5 transition-transform duration-200"
-                :class="openMenu === item.audience ? 'rotate-180' : ''"
-                aria-hidden="true"
-              />
             </button>
           </template>
         </nav>
@@ -337,22 +331,22 @@ const barHidden = computed(
         </button>
       </div>
 
-      <!-- desktop mega-menu panel: full container width, dropped below the bar -->
-      <div class="pointer-events-none absolute inset-x-4 top-full z-50 hidden lg:block">
+      <!-- desktop mega-menu panel: content-sized, centered below the bar.
+           Centering lives on this static wrapper (flex) — the animated child
+           can't carry translate classes since .mega-pop animates transform. -->
+      <div class="pointer-events-none absolute inset-x-4 top-full z-50 hidden lg:flex lg:justify-center">
         <div
           v-if="openMenu"
           :id="`mega-${openMenu}`"
           role="region"
-          :aria-label="menus[openMenu].sectionLabel"
-          class="pointer-events-auto mt-1.5"
+          :aria-label="menus[openMenu].label"
+          class="pointer-events-auto mt-6 min-w-0"
           :class="closing ? 'mega-pop-out' : 'mega-pop'"
           @mouseenter="cancelClose"
           @mouseleave="scheduleClose"
         >
           <NavMegaMenu
-            :section-label="menus[openMenu].sectionLabel"
             :links="menus[openMenu].links"
-            :promo-side="menus[openMenu].promoSide"
             :promo="menus[openMenu].promo"
           />
         </div>

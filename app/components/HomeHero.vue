@@ -60,6 +60,36 @@ function next() {
   if (!reduced.value) go(current.value + 1)
 }
 
+// ── CTA gating ────────────────────────────────────────────────────────────
+// The lime CTA holds until EVERY text block on the slide has finished its
+// BlurText reveal, then rises in. We count each eyebrow/headline/subtext
+// `@animation-complete` against the slide's text-block count — the designed
+// BeepWallet slide shows a wordmark <img> (not a text eyebrow) so it has 2 text
+// blocks, the others 3. A short delay before the CTA gives it visual separation.
+// (The last block to finish isn't always the subtitle: a long headline at 60ms/
+// word can outlast a short subtitle at 35ms/word — hence counting, not one event.)
+const ctaReady = ref(false)
+const textReveals = ref(0)
+const textBlockCount = computed(() =>
+  'logo' in slides[current.value] && (slides[current.value] as { logo?: string }).logo ? 2 : 3,
+)
+// Safety net: reveal the CTA even if a completion event is ever missed (e.g. the
+// hero somehow never enters view) so the primary CTA can't get stuck hidden.
+let ctaFallback: ReturnType<typeof setTimeout> | undefined
+function armCtaFallback() {
+  if (ctaFallback) clearTimeout(ctaFallback)
+  ctaFallback = setTimeout(() => { ctaReady.value = true }, 1600)
+}
+function onTextReveal() {
+  if (++textReveals.value >= textBlockCount.value) ctaReady.value = true
+}
+// Each slide replays: reset the count + hide the CTA until the new copy lands.
+watch(current, () => {
+  textReveals.value = 0
+  ctaReady.value = false
+  armCtaFallback()
+})
+
 // Pause on hover/focus is handled purely in CSS (`.hero-card:hover` /
 // `:focus-within` pause the progress animation) — the browser pairs enter/leave
 // reliably, so the auto-advance can never get stuck the way a JS flag can.
@@ -153,6 +183,8 @@ onMounted(() => {
 
   window.matchMedia(DESKTOP).addEventListener('change', setupScrub)
   setupScrub()
+
+  armCtaFallback()
 })
 
 onBeforeUnmount(() => {
@@ -161,6 +193,7 @@ onBeforeUnmount(() => {
     window.removeEventListener('resize', onScroll)
   }
   if (rafId) cancelAnimationFrame(rafId)
+  if (ctaFallback) clearTimeout(ctaFallback)
 })
 </script>
 
@@ -236,40 +269,51 @@ onBeforeUnmount(() => {
                     :text="t(`hero.tabs.${slides[current].key}`)"
                     as="span"
                     animate-by="words"
-                    :delay="80"
-                    :start-delay="0.04"
+                    :delay="25"
+                    :start-delay="0.03"
                     class="font-display text-lg font-semibold tracking-tight text-white/95 sm:text-xl mb-4"
+                    @animation-complete="onTextReveal"
                   />
 
                   <BlurText
                     :text="t(`hero.slides.${slides[current].key}.headline`)"
                     as="h1"
                     animate-by="words"
-                    :delay="120"
-                    :start-delay="0.16"
+                    :delay="38"
+                    :start-delay="0.09"
                     class="font-display text-[1.75rem] font-semibold leading-tight tracking-tight text-white sm:text-[2.25rem] sm:leading-[1.18] lg:text-[2.5rem] lg:leading-[3rem]"
+                    @animation-complete="onTextReveal"
                   />
 
                   <BlurText
                     :text="t(`hero.slides.${slides[current].key}.subtext`)"
                     as="p"
                     animate-by="words"
-                    :delay="35"
-                    :start-delay="0.28"
+                    :delay="20"
+                    :start-delay="0.15"
                     class="max-w-[620px] text-base font-light leading-7 text-white/90 sm:text-lg lg:text-xl lg:leading-8"
+                    @animation-complete="onTextReveal"
                   />
                 </div>
 
-                <NuxtLink
-                  :to="localePath(slides[current].to)"
-                  class="hero-rise inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl bg-lime px-4 py-2 text-sm font-medium text-dark shadow-2xs transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
-                  style="animation-delay: 0.28s"
+                <!-- CTA holds until every text block has revealed (see `onTextReveal`),
+                     then rises in — replacing the old fixed-delay `.hero-rise`. -->
+                <Motion
+                  class="w-fit"
+                  :initial="{ opacity: 0, y: -16, filter: 'blur(6px)' }"
+                  :animate="ctaReady ? { opacity: 1, y: 0, filter: 'blur(0px)' } : { opacity: 0, y: -16, filter: 'blur(6px)' }"
+                  :transition="{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }"
                 >
-                  {{ t('hero.cta') }}
-                  <svg viewBox="0 0 16 16" class="size-4" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                    <path d="M3.33 8h9.34M9 4.33 12.67 8 9 11.67" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </NuxtLink>
+                  <NuxtLink
+                    :to="localePath(slides[current].to)"
+                    class="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl bg-lime px-4 py-2 text-sm font-medium text-dark shadow-2xs transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
+                  >
+                    {{ t('hero.cta') }}
+                    <svg viewBox="0 0 16 16" class="size-4" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <path d="M3.33 8h9.34M9 4.33 12.67 8 9 11.67" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </NuxtLink>
+                </Motion>
             </div>
           </div>
         </div>

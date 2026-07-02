@@ -173,7 +173,10 @@
     "products": {
       "heading": "Financial solutions tailored ",
       "headingAccent": "to your needs",
-      "subtext": "Manage your finances more easily with products built for individuals and businesses."
+      "subtext": "Manage your finances more easily with products built for individuals and businesses.",
+      "businessHeading": "Financial solutions tailored ",
+      "businessHeadingAccent": "to business needs",
+      "businessSubtext": "Financing for your business operations, working capital, and investments."
     },
     "beep": {
       "heading": "Feel, Build, Stand out",

@@ -64,8 +64,8 @@ function goBack() {
           :text="t('productsPage.headline')"
           as="h1"
           animate-by="words"
-          :delay="120"
-          :start-delay="0.1"
+          :delay="60"
+          :start-delay="0.06"
           class="max-w-[700px] justify-center font-display text-3xl font-bold leading-[1.2] sm:text-4xl md:text-[40px] md:leading-[48px]"
         />
         <div class="hero-rise" style="animation-delay: 0.24s">

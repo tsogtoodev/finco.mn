@@ -30,7 +30,7 @@ defineProps<{ headline: string; intro: string; photo: string }>()
         :text="headline"
         as="h1"
         animate-by="words"
-        :delay="120"
+        :delay="60"
         class="mx-auto max-w-4xl justify-center font-display text-[1.75rem] font-medium leading-[1.2] tracking-tight text-white sm:text-[2.25rem] lg:text-[2.5rem] lg:leading-[1.25]"
         style="text-shadow: 0 0 10px rgba(255,255,255,0.12);"
       />
@@ -38,9 +38,9 @@ defineProps<{ headline: string; intro: string; photo: string }>()
         :text="intro"
         as="p"
         animate-by="words"
-        :delay="35"
-        :start-delay="0.18"
-        class="mx-auto mt-8 max-w-4xl justify-center text-sm font-thin leading-6 tracking-[0.2px] text-white/60 sm:mt-10 sm:text-lg sm:leading-7"
+        :delay="20"
+        :start-delay="0.1"
+        class="mx-auto mt-8 max-w-[1200px] justify-center text-sm font-thin leading-6 tracking-[0.2px] text-white/60 sm:mt-10 sm:text-lg sm:leading-7"
       />
     </div>
   </section>

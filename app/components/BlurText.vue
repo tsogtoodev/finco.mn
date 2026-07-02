@@ -49,7 +49,7 @@ const props = withDefaults(
     animationFrom: undefined,
     animationTo: undefined,
     easing: (t: number) => t,
-    stepDuration: 0.35,
+    stepDuration: 0.22,
     as: 'p',
     startDelay: 0,
   },
@@ -70,8 +70,8 @@ const segments = computed(() =>
 
 const defaultFrom = computed<Keyframe>(() =>
   props.direction === 'top'
-    ? { filter: 'blur(10px)', opacity: 0, y: -50 }
-    : { filter: 'blur(10px)', opacity: 0, y: 50 },
+    ? { filter: 'blur(10px)', opacity: 0, y: -20 }
+    : { filter: 'blur(10px)', opacity: 0, y: 20 },
 )
 
 const defaultTo = computed<Keyframe[]>(() => [

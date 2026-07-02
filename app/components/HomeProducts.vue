@@ -29,22 +29,72 @@ const tabTheme = computed(() =>
     ? { bar: 'rgba(76, 65, 216, 0.1)', pill: 'var(--color-accent)' }
     : { bar: 'rgba(19, 207, 185, 0.1)', pill: 'var(--color-teal)' },
 )
+
+// Heading, accent and subtext swap with the active audience (Figma 238:9708
+// individual, 340:8034 business).
+const isBusiness = computed(() => audience.value === 'business')
+const heading = computed(() =>
+  t(isBusiness.value ? 'home.products.businessHeading' : 'home.products.heading'),
+)
+const headingAccent = computed(() =>
+  t(isBusiness.value ? 'home.products.businessHeadingAccent' : 'home.products.headingAccent'),
+)
+const subtext = computed(() =>
+  t(isBusiness.value ? 'home.products.businessSubtext' : 'home.products.subtext'),
+)
+
+// BlurText per-word reveal, staggered across the three blocks: the dark heading
+// runs first, the colour accent picks up where it ends, then the subtext — each
+// block's `startDelay` continues the previous block's word cadence.
+const TITLE_WORD_MS = 45
+const TITLE_START = 0.05
+const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length
+const accentStart = computed(() => TITLE_START + (wordCount(heading.value) * TITLE_WORD_MS) / 1000)
+const subtextStart = computed(
+  () => accentStart.value + (wordCount(headingAccent.value) * TITLE_WORD_MS) / 1000 + 0.06,
+)
 </script>
 
 <template>
   <section class="bg-[#fdfffe] py-24 lg:py-32">
     <div class="mx-auto w-full max-w-[1200px] px-6">
-      <MotionReveal class="flex flex-col items-center gap-3 text-center">
-        <h2 class="font-display text-3xl font-bold leading-tight text-[#231f20] sm:text-4xl">
-          {{ t('home.products.heading') }}<span class="transition-colors duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none" :style="{ color: tabTheme.pill }">{{ t('home.products.headingAccent') }}</span>
+      <div class="flex flex-col items-center gap-3 text-center">
+        <!-- Title blur-reveals word-by-word; the accent half continues the
+             stagger and keeps its teal/blurple colour. -->
+        <h2 class="flex w-full flex-wrap items-baseline justify-center gap-x-[0.28em] font-display text-3xl font-bold leading-tight text-[#231f20] sm:text-4xl">
+          <BlurText
+            :key="audience"
+            :text="heading.trim()"
+            as="span"
+            animate-by="words"
+            :delay="TITLE_WORD_MS"
+            :start-delay="TITLE_START"
+            class="justify-center"
+          />
+          <BlurText
+            :key="audience"
+            :text="headingAccent"
+            as="span"
+            animate-by="words"
+            :delay="TITLE_WORD_MS"
+            :start-delay="accentStart"
+            class="justify-center transition-colors duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+            :style="{ color: tabTheme.pill }"
+          />
         </h2>
-        <p class="text-base font-light leading-relaxed text-[#231f20]/60">
-          {{ t('home.products.subtext') }}
-        </p>
+        <BlurText
+          :key="audience"
+          :text="subtext"
+          as="p"
+          animate-by="words"
+          :delay="18"
+          :start-delay="subtextStart"
+          class="w-full justify-center text-base font-light leading-relaxed text-[#231f20]/60"
+        />
 
         <!-- Audience toggle (filters the carousel) — sliding pill -->
+        <MotionReveal :delay="0.2" class="mt-9">
         <TabPills
-          class="mt-9"
           :model-value="audience"
           :tabs="options.map((o) => ({ value: o.key, label: o.label }))"
           :aria-label="t('home.products.heading')"
@@ -64,7 +114,8 @@ const tabTheme = computed(() =>
           }"
           @update:model-value="(v) => (audience = v as 'individual' | 'business')"
         />
-      </MotionReveal>
+        </MotionReveal>
+      </div>
 
       <MotionReveal :delay="0.1" class="mt-12">
         <ProductCarousel :label="t('home.products.heading')">

@@ -73,8 +73,8 @@ function goBack() {
           :text="props.title ?? ''"
           as="h1"
           animate-by="words"
-          :delay="120"
-          :start-delay="0.12"
+          :delay="60"
+          :start-delay="0.07"
           class="max-w-[860px] justify-center font-display text-3xl font-medium leading-[1.15] sm:text-4xl md:text-[48px] md:leading-[52px]"
         />
         <BlurText
@@ -82,8 +82,8 @@ function goBack() {
           :text="props.subtitle"
           as="p"
           animate-by="words"
-          :delay="35"
-          :start-delay="0.28"
+          :delay="20"
+          :start-delay="0.15"
           class="max-w-[640px] justify-center text-base font-extralight leading-7 text-white/90 sm:text-lg md:text-xl"
         />
         <div v-if="props.cta" class="hero-rise pt-2" style="animation-delay: 0.36s">

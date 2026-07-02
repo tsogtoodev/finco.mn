@@ -70,7 +70,7 @@ function goBack() {
           :text="eyebrow"
           as="p"
           animate-by="words"
-          :delay="80"
+          :delay="45"
           class="text-sm font-semibold"
           :class="[dark ? 'text-teal' : 'text-accent', centered && 'justify-center']"
         />
@@ -78,8 +78,8 @@ function goBack() {
           :text="title ?? ''"
           as="h1"
           animate-by="words"
-          :delay="120"
-          :start-delay="0.15"
+          :delay="60"
+          :start-delay="0.08"
           class="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl"
           :class="centered ? 'mx-auto max-w-[700px] justify-center' : 'max-w-3xl'"
         />
@@ -88,8 +88,8 @@ function goBack() {
           :text="subtitle"
           as="p"
           animate-by="words"
-          :delay="35"
-          :start-delay="0.3"
+          :delay="20"
+          :start-delay="0.16"
           class="mt-4 text-lg"
           :class="[dark ? 'text-white/70' : 'text-muted-foreground', centered ? 'mx-auto max-w-2xl justify-center' : 'max-w-2xl']"
         />

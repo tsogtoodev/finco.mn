@@ -55,6 +55,10 @@ defineProps<{ ceo: AboutContent['ceo'] }>()
             aria-hidden="true"
             class="pointer-events-none absolute inset-0 -z-10 rotate-[6.46deg] rounded-[2rem] bg-[#fbfbfb] shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
           />
+          <div
+            aria-hidden="true"
+            class="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-[#fbfbfb] shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
+          />
           <h3 class="text-lg font-medium text-[#141414]">{{ ceo.greetingTitle }}</h3>
           <div class="mt-5 space-y-4 text-sm font-light leading-6 text-[rgba(0,0,0,0.7)]">
             <p v-for="(para, i) in ceo.greetingBody" :key="i">{{ para }}</p>

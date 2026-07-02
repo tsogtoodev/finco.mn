@@ -1,8 +1,9 @@
 <script setup lang="ts">
 // The white dropdown panel for a nav mega-menu (Figma 1:11916 Иргэнд /
-// 1:11775 Бизнесд). Generic + config-driven: one promo card on `promoSide`, a
-// section label, and a 2-column link grid. Links are split column-major
-// (ceil(n/2) in the first column) to match the Figma layout.
+// 1:11775 Бизнесд). Generic + config-driven: promo card on the left plus a
+// link grid chunked column-major into columns of at most five links, hairline
+// dividers between columns (Иргэнд: 5, Бизнесд: 5 + 3). The panel is
+// content-sized; the caller centers it under the nav bar.
 interface MenuLink {
   to: string
   title: string
@@ -18,62 +19,42 @@ interface MenuPromo {
 }
 
 const props = defineProps<{
-  sectionLabel: string
   links: MenuLink[]
-  promoSide: 'left' | 'right'
   promo: MenuPromo
 }>()
 
+const PER_COLUMN = 5
 const columns = computed<MenuLink[][]>(() => {
-  const per = Math.ceil(props.links.length / 2)
-  return [props.links.slice(0, per), props.links.slice(per)]
+  const cols: MenuLink[][] = []
+  for (let i = 0; i < props.links.length; i += PER_COLUMN)
+    cols.push(props.links.slice(i, i + PER_COLUMN))
+  return cols
 })
 </script>
 
 <template>
   <div
-    class="flex gap-10 overflow-hidden rounded-[24px] bg-white p-6 shadow-[0_16px_44px_-24px_rgba(0,0,0,0.22)] ring-1 ring-black/[0.05]"
+    class="flex gap-3 overflow-hidden rounded-[24px] bg-white p-6 shadow-[0_16px_44px_-24px_rgba(0,0,0,0.22)] ring-1 ring-black/[0.05]"
   >
-    <NavPromoCard
-      v-if="promoSide === 'left'"
-      v-bind="promo"
-    />
+    <NavPromoCard v-bind="promo" />
 
-    <div
-      v-if="promoSide === 'left'"
-      aria-hidden="true"
-      class="w-px shrink-0 self-stretch bg-black/10"
-    />
-
-    <!-- link grid + section label -->
-    <div class="flex min-w-0 flex-1 flex-col gap-8 py-2">
-      <p class="text-sm font-extralight leading-5 text-black/60">{{ sectionLabel }}</p>
-      <div class="grid grid-cols-2 gap-x-12">
-        <div
-          v-for="(col, ci) in columns"
-          :key="ci"
-          class="flex flex-col gap-8"
-        >
-          <NavMenuLink
-            v-for="link in col"
-            :key="link.to + link.title"
-            :to="link.to"
-            :title="link.title"
-            :desc="link.desc"
-          />
-        </div>
+    <template v-for="(col, ci) in columns" :key="ci">
+      <div
+        v-if="ci > 0"
+        aria-hidden="true"
+        class="w-px shrink-0 self-stretch bg-black/10"
+      />
+      <!-- fixed 440px columns per Figma; min-w-0 lets them shrink (text wraps)
+           when the viewport caps the panel below its natural width -->
+      <div class="flex w-[440px] min-w-0 flex-col gap-1">
+        <NavMenuLink
+          v-for="link in col"
+          :key="link.to + link.title"
+          :to="link.to"
+          :title="link.title"
+          :desc="link.desc"
+        />
       </div>
-    </div>
-
-    <div
-      v-if="promoSide === 'right'"
-      aria-hidden="true"
-      class="w-px shrink-0 self-stretch bg-black/10"
-    />
-
-    <NavPromoCard
-      v-if="promoSide === 'right'"
-      v-bind="promo"
-    />
+    </template>
   </div>
 </template>

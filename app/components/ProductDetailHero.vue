@@ -93,15 +93,15 @@ function goBack() {
             :text="props.eyebrow"
             as="p"
             animate-by="words"
-            :delay="80"
+            :delay="45"
             class="justify-center font-display text-xl font-semibold text-teal"
           />
           <BlurText
             :text="props.title ?? ''"
             as="h1"
             animate-by="words"
-            :delay="120"
-            :start-delay="0.12"
+            :delay="60"
+            :start-delay="0.07"
             class="max-w-[900px] justify-center font-display text-3xl font-medium leading-[1.05] sm:text-4xl md:text-[48px] md:leading-[48px]"
           />
           <BlurText
@@ -109,8 +109,8 @@ function goBack() {
             :text="props.subtitle"
             as="p"
             animate-by="words"
-            :delay="35"
-            :start-delay="0.24"
+            :delay="20"
+            :start-delay="0.13"
             class="max-w-[720px] justify-center text-base font-extralight leading-7 text-white/90 sm:text-lg md:text-xl"
           />
         </div>
