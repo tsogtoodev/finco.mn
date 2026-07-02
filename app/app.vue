@@ -15,7 +15,7 @@ useSchemaOrg([
   defineOrganization({
     name: 'finco.design',
     url: 'https://finco.design',
-    logo: '/favicon.ico',
+    logo: '/favicon.png',
   }),
   defineWebSite({ name: 'finco.design' }),
 ])
