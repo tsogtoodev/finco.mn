@@ -34,6 +34,10 @@ const props = withDefaults(
     easing?: (t: number) => number
     /** Time each step takes, in seconds. */
     stepDuration?: number
+    /** Root element tag (e.g. 'h1', 'span'). Defaults to 'p'. */
+    as?: string
+    /** Seconds to wait before the first segment — staggers whole blocks. */
+    startDelay?: number
   }>(),
   {
     text: '',
@@ -46,6 +50,8 @@ const props = withDefaults(
     animationTo: undefined,
     easing: (t: number) => t,
     stepDuration: 0.35,
+    as: 'p',
+    startDelay: 0,
   },
 )
 
@@ -101,7 +107,7 @@ function spanTransition(index: number) {
   return {
     duration: totalDuration.value,
     times: times.value,
-    delay: (index * props.delay) / 1000,
+    delay: props.startDelay + (index * props.delay) / 1000,
     ease: props.easing,
   }
 }
@@ -121,7 +127,7 @@ function handleComplete() {
 </script>
 
 <template>
-  <p ref="rootEl" style="display: flex; flex-wrap: wrap">
+  <component :is="as" ref="rootEl" style="display: flex; flex-wrap: wrap">
     <Motion
       v-for="(segment, index) in segments"
       :key="index"
@@ -132,5 +138,5 @@ function handleComplete() {
       :style="{ display: 'inline-block', willChange: 'transform, filter, opacity' }"
       :on-animation-complete="index === segments.length - 1 ? handleComplete : undefined"
     >{{ displaySegment(segment, index) }}</Motion>
-  </p>
+  </component>
 </template>

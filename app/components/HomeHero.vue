@@ -231,27 +231,33 @@ onBeforeUnmount(() => {
                     class="hero-rise h-9 w-auto self-start sm:h-10 mb-4"
                     style="animation-delay: 0.04s"
                   >
-                  <span
+                  <BlurText
                     v-else
-                    class="hero-rise font-display text-lg font-semibold tracking-tight text-white/95 sm:text-xl mb-4"
-                    style="animation-delay: 0.04s"
-                  >
-                    {{ t(`hero.tabs.${slides[current].key}`) }}
-                  </span>
+                    :text="t(`hero.tabs.${slides[current].key}`)"
+                    as="span"
+                    animate-by="words"
+                    :delay="80"
+                    :start-delay="0.04"
+                    class="font-display text-lg font-semibold tracking-tight text-white/95 sm:text-xl mb-4"
+                  />
 
-                  <h1
-                    class="hero-rise font-display text-[1.75rem] font-semibold leading-tight tracking-tight text-white sm:text-[2.25rem] sm:leading-[1.18] lg:text-[2.5rem] lg:leading-[3rem]"
-                    style="animation-delay: 0.12s"
-                  >
-                    {{ t(`hero.slides.${slides[current].key}.headline`) }}
-                  </h1>
+                  <BlurText
+                    :text="t(`hero.slides.${slides[current].key}.headline`)"
+                    as="h1"
+                    animate-by="words"
+                    :delay="120"
+                    :start-delay="0.16"
+                    class="font-display text-[1.75rem] font-semibold leading-tight tracking-tight text-white sm:text-[2.25rem] sm:leading-[1.18] lg:text-[2.5rem] lg:leading-[3rem]"
+                  />
 
-                  <p
-                    class="hero-rise max-w-[620px] text-base font-light leading-7 text-white/90 sm:text-lg lg:text-xl lg:leading-8"
-                    style="animation-delay: 0.2s"
-                  >
-                    {{ t(`hero.slides.${slides[current].key}.subtext`) }}
-                  </p>
+                  <BlurText
+                    :text="t(`hero.slides.${slides[current].key}.subtext`)"
+                    as="p"
+                    animate-by="words"
+                    :delay="35"
+                    :start-delay="0.28"
+                    class="max-w-[620px] text-base font-light leading-7 text-white/90 sm:text-lg lg:text-xl lg:leading-8"
+                  />
                 </div>
 
                 <NuxtLink

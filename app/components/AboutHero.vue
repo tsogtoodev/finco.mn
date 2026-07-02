@@ -26,21 +26,22 @@ defineProps<{ headline: string; intro: string; photo: string }>()
     />
 
     <div class="mx-auto w-full max-w-5xl px-4 pb-[12vh] pt-32 text-center sm:pb-[14vh]">
-      <MotionReveal :y="28">
-        <h1
-          class="mx-auto max-w-4xl bg-gradient-to-b from-white to-[#d8d8d8] bg-clip-text font-display text-[1.75rem] font-medium leading-[1.2] tracking-tight text-transparent sm:text-[2.25rem] lg:text-[2.5rem] lg:leading-[1.25]"
-          style="text-shadow: 0 0 10px rgba(255,255,255,0.12);"
-        >
-          {{ headline }}
-        </h1>
-      </MotionReveal>
-      <MotionReveal :y="24" :delay="0.12">
-        <p
-          class="mx-auto mt-8 max-w-4xl text-sm font-thin leading-6 tracking-[0.2px] text-white/60 sm:mt-10 sm:text-lg sm:leading-7"
-        >
-          {{ intro }}
-        </p>
-      </MotionReveal>
+      <BlurText
+        :text="headline"
+        as="h1"
+        animate-by="words"
+        :delay="120"
+        class="mx-auto max-w-4xl justify-center font-display text-[1.75rem] font-medium leading-[1.2] tracking-tight text-white sm:text-[2.25rem] lg:text-[2.5rem] lg:leading-[1.25]"
+        style="text-shadow: 0 0 10px rgba(255,255,255,0.12);"
+      />
+      <BlurText
+        :text="intro"
+        as="p"
+        animate-by="words"
+        :delay="35"
+        :start-delay="0.18"
+        class="mx-auto mt-8 max-w-4xl justify-center text-sm font-thin leading-6 tracking-[0.2px] text-white/60 sm:mt-10 sm:text-lg sm:leading-7"
+      />
     </div>
   </section>
 </template>

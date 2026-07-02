@@ -65,22 +65,34 @@ function goBack() {
       </button>
 
       <div :class="centered && 'text-center'">
-        <p v-if="eyebrow" class="text-sm font-semibold" :class="dark ? 'text-teal' : 'text-accent'">
-          {{ eyebrow }}
-        </p>
-        <h1
+        <BlurText
+          v-if="eyebrow"
+          :text="eyebrow"
+          as="p"
+          animate-by="words"
+          :delay="80"
+          class="text-sm font-semibold"
+          :class="[dark ? 'text-teal' : 'text-accent', centered && 'justify-center']"
+        />
+        <BlurText
+          :text="title ?? ''"
+          as="h1"
+          animate-by="words"
+          :delay="120"
+          :start-delay="0.15"
           class="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl"
-          :class="centered ? 'mx-auto max-w-[700px]' : 'max-w-3xl'"
-        >
-          {{ title }}
-        </h1>
-        <p
+          :class="centered ? 'mx-auto max-w-[700px] justify-center' : 'max-w-3xl'"
+        />
+        <BlurText
           v-if="subtitle"
+          :text="subtitle"
+          as="p"
+          animate-by="words"
+          :delay="35"
+          :start-delay="0.3"
           class="mt-4 text-lg"
-          :class="[dark ? 'text-white/70' : 'text-muted-foreground', centered ? 'mx-auto max-w-2xl' : 'max-w-2xl']"
-        >
-          {{ subtitle }}
-        </p>
+          :class="[dark ? 'text-white/70' : 'text-muted-foreground', centered ? 'mx-auto max-w-2xl justify-center' : 'max-w-2xl']"
+        />
         <slot />
       </div>
     </div>

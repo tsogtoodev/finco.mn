@@ -69,19 +69,23 @@ function goBack() {
 
       <!-- centered headline + subtext + CTA -->
       <div class="flex flex-1 flex-col items-center justify-center gap-8 pb-6 pt-10 text-center">
-        <h1
-          class="hero-rise max-w-[860px] font-display text-3xl font-medium leading-[1.15] sm:text-4xl md:text-[48px] md:leading-[52px]"
-          style="animation-delay: 0.12s"
-        >
-          {{ props.title }}
-        </h1>
-        <p
+        <BlurText
+          :text="props.title ?? ''"
+          as="h1"
+          animate-by="words"
+          :delay="120"
+          :start-delay="0.12"
+          class="max-w-[860px] justify-center font-display text-3xl font-medium leading-[1.15] sm:text-4xl md:text-[48px] md:leading-[52px]"
+        />
+        <BlurText
           v-if="props.subtitle"
-          class="hero-rise max-w-[640px] text-base font-extralight leading-7 text-white/90 sm:text-lg md:text-xl"
-          style="animation-delay: 0.24s"
-        >
-          {{ props.subtitle }}
-        </p>
+          :text="props.subtitle"
+          as="p"
+          animate-by="words"
+          :delay="35"
+          :start-delay="0.28"
+          class="max-w-[640px] justify-center text-base font-extralight leading-7 text-white/90 sm:text-lg md:text-xl"
+        />
         <div v-if="props.cta" class="hero-rise pt-2" style="animation-delay: 0.36s">
           <AppButton :to="props.cta.to" variant="light" size="lg" arrow>
             {{ props.cta.label }}

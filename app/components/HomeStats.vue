@@ -14,7 +14,7 @@ const { t } = useI18n()
     <!-- Background Spline scene (>= sm). pointer-events-none → pure backdrop,
          no drag/orbit; ClientOnly keeps WebGL off the server and shows the
          poster until the scene has loaded. -->
-    <div class="pointer-events-none absolute inset-0 hidden size-full scale-120 sm:block -mt-20">
+    <div class="pointer-events-none absolute inset-0 hidden size-full scale-120 sm:block -translate-y-[100px]">
       <ClientOnly>
         <SplineScene scene="/_tmp-stats-scene.splinecode" no-drag />
         <template #fallback>
@@ -28,12 +28,12 @@ const { t } = useI18n()
       </ClientOnly>
     </div>
     <!-- Static poster (mobile only) — avoids the WebGL payload on phones -->
-    <NuxtImg
+    <!-- <NuxtImg
       src="/images/home/stats-wave.png"
       alt=""
       aria-hidden="true"
       class="pointer-events-none absolute inset-0 size-full object-cover sm:hidden"
-    />
+    /> -->
     <!-- Edge fade masks: blend the scene into the panel at the left/right edges.
          Above the background, below the content (no z so DOM order keeps text on
          top). Two layers per side: a TRANSPARENT backdrop-blur (masked to fade
@@ -51,7 +51,7 @@ const { t } = useI18n()
         {{ t('home.stats.heading') }}
       </MotionReveal>
 
-      <div class="mt-90 grid w-full grid-cols-1 gap-12 sm:grid-cols-3 sm:gap-6">
+      <div class="mt-80 grid w-full grid-cols-1 gap-12 sm:grid-cols-3 sm:gap-6">
         <div
           v-for="(s, i) in [
             { value: 71000, label: t('home.stats.customers.label') },
@@ -68,10 +68,11 @@ const { t } = useI18n()
                (216px vs 156px). Desktop only. -->
           <span
             aria-hidden="true"
-            class="pointer-events-none absolute left-1/2 top-0 hidden w-px -translate-x-1/2 -translate-y-[34px] sm:block [background:linear-gradient(to_bottom,#3b06cd_0%,#cd06ab_15.87%,#600a51_31.73%,rgba(118,70,108,0)_100%)]"
-            :class="i === 1 ? 'h-[216px]' : 'h-[156px]'"
+            class="pointer-events-none absolute left-1/2 top-0 hidden w-px -translate-x-1/2 -translate-y-[134px] sm:block [background:linear-gradient(to_bottom,#3b06cd_0%,#cd06ab_15.87%,#600a51_31.73%,rgba(118,70,108,0)_100%)]"
+            :class="i === 1 ? 'h-[156px]' : 'h-[126px]'"
+            style="transform: scaleY(-1)"
           />
-          <p class="relative font-display text-5xl font-semibold text-white leading-tight">
+          <p class="relative font-display text-5xl font-semibold text-white leading-tight mt-6">
             <span v-if="s.prefix">{{ s.prefix }}</span><StatCounter :value="s.value" /><span
               v-if="s.suffix"
               :class="s.prefix ? 'text-2xl' : ''"

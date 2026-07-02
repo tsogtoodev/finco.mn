@@ -88,22 +88,31 @@ function goBack() {
       <!-- centred eyebrow + title + subtitle + stats + CTAs -->
       <div class="flex flex-1 flex-col items-center justify-center gap-10 pb-4 pt-10 text-center">
         <div class="flex flex-col items-center gap-3">
-          <p v-if="props.eyebrow" class="hero-rise font-display text-xl font-semibold text-teal">
-            {{ props.eyebrow }}
-          </p>
-          <h1
-            class="hero-rise max-w-[900px] font-display text-3xl font-medium leading-[1.05] sm:text-4xl md:text-[48px] md:leading-[48px]"
-            style="animation-delay: 0.08s"
-          >
-            {{ props.title }}
-          </h1>
-          <p
+          <BlurText
+            v-if="props.eyebrow"
+            :text="props.eyebrow"
+            as="p"
+            animate-by="words"
+            :delay="80"
+            class="justify-center font-display text-xl font-semibold text-teal"
+          />
+          <BlurText
+            :text="props.title ?? ''"
+            as="h1"
+            animate-by="words"
+            :delay="120"
+            :start-delay="0.12"
+            class="max-w-[900px] justify-center font-display text-3xl font-medium leading-[1.05] sm:text-4xl md:text-[48px] md:leading-[48px]"
+          />
+          <BlurText
             v-if="props.subtitle"
-            class="hero-rise max-w-[720px] text-base font-extralight leading-7 text-white/90 sm:text-lg md:text-xl"
-            style="animation-delay: 0.16s"
-          >
-            {{ props.subtitle }}
-          </p>
+            :text="props.subtitle"
+            as="p"
+            animate-by="words"
+            :delay="35"
+            :start-delay="0.24"
+            class="max-w-[720px] justify-center text-base font-extralight leading-7 text-white/90 sm:text-lg md:text-xl"
+          />
         </div>
 
         <dl
