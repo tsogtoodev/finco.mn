@@ -63,7 +63,7 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
         <div class="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4">
           <div v-for="col in columns" :key="col.heading">
             <h3 class="font-display text-base font-medium text-accent">{{ col.heading }}</h3>
-            <ul class="mt-6 space-y-4">
+            <ul class="mt-6 space-y-3">
               <li v-for="l in col.links" :key="l.label">
                 <NuxtLink
                   :to="localePath(l.to)"
@@ -124,12 +124,12 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
          motion-safe only → reduced-motion users get a plain stacked footer. -->
     <div class="relative z-0 overflow-hidden bg-[#0a0a1a] motion-safe:sticky motion-safe:bottom-0">
       <img
-        src="/images/home/footer-glow.svg"
+        src="/images/home/finco-footer.png"
         alt=""
         aria-hidden="true"
-        class="pointer-events-none absolute -bottom-24 left-1/2 w-[1180px] max-w-none -translate-x-1/4 opacity-60"
+        class="pointer-events-none absolute bottom-0 right-0 h-auto w-[80%] min-w-[720px] max-w-none translate-x-[8%] translate-y-[6%]"
       >
-      <div class="relative mx-auto w-full max-w-[1200px] px-6 py-20 lg:py-28">
+      <div class="relative mx-auto w-full max-w-[1200px] px-6 pb-16 pt-[clamp(8rem,39vw,586px)] lg:pb-24">
         <div class="flex flex-col gap-4 text-center text-sm font-thin leading-5 tracking-wide text-white/60">
           <p v-for="(para, i) in disclaimer" :key="i">{{ para }}</p>
         </div>
