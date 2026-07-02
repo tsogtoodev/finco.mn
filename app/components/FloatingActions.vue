@@ -48,7 +48,12 @@ const showCalculator = ref(false)
   border: 2px solid #f2f2f2;
   background: #fff;
   color: #646466;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s cubic-bezier(0.25, 1, 0.5, 1),
+    color 0.2s cubic-bezier(0.25, 1, 0.5, 1),
+    transform 0.2s cubic-bezier(0.25, 1, 0.5, 1),
+    filter 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform;
 }
 
 .fab-btn:hover {
@@ -61,5 +66,20 @@ const showCalculator = ref(false)
 .fab-btn:active {
   background: #4c41d8;
   color: #fff;
+}
+
+/* Tactile press micro-interaction: a brief scale-down + soft blur that springs
+   back crisp on release (cubic-bezier deceleration is on the transition above).
+   Press-only — a persistent blur would soften the icon and hurt legibility. */
+.fab-btn:active {
+  transform: scale(0.88);
+  /* filter: blur(1px); */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fab-btn:active {
+    transform: none;
+    filter: none;
+  }
 }
 </style>

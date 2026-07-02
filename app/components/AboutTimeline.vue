@@ -22,14 +22,35 @@ defineProps<{ heading: string; subheading: string; milestones: Milestone[] }>()
         </p>
       </MotionReveal>
 
-      <div class="mt-14 grid gap-x-16 gap-y-12 sm:grid-cols-2 lg:mt-20 lg:gap-x-20">
-        <MotionReveal v-for="(m, i) in milestones" :key="i" :delay="(i % 2) * 0.08" as="div">
+      <!-- Rows cascade in once the grid reaches the vertical center of the
+           viewport. A parent Motion drives the stagger; each child inherits
+           the hidden/visible variant so they reveal in DOM order. -->
+      <Motion
+        class="mt-14 grid gap-x-16 gap-y-12 sm:grid-cols-2 lg:mt-20 lg:gap-x-20"
+        initial="hidden"
+        while-in-view="visible"
+        :in-view-options="{ once: true, margin: '-45% 0px -45% 0px' }"
+        :variants="{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.12, delayChildren: 0.05 } },
+        }"
+      >
+        <Motion
+          v-for="(m, i) in milestones"
+          :key="i"
+          as="div"
+          :variants="{
+            hidden: { opacity: 0, y: 28 },
+            visible: { opacity: 1, y: 0 },
+          }"
+          :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }"
+        >
           <div class="font-display text-3xl font-medium text-[#141414] sm:text-4xl">{{ m.year }}</div>
           <p class="mt-5 text-[1.0625rem] font-light leading-7 text-[rgba(0,0,0,0.7)] sm:text-lg">
             {{ m.body }}
           </p>
-        </MotionReveal>
-      </div>
+        </Motion>
+      </Motion>
     </div>
   </section>
 </template>

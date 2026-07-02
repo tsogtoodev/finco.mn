@@ -4,29 +4,15 @@
 import type { BadgeBlock } from '~/data/about'
 import torus from '~/assets/images/about-mission-torus.svg'
 import radiant from '~/assets/images/fig-3d10041054.png'
+import fractalGlow from '~/assets/images/about-mission-fractal-glow.png'
 
 defineProps<{ blocks: BadgeBlock[] }>()
 </script>
 
 <template>
-  <section class="relative overflow-hidden bg-[#080a12] text-white">
-    <!-- Right-side decorative graphics -->
-    <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-0">
-      <img
-        :src="radiant"
-        alt=""
-        class="absolute right-[-12%] top-1/2 w-[78%] max-w-[1200px] -translate-y-1/2 opacity-90"
-      >
-      <img
-        :src="torus"
-        alt=""
-        class="absolute right-[-4%] top-1/2 w-[46%] max-w-[680px] -translate-y-1/2"
-      >
-      <!-- soft blue glow, lower-left -->
-      <div class="absolute -bottom-24 -left-24 size-[420px] rounded-full bg-[#214784]/25 blur-[120px]" />
-    </div>
+  <section class="relative isolate overflow-hidden bg-[#080a12] text-white">
 
-    <div class="relative mx-auto max-w-7xl px-4 py-24 sm:py-28 lg:py-36">
+    <div class="relative mx-auto max-w-7xl px-4 py-24 sm:py-28">
       <div class="flex max-w-[640px] flex-col gap-20 lg:gap-32">
         <MotionReveal v-for="(b, i) in blocks" :key="i" :delay="i * 0.05">
           <div class="flex flex-col gap-6">
@@ -44,6 +30,33 @@ defineProps<{ blocks: BadgeBlock[] }>()
           </div>
         </MotionReveal>
       </div>
+    </div>
+
+    <!-- Right-side decorative graphics. -z-10 keeps this layer behind the text
+         content (which sits at z-auto) — the fractal-glow raster is opaque and
+         would otherwise cover the left-hand text. -->
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10">
+      <!-- Fractal glow (Figma 369:20237) — Figma's own raster export so the blur
+           matches exactly. Its dark areas are #080a12 (= section bg), so it
+           composites seamlessly. Spans the section's left region 1:1. -->
+      <img
+        :src="fractalGlow"
+        alt=""
+        class="absolute left-0 top-0 h-full w-[59%] max-w-[849px] object-fill"
+      >
+      <div class="pointer-events-auto absolute bottom-0 right-0 translate-x-1/3 translate-y-1/5 scale-120">
+        <ClientOnly>
+          <SplineScene
+            scene="https://prod.spline.design/5QI6kS8kPdn7j7Y3/scene.splinecode"
+            :reveal-delay="2000"
+          />
+          <template #fallback>
+            <img :src="torus" alt="" class="size-full object-contain">
+          </template>
+        </ClientOnly>
+      </div>
+      <!-- soft blue glow, lower-left -->
+      <div class="absolute -bottom-24 -left-24 size-[420px] rounded-full bg-[#214784]/25 blur-[120px]" />
     </div>
   </section>
 </template>

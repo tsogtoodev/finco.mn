@@ -50,6 +50,11 @@ defineProps<{ ceo: AboutContent['ceo'] }>()
           :delay="0.1"
           class="relative z-10 mt-6 rounded-[2rem] bg-[#fbfbfb] p-7 shadow-[0_4px_24px_rgba(0,0,0,0.1)] sm:p-9 lg:-ml-16 lg:mt-0 lg:flex-1 lg:self-center lg:p-12"
         >
+          <!-- tilted duplicate card peeking out behind the letter -->
+          <div
+            aria-hidden="true"
+            class="pointer-events-none absolute inset-0 -z-10 rotate-[6.46deg] rounded-[2rem] bg-[#fbfbfb] shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
+          />
           <h3 class="text-lg font-medium text-[#141414]">{{ ceo.greetingTitle }}</h3>
           <div class="mt-5 space-y-4 text-sm font-light leading-6 text-[rgba(0,0,0,0.7)]">
             <p v-for="(para, i) in ceo.greetingBody" :key="i">{{ para }}</p>

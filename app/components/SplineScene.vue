@@ -16,21 +16,31 @@ const props = withDefaults(
     /** Pre-load margin (px) around the viewport before the canvas is visible. */
     rootMargin?: number
     /**
-     * Suppress pointer-move-driven motion — camera orbit/object dragging AND
-     * the scene's "follow cursor" tilt (which otherwise drifts as the page
-     * scrolls under a stationary pointer, looking like parallax). Clicks still
-     * pass through. Spline has no runtime control toggle, so we swallow move
-     * events over the canvas before they reach its listeners.
+     * Suppress click-drag interaction — camera orbit / object dragging — by
+     * swallowing move events that occur *while a press is held on the canvas*.
+     * Bare hover (and the scene's cursor-follow tilt) and plain clicks still
+     * pass through. Spline has no runtime control toggle, so we catch the drag
+     * moves in the window capture phase before they reach its listeners.
      */
     noDrag?: boolean
+    /**
+     * Hold the canvas hidden for this many ms *after* the scene finishes
+     * loading, then run the fade-in. The scene still loads and renders
+     * immediately — only its reveal is delayed — so it's already animating by
+     * the time it fades in. 0 = reveal as soon as it loads (default).
+     */
+    revealDelay?: number
   }>(),
-  { rootMargin: 200, noDrag: false },
+  { rootMargin: 200, noDrag: false, revealDelay: 0 },
 )
 
 const emit = defineEmits<{ load: [] }>()
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 const loaded = ref(false)
+// Drives the fade-in — flips `revealDelay` ms after the scene has loaded.
+const revealed = ref(false)
+let revealTimer: ReturnType<typeof setTimeout> | null = null
 // shallowRef: the Spline Application is a large non-reactive instance.
 const app = shallowRef<import('@splinetool/runtime').Application | null>(null)
 
@@ -62,6 +72,9 @@ async function loadScene() {
     app.value = new Application(canvas.value)
     await app.value.load(props.scene)
     loaded.value = true
+    // Delay the fade-in without delaying the load/render itself.
+    if (props.revealDelay > 0) revealTimer = setTimeout(() => { revealed.value = true }, props.revealDelay)
+    else revealed.value = true
     startRenderGating()
     emit('load')
   }
@@ -133,7 +146,9 @@ function onPressStart(e: PointerEvent | TouchEvent) {
   pressedOnCanvas = !!canvas.value && target === canvas.value
 }
 function onMove(e: Event) {
-  if (pressedOnCanvas || isOverCanvas(e)) e.stopPropagation()
+  // Block only moves that are part of a press-drag (camera orbit / object drag).
+  // Bare hover passes through, so the scene's cursor-follow interaction works.
+  if (pressedOnCanvas) e.stopPropagation()
 }
 function onPressEnd() {
   pressedOnCanvas = false
@@ -199,6 +214,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  if (revealTimer) clearTimeout(revealTimer)
   teardownScroll()
   stopRenderGating()
   unbindMotionGuard()
@@ -212,7 +228,7 @@ onBeforeUnmount(() => {
   <canvas
     ref="canvas"
     class="block size-full transition-opacity duration-700 ease-out"
-    :class="loaded ? 'opacity-100' : 'opacity-0'"
+    :class="revealed ? 'opacity-100' : 'opacity-0'"
     style="touch-action: pan-x pan-y"
   />
 </template>

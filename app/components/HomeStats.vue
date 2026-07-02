@@ -61,21 +61,23 @@ const { t } = useI18n()
           :key="i"
           class="relative flex flex-col items-center gap-2 text-center"
         >
-          <!-- Gradient "drop" line centred in the gap ABOVE each number (Figma
-               1:14170–72): colourful at the top, fading to transparent toward
-               the number. Sits entirely above the text (bottom-full + gap) so
-               it never overlaps the number/label. Desktop only. -->
+          <!-- Gradient "drop" line centred on each column (Figma 238:9704–06):
+               starts 34px above the number and runs down BEHIND the text (the
+               number/label are `relative`, so they paint on top). Colourful at
+               the top fading to transparent; the middle column's line is taller
+               (216px vs 156px). Desktop only. -->
           <span
             aria-hidden="true"
-            class="pointer-events-none absolute bottom-full left-1/2 mb-2 hidden h-20 w-px -translate-x-1/2 sm:block [background:linear-gradient(to_bottom,#3b06cd_0%,#cd06ab_16%,#600a51_32%,rgba(118,70,108,0)_100%)]"
+            class="pointer-events-none absolute left-1/2 top-0 hidden w-px -translate-x-1/2 -translate-y-[34px] sm:block [background:linear-gradient(to_bottom,#3b06cd_0%,#cd06ab_15.87%,#600a51_31.73%,rgba(118,70,108,0)_100%)]"
+            :class="i === 1 ? 'h-[216px]' : 'h-[156px]'"
           />
-          <p class="font-display text-5xl font-semibold text-white leading-tight">
+          <p class="relative font-display text-5xl font-semibold text-white leading-tight">
             <span v-if="s.prefix">{{ s.prefix }}</span><StatCounter :value="s.value" /><span
               v-if="s.suffix"
               :class="s.prefix ? 'text-2xl' : ''"
             >{{ s.suffix }}</span>
           </p>
-          <p class="text-[15px] font-extralight tracking-wide text-white/80">{{ s.label }}</p>
+          <p class="relative text-[15px] font-extralight tracking-wide text-white/80">{{ s.label }}</p>
         </div>
       </div>
     </div>

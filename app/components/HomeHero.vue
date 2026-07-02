@@ -220,7 +220,7 @@ onBeforeUnmount(() => {
                 :aria-labelledby="`hero-tab-${slides[current].key}`"
                 class="flex max-w-[640px] flex-col gap-8 lg:gap-10"
               >
-                <div class="flex flex-col gap-5 lg:gap-6">
+                <div class="flex flex-col gap-2 lg:gap-2">
                   <!-- Wordmark (designed slide) or eyebrow label -->
                   <img
                     v-if="'logo' in slides[current] && slides[current].logo"
@@ -228,12 +228,12 @@ onBeforeUnmount(() => {
                     :alt="t('hero.wordmarkAlt')"
                     width="109"
                     height="40"
-                    class="hero-rise h-9 w-auto self-start sm:h-10"
+                    class="hero-rise h-9 w-auto self-start sm:h-10 mb-4"
                     style="animation-delay: 0.04s"
                   >
                   <span
                     v-else
-                    class="hero-rise font-display text-lg font-semibold tracking-tight text-white/95 sm:text-xl"
+                    class="hero-rise font-display text-lg font-semibold tracking-tight text-white/95 sm:text-xl mb-4"
                     style="animation-delay: 0.04s"
                   >
                     {{ t(`hero.tabs.${slides[current].key}`) }}

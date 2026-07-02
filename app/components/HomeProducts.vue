@@ -21,12 +21,12 @@ const products = computed(() =>
 )
 
 // Toggle accent follows the active product line: teal for Beep/individual
-// (Иргэнд), FincoBiz brand blue for business (Бизнест). The Figma only ever
-// shows the individual/green state, so the business palette mirrors the
-// FincoBiz brand colour used elsewhere (--color-primary #214784).
+// (Иргэнд), blurple for business (Бизнест). The business-active state in Figma
+// (340:8039) uses --color-accent #4c41d8 for the pill and its 10% tint for the
+// bar — rgba(76, 65, 216, 0.1).
 const tabTheme = computed(() =>
   audience.value === 'business'
-    ? { bar: 'rgba(33, 71, 132, 0.1)', pill: 'var(--color-primary)' }
+    ? { bar: 'rgba(76, 65, 216, 0.1)', pill: 'var(--color-accent)' }
     : { bar: 'rgba(19, 207, 185, 0.1)', pill: 'var(--color-teal)' },
 )
 </script>
@@ -36,7 +36,7 @@ const tabTheme = computed(() =>
     <div class="mx-auto w-full max-w-[1200px] px-6">
       <MotionReveal class="flex flex-col items-center gap-3 text-center">
         <h2 class="font-display text-3xl font-bold leading-tight text-[#231f20] sm:text-4xl">
-          {{ t('home.products.heading') }}<span class="text-teal">{{ t('home.products.headingAccent') }}</span>
+          {{ t('home.products.heading') }}<span class="transition-colors duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none" :style="{ color: tabTheme.pill }">{{ t('home.products.headingAccent') }}</span>
         </h2>
         <p class="text-base font-light leading-relaxed text-[#231f20]/60">
           {{ t('home.products.subtext') }}

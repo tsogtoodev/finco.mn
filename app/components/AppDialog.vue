@@ -80,7 +80,7 @@ onBeforeUnmount(() => {
           <button
             type="button"
             :aria-label="labelClose"
-            class="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-white shadow-md"
+            class="dialog-close absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-white shadow-md"
             @click="close"
           >
             <Icon name="f:remove" class="text-[24px] text-foreground/70" />
@@ -94,3 +94,16 @@ onBeforeUnmount(() => {
     </Teleport>
   </ClientOnly>
 </template>
+
+<style scoped>
+/* Press micro-interaction: subtle blur + scale with a fast-out deceleration curve. */
+.dialog-close {
+  transition:
+    transform 200ms cubic-bezier(0.25, 1, 0.5, 1),
+    filter 200ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+.dialog-close:active {
+  transform: scale(0.98);
+  filter: blur(1px);
+}
+</style>

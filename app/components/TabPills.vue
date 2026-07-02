@@ -99,6 +99,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', snap))
   padding: var(--tabs-pad);
   border-radius: var(--tabs-radius);
   background: var(--tabs-bar-bg);
+  transition: background-color var(--tabs-dur) var(--tabs-ease);
 }
 .t-tab {
   position: relative;
@@ -135,12 +136,14 @@ onBeforeUnmount(() => window.removeEventListener('resize', snap))
   transform: translateX(0);
   transition:
     transform var(--tabs-dur) var(--tabs-ease),
-    width var(--tabs-dur) var(--tabs-ease);
+    width var(--tabs-dur) var(--tabs-ease),
+    background-color var(--tabs-dur) var(--tabs-ease);
   will-change: transform, width;
   z-index: 0;
   pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce) {
+  .t-tabs,
   .t-tabs-pill,
   .t-tab {
     transition: none !important;

@@ -34,16 +34,16 @@ const fmt: Intl.NumberFormatOptions = { maximumFractionDigits: 0 }
     :label-close="t('fab.close')"
     @update:open="emit('update:open', $event)"
   >
-    <div class="flex flex-col gap-8">
+    <div class="calc-body flex flex-col gap-8">
       <div class="flex flex-col gap-6 sm:flex-row sm:gap-[34px]">
         <AppInput v-model="amount" :label="t('fab.calculator.amount')" type="number" inputmode="numeric" unit="₮" />
         <AppInput v-model="rate" :label="t('fab.calculator.rate')" type="number" inputmode="decimal" unit="%" unit-position="trailing" />
         <NumberStepper v-model="term" :label="t('fab.calculator.term')" :min="1" :max="360" />
       </div>
 
-      <AppButton variant="accent" block size="lg" type="button">
+      <!-- <AppButton variant="accent" block size="lg" type="button">
         {{ t('fab.calculator.calculate') }}
-      </AppButton>
+      </AppButton> -->
 
       <div class="flex flex-col gap-6 rounded-[24px] bg-[#f7f7f7] p-6 sm:flex-row">
         <div class="flex flex-1 items-center justify-between gap-4 rounded-[24px] bg-white p-6">
@@ -62,3 +62,15 @@ const fmt: Intl.NumberFormatOptions = { maximumFractionDigits: 0 }
     </div>
   </AppDialog>
 </template>
+
+<style scoped>
+/* Press micro-interaction: subtle blur + scale with a fast-out deceleration curve. */
+.calc-body :deep(button) {
+  transition:
+    transform 200ms cubic-bezier(0.25, 1, 0.5, 1),
+    filter 200ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+.calc-body :deep(button:active:not(:disabled)) {
+  transform: scale(0.88);
+}
+</style>
