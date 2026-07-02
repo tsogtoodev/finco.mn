@@ -318,10 +318,10 @@ onBeforeUnmount(() => {
   </section>
 
   <!-- ── Partner-logo marquee (own normal-flow section, below the pin) ───── -->
-  <section class="bg-[#fcfcff] pt-5 pb-5 sm:pt-6 sm:pb-6 lg:pb-7">
+  <section class="bg-[#fcfcff] pt-0 pb-5 sm:pb-6 lg:pb-7">
     <div class="mx-auto max-w-[1512px] px-4 sm:px-6 lg:px-9">
       <div
-        class="marquee relative flex h-[101px] items-center overflow-hidden"
+        class="marquee relative flex h-[31px] items-center overflow-hidden"
         role="group"
         :aria-label="t('hero.marqueeLabel')"
       >
@@ -388,6 +388,19 @@ onBeforeUnmount(() => {
   animation-play-state: paused;
 }
 
+/* Edge fade mask: logos dissolve into the section background at the left/right
+   ends of the strip instead of hard-clipping at the overflow edge. Narrower fade
+   on mobile, wider on ≥sm. Disabled under reduced-motion (the strip wraps to
+   static centred rows, where an edge fade would clip logos oddly). */
+.marquee {
+  --marquee-fade: 40px;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--marquee-fade), #000 calc(100% - var(--marquee-fade)), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, #000 var(--marquee-fade), #000 calc(100% - var(--marquee-fade)), transparent 100%);
+}
+@media (min-width: 640px) {
+  .marquee { --marquee-fade: 96px; }
+}
+
 /* Seamless infinite marquee: the track holds two copies; translating it -50%
    lands copy #2 exactly where copy #1 began. */
 .marquee-track {
@@ -402,6 +415,10 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .marquee {
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
   .marquee-track {
     animation: none;
     flex-wrap: wrap;

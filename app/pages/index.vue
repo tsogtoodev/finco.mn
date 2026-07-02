@@ -15,11 +15,6 @@ useSeoMeta({
   <div>
     <HomeHero />
     <HomeFeatures />
-    <!-- Curtain reveal: HomeStats pins to the top while HomeProducts slides up
-         over it on scroll (same mechanism as the footer curtain). The wrapper
-         scopes the pin to just this pair; HomeProducts sits on a higher layer so
-         it covers the pinned stats panel as it rises. Gated on motion-safe →
-         reduced-motion users get the normal stacked sections. -->
     <div class="relative">
       <div class="z-0 motion-safe:sticky motion-safe:top-0">
         <HomeStats />
