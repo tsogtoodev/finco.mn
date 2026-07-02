@@ -27,5 +27,7 @@ By morning it needs to be finished
 [ ] About page update
 [x] Geologica font import all family styles (including the light, extra-light)
 
+for site footer section: https://prod.spline.design/ctfpPmq7XLx77Ni2/scene.splinecode
+for about us page: https://prod.spline.design/5QI6kS8kPdn7j7Y3/scene.splinecode
 
 Inspiration: https://worklouder.cc/framer-f1
