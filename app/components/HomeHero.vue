@@ -338,7 +338,7 @@ onBeforeUnmount(() => {
                 :aria-selected="i === current"
                 :aria-controls="`hero-panel-${s.key}`"
                 :tabindex="i === current ? 0 : -1"
-                class="flex w-full flex-col gap-4 pt-2 pb-6 text-left outline-none lg:pb-0 cursor-pointer"
+                class="group flex w-full flex-col gap-4 pt-2 pb-6 text-left outline-none lg:pb-0 cursor-pointer"
                 @click="go(i)"
                 @keydown="onTabKey($event, i)"
               >
@@ -354,7 +354,7 @@ onBeforeUnmount(() => {
                   />
                 </span>
                 <span
-                  class="truncate text-base leading-5 transition-colors"
+                  class="truncate text-base leading-5 transition-colors group-hover:text-white"
                   :class="i === current ? 'font-medium text-white' : 'font-normal text-white/80'"
                 >
                   {{ t(`hero.tabs.${s.key}`) }}

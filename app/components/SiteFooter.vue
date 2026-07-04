@@ -129,16 +129,7 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
         aria-hidden="true"
         class="pointer-events-none absolute bottom-0 right-0 h-auto w-[80%] min-w-[720px] max-w-none translate-x-[8%] translate-y-[6%]"
       >
-      <div class="pointer-events-none absolute inset-x-0 top-0 z-10 hidden h-[clamp(8rem,39vw,586px)] items-end justify-center sm:flex">
-        <ClientOnly>
-          <SplineScene
-            scene="https://prod.spline.design/ctfpPmq7XLx77Ni2/scene.splinecode"
-            class="pointer-events-auto size-full w-full -translate-y-[40px]"
-            no-drag
-          />
-        </ClientOnly>
-      </div>
-      <div class="relative mx-auto w-full max-w-[1200px] px-6 pb-16 pt-[clamp(8rem,39vw,586px)] lg:pb-24">
+      <div class="relative mx-auto w-full max-w-[1200px] px-6 py-16 lg:py-24">
         <div class="flex flex-col gap-4 text-center text-sm font-thin leading-5 tracking-wide text-white/60">
           <p v-for="(para, i) in disclaimer" :key="i">{{ para }}</p>
         </div>
