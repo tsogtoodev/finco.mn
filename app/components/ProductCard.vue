@@ -41,19 +41,25 @@ const to = computed(() =>
       sizes="360px"
       class="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
     />
-    <!-- Dark-green legibility gradient -->
+    <!-- Dark-green legibility gradient (keeps the photo sharp) -->
     <div class="absolute inset-0 bg-gradient-to-t from-[rgba(4,20,18,0.85)] via-[rgba(4,20,18,0.35)] to-transparent" />
 
     <div class="relative flex flex-col gap-3 p-6 pb-7">
       <span v-if="category" class="text-xs font-medium text-teal">{{ category }}</span>
-      <h3 class="font-display text-xl font-extrabold leading-8 text-white">{{ title }}</h3>
+      <h3 class="font-display text-xl font-extrabold leading-9 text-white">{{ title }}</h3>
       <p v-if="summary" class="text-[15px] font-light leading-relaxed text-white/70">{{ summary }}</p>
-      <span
-        class="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-      >
-        {{ $t('common.learnMore') }}
-        <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-0.5" />
-      </span>
+      <!-- On hover the row expands 0fr→1fr; because the card is justify-end, the
+           title/subtitle lift as the "learn more" button reveals below them. -->
+      <div class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out group-hover:grid-rows-[1fr] motion-reduce:transition-none">
+        <div class="overflow-hidden">
+          <span
+            class="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-hover:delay-75 motion-reduce:transition-none"
+          >
+            {{ $t('common.learnMore') }}
+            <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </div>
+      </div>
     </div>
   </component>
 </template>

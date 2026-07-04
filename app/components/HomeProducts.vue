@@ -116,19 +116,14 @@ const subtextStart = computed(
         />
         </MotionReveal>
       </div>
+    </div>
 
-      <MotionReveal :delay="0.1" class="mt-12">
-        <ProductCarousel :label="t('home.products.heading')">
-          <ProductCard
-            v-for="p in products"
-            :key="p.slug"
-            :title="p.title"
-            :summary="p.summary"
-            :image="p.image"
-            :to="`/products/${p.slug}`"
-            class="h-[460px] w-[300px] shrink-0 snap-start sm:w-[340px]"
-          />
-        </ProductCarousel>
+    <!-- Full-bleed carousel: the heading + controls stay in the 1200 column while
+         the card track scrolls edge-to-edge. --carousel-edge aligns the first/last
+         card (and the controls) to the heading column. -->
+    <div class="mt-12" :style="{ '--carousel-edge': 'max(1.5rem, calc((100vw - 1200px) / 2 + 1.5rem))' }">
+      <MotionReveal :delay="0.1">
+        <HomeProductsCarousel :products="products" :label="t('home.products.heading')" />
       </MotionReveal>
     </div>
   </section>
