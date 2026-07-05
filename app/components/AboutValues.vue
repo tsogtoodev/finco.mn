@@ -5,9 +5,10 @@
 // The active card is white with a soft shadow and teal semibold title; its marker
 // lights up. Clicking a card or marker activates it; non-active cards tint on
 // hover (Figma's `hover` annotation). The cluster + spine are desktop-only (lg+);
-// below that the cards simply stack. Entrance uses the CSS `.hero-rise` stagger
-// rather than motion-v so below-the-fold content is never stranded at opacity:0
-// on SSR (see app/assets/css/main.css).
+// tablet (md–lg) uses a 2+3 card grid with the cluster in the bottom-right
+// (Figma 462:9281); below md the cards simply stack. Entrance uses the CSS
+// `.hero-rise` stagger rather than motion-v so below-the-fold content is never
+// stranded at opacity:0 on SSR (see app/assets/css/main.css).
 import type { ValueItem } from '~/composables/useAboutContent'
 import cluster from '~/assets/images/fig-76f105c432.png'
 
@@ -38,31 +39,67 @@ const routeD = computed(() => {
 
 <template>
   <section class="relative overflow-hidden bg-[#fafafe]">
-    <div class="mx-auto max-w-7xl px-4 pb-20 pt-20 sm:pt-24 lg:pt-28">
+    <div class="mx-auto max-w-7xl px-4 pb-20 pt-20 sm:pt-24 md:pb-40 md:pt-[120px] lg:pb-20 lg:pt-28">
       <div class="hero-rise flex flex-col items-center gap-3 text-center">
-        <h2 class="max-w-[750px] font-display text-3xl font-medium leading-tight text-[#141414] sm:text-4xl lg:text-[36px] lg:leading-9">
+        <h2 class="max-w-[750px] font-display text-3xl font-medium leading-tight text-[#141414] sm:text-4xl md:text-[36px] md:leading-9 lg:text-[36px] lg:leading-9">
           {{ headingLead }}<span class="text-[#2de0c6]">{{ headingAccent }}</span>
         </h2>
-        <p class="max-w-[1012px] text-lg font-extralight leading-7 text-[rgba(0,0,0,0.6)] sm:text-xl lg:text-[20px] lg:leading-7">
+        <p class="max-w-[1012px] text-lg font-extralight leading-7 text-[rgba(0,0,0,0.6)] sm:text-xl md:text-[20px] md:leading-7 lg:text-[20px] lg:leading-7">
           {{ subheading }}
         </p>
       </div>
 
-      <div class="relative mx-auto mt-12 max-w-[1200px] sm:mt-16 lg:mt-[120px]">
+      <!-- Tablet (Figma 462:9281): 2+3 card grid + bottom-right cluster bleed. -->
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute bottom-0 right-0 z-0 hidden h-[min(70%,680px)] w-[min(85%,920px)] translate-x-[18%] translate-y-[12%] md:block lg:hidden"
+      >
+        <img
+          :src="cluster"
+          alt=""
+          class="size-full object-contain object-left-top mix-blend-multiply"
+        >
+      </div>
+
+      <div class="relative mx-auto mt-12 max-w-[1200px] sm:mt-16 md:mt-20 lg:mt-[120px]">
         <!-- Teal cube-cluster raster (Figma 464:9715), scaled to fit the left slot
              within the max-w-7xl column — no bleed or mid-frame crop. -->
         <div
           aria-hidden="true"
           class="pointer-events-none absolute inset-y-0 left-0 hidden w-[367px] lg:block"
         >
-          <img
+          <!-- <img
             :src="cluster"
             alt=""
             class="size-full object-contain object-right mix-blend-multiply scale-300"
-          >
+          > -->
+          <ClientOnly>
+            <SplineScene scene="https://prod.spline.design/n2ZpeSHKKA8Olc1E/scene.splinecode" no-drag :zoom="1" />
+            <template #fallback>
+              <img :src="cluster" alt="" class="size-full object-contain object-right mix-blend-multiply scale-300">
+            </template>
+          </ClientOnly>
         </div>
 
-        <div class="relative flex items-center gap-8">
+        <!-- Tablet: static 2-over-3 card grid (no spine / selection chrome). -->
+        <div class="relative z-10 hidden grid-cols-6 gap-6 md:grid lg:hidden">
+          <div
+            v-for="(it, i) in items"
+            :key="`t-${i}`"
+            class="hero-rise flex flex-col gap-4 rounded-[12px] bg-white p-8 shadow-[0px_0px_20px_0px_rgba(0,0,0,0.05)]"
+            :class="i < 2 ? 'col-span-3' : 'col-span-2'"
+            :style="{ animationDelay: `${0.1 + i * 0.08}s` }"
+          >
+            <h3 class="text-[20px] font-medium leading-7 text-[rgba(0,0,0,0.6)]">
+              {{ it.title }}
+            </h3>
+            <p class="text-base font-light leading-6 text-[rgba(0,0,0,0.4)]">
+              {{ it.body }}
+            </p>
+          </div>
+        </div>
+
+        <div class="relative hidden items-center gap-8 lg:flex">
           <!-- Connector spine + numbered diamond markers. The 367px offset stands
                in for the cluster's slot in the row (Figma 464:9723). -->
           <div class="hero-rise relative z-10 hidden h-[568px] w-[241px] shrink-0 lg:ml-[367px] lg:block" style="animation-delay: 0.1s">
@@ -155,12 +192,40 @@ const routeD = computed(() => {
             </button>
           </div>
         </div>
+
+        <!-- Mobile: stacked interactive cards. -->
+        <div class="relative z-10 flex flex-col gap-6 md:hidden">
+          <button
+            v-for="(it, i) in items"
+            :key="`m-${i}`"
+            type="button"
+            class="hero-rise flex w-full flex-col gap-2 rounded-[12px] p-4 text-left transition-[background-color,box-shadow] duration-300 cursor-pointer"
+            :style="{ animationDelay: `${0.1 + i * 0.08}s` }"
+            :class="active === i
+              ? 'bg-white shadow-[0px_0px_20px_0px_rgba(0,0,0,0.05)]'
+              : 'hover:bg-[#f3fafb]'"
+            @click="active = i"
+          >
+            <h3
+              class="text-[18px] leading-7 transition-colors duration-300"
+              :class="active === i ? 'font-semibold text-[#2de0c6]' : 'font-normal text-[rgba(0,0,0,0.6)]'"
+            >
+              {{ it.title }}
+            </h3>
+            <p
+              class="text-base font-light leading-6 transition-colors duration-300"
+              :class="active === i ? 'text-[rgba(0,0,0,0.6)]' : 'text-[rgba(0,0,0,0.4)]'"
+            >
+              {{ it.body }}
+            </p>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Bottom fade into white over the cluster's lower bleed (Figma 464:9717);
-         sits above the raster but below the content row. -->
-    <div class="pointer-events-none absolute inset-x-0 bottom-0 hidden h-[310px] bg-gradient-to-b from-transparent to-white lg:block" />
+    <!-- Bottom fade into white over the cluster's lower bleed (Figma 464:9717 /
+         462:9283); sits above the raster but below the content row. -->
+    <div class="pointer-events-none absolute inset-x-0 bottom-0 z-[1] hidden h-[310px] bg-gradient-to-b from-transparent to-white md:block" />
   </section>
 </template>
 
