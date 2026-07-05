@@ -5,9 +5,9 @@ defineProps<{ open: boolean }>()
 const emit = defineEmits<{ 'update:open': [value: boolean] }>()
 const { t } = useI18n()
 
-const amount = ref('') // ₮
-const rate = ref('')   // monthly %
-const term = ref(12)   // months
+const amount = ref('1000000') // ₮
+const rate = ref('1.0')       // monthly %
+const term = ref(3)           // months
 
 const principal = computed(() => Number(amount.value) || 0)
 const monthlyRate = computed(() => (Number(rate.value) || 0) / 100)

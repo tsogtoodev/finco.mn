@@ -14,10 +14,32 @@ const dismissed = useCookie<boolean>('finco_announcement_dismissed', {
   sameSite: 'lax',
   // No maxAge → session cookie: cleared when the browser closes, kept across reloads.
 })
+
+// Dismiss is a two-phase exit so the nav slides up instead of jumping: flip
+// `collapsing` (adds .is-collapsing → CSS eases --announcement-h, and thus the
+// bar's height + the nav's flow position, to 0), then unmount once it settles.
+// COLLAPSE_MS must match the --announcement-h transition in main.css.
+const COLLAPSE_MS = 420
+const collapsing = ref(false)
+let collapseTimer: ReturnType<typeof setTimeout> | undefined
+
+function dismiss() {
+  if (collapsing.value) return
+  collapsing.value = true
+  collapseTimer = setTimeout(() => {
+    dismissed.value = true // persists the cookie + drops the bar from the DOM
+  }, COLLAPSE_MS)
+}
+
+onBeforeUnmount(() => clearTimeout(collapseTimer))
 </script>
 
 <template>
-  <div v-if="!dismissed" class="relative bg-announcement text-white">
+  <div
+    v-if="!dismissed"
+    class="announcement-bar relative h-[var(--announcement-h)] overflow-hidden bg-announcement text-white"
+    :class="{ 'is-collapsing': collapsing }"
+  >
     <div class="relative mx-auto flex h-9 max-w-7xl items-center justify-center gap-3 px-12">
       <p class="flex min-w-0 items-center gap-1.5 text-sm">
         <svg
@@ -52,7 +74,7 @@ const dismissed = useCookie<boolean>('finco_announcement_dismissed', {
         type="button"
         class="absolute right-4 flex size-6 items-center justify-center text-white/70 transition-colors hover:text-white"
         :aria-label="t('announcement.dismiss')"
-        @click="dismissed = true"
+        @click="dismiss()"
       >
         <svg
           viewBox="0 0 24 24"

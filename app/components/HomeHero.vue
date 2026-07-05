@@ -216,14 +216,14 @@ onBeforeUnmount(() => {
        partner marquee lives in its own normal-flow section below. -->
   <section class="bg-[#fcfcff] motion-safe:lg:h-[180vh]">
     <div
-      class="px-0 pt-0 lg:px-9 lg:pt-7 motion-safe:lg:sticky motion-safe:lg:top-0 motion-safe:lg:flex motion-safe:lg:h-screen motion-safe:lg:items-center motion-safe:lg:justify-center motion-safe:lg:!px-0 motion-safe:lg:!pt-0"
+      class="px-0 pt-0 lg:px-9 lg:pt-7 motion-safe:lg:sticky motion-safe:lg:top-0 motion-safe:lg:flex motion-safe:lg:h-[calc(100vh-var(--announcement-h,0px))] motion-safe:lg:items-center motion-safe:lg:justify-center motion-safe:lg:!px-0 motion-safe:lg:!pt-0"
     >
       <!-- Mobile + tablet (<lg) render the hero full-bleed at viewport height
            (h-[100svh], no inset/rounding/frame) so it mirrors the desktop scrub's
            EXPANDED state rather than the condensed card. Only at lg does it become
            the inset rounded card + scroll scrub (see .hero-card.is-scrub below). -->
       <div
-        class="hero-card is-scrub relative isolate mx-auto h-[100svh] w-full max-w-none overflow-clip rounded-none bg-white text-white lg:h-[737px] lg:max-w-[1440px] lg:rounded-[40px]"
+        class="hero-card is-scrub relative isolate mx-auto h-[calc(100svh-var(--announcement-h,0px))] w-full max-w-none overflow-clip rounded-none bg-white text-white lg:h-[737px] lg:max-w-[1440px] lg:rounded-[40px]"
         :style="{ '--hero-p': p, '--hero-settled-w': `${settledW}px` }"
         @pointerdown="onPointerDown"
         @pointerup="onPointerUp"

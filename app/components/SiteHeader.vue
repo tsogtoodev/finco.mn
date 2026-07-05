@@ -11,8 +11,9 @@
 // 1:11775); the other three are plain links. While a panel is open the bar is
 // forced to its solid treatment so the white panel reads correctly.
 //
-// The 36px AnnouncementBar lives above this row in the layout and scrolls away;
-// only this row is sticky (top:0). Height is 60px to match Figma.
+// The 36px AnnouncementBar rides at the top of this sticky header (rendered
+// below), so it reveals/hides WITH the nav on scroll — returning on scroll-up
+// until dismissed — instead of scrolling away. The nav row is 60px per Figma.
 import { navPromos, type NavAudience } from '~/data/navMenus'
 
 const props = withDefaults(defineProps<{ transparent?: boolean }>(), {
@@ -26,12 +27,14 @@ const route = useRoute()
 // ── nav model ─────────────────────────────────────────────────────────────
 type NavItem =
   | { kind: 'link'; to: string; label: string }
-  | { kind: 'menu'; audience: NavAudience; label: string }
+  // Mega-menu items are also real links: the trigger navigates to its section
+  // page on click while opening the dropdown on hover.
+  | { kind: 'menu'; audience: NavAudience; label: string; to: string }
 
 const navItems = computed<NavItem[]>(() => [
   { kind: 'link', to: '/about', label: t('nav.about') },
-  { kind: 'menu', audience: 'individual', label: t('nav.products') },
-  { kind: 'menu', audience: 'business', label: t('nav.business') },
+  { kind: 'menu', audience: 'individual', label: t('nav.products'), to: '/products' },
+  { kind: 'menu', audience: 'business', label: t('nav.business'), to: '/business' },
   { kind: 'link', to: '/services', label: t('nav.trust') },
   { kind: 'link', to: '/news', label: t('nav.news') },
 ])
@@ -132,18 +135,39 @@ function hardClose() {
   clearTimeout(exitTimer)
   closing.value = false
   openMenu.value = null
+  megaSize.value = {}
 }
+
+// ── mega-menu size tween (.t-resize) ───────────────────────────────────────
+// The panel is a different size per menu (Иргэнд: 1 column, Бизнесд: 2). A
+// persistent-while-open wrapper carries the card chrome + `.t-resize`; on each
+// open/switch we measure the (w-max, natural-size) content and pin the wrapper's
+// explicit px width/height, so an Иргэнд ↔ Бизнесд switch TWEENS the frame
+// between the two sizes (the wrapper persists across the switch; only the inner
+// keyed content remounts for the pop/swap). Reset on close so the next open
+// re-measures from scratch instead of flashing the previous menu's size.
+const megaContent = ref<HTMLElement | null>(null)
+const megaSize = ref<Record<string, string>>({})
+async function measureMega() {
+  await nextTick()
+  const el = megaContent.value
+  // Pin WIDTH only (the 1-col ↔ 2-col change). Height is left auto: both menus
+  // are ≤5 rows so it barely differs, and an exact pinned height would risk a
+  // 1px clip against the overflow-hidden frame.
+  if (el) megaSize.value = { width: `${el.offsetWidth}px` }
+}
+watch(openMenu, (v) => { if (v) measureMega() })
 
 // ── triggers (keyboard + focus management) ─────────────────────────────────
-const triggerEls = ref<Partial<Record<NavAudience, HTMLButtonElement>>>({})
+// Triggers are <NuxtLink>s, so a template ref yields the component instance —
+// unwrap to its root <a> element so focus management (Esc restore) still works.
+const triggerEls = ref<Partial<Record<NavAudience, HTMLElement>>>({})
 function setTrigger(a: NavAudience, el: unknown) {
-  if (el) triggerEls.value[a] = el as HTMLButtonElement
+  if (!el) return
+  const node = (el as { $el?: unknown }).$el ?? el
+  if (node instanceof HTMLElement) triggerEls.value[a] = node
 }
 
-function toggleMenu(a: NavAudience) {
-  if (openMenu.value === a && !closing.value) hideMenu()
-  else showMenu(a)
-}
 function openAndFocus(a: NavAudience) {
   showMenu(a)
   nextTick(() =>
@@ -260,6 +284,12 @@ const barHidden = computed(
       @click="closeNow"
     />
 
+    <!-- Promo strip rides at the top of this sticky, scroll-revealing header (so
+         it hides on scroll-down and returns on scroll-up until dismissed). Its
+         own 36px height + the transparent `-mb-[60px]` keep the hero offset the
+         same as when it was a separate strip. -->
+    <AnnouncementBar />
+
     <div
       ref="navWrap"
       class="relative z-50 mx-auto flex h-[60px] max-w-7xl items-center justify-between gap-6 px-4"
@@ -296,25 +326,25 @@ const barHidden = computed(
               {{ item.label }}
             </NuxtLink>
 
-            <button
+            <NuxtLink
               v-else
               :ref="(el) => setTrigger(item.audience, el)"
-              type="button"
+              :to="localePath(item.to)"
               class="rounded-full px-4 py-2 text-sm font-light transition-colors"
               :class="[
                 solid ? 'text-dark hover:bg-black/5' : 'text-white hover:bg-white/10',
                 openMenu === item.audience ? 'bg-black/5 font-medium' : '',
               ]"
+              :active-class="solid ? 'bg-black/[0.06] font-normal' : 'bg-white/15 font-normal'"
               :aria-expanded="openMenu === item.audience"
               aria-haspopup="true"
               :aria-controls="`mega-${item.audience}`"
               @mouseenter="scheduleOpen(item.audience)"
               @mouseleave="scheduleClose"
-              @click="toggleMenu(item.audience)"
               @keydown.down.prevent="openAndFocus(item.audience)"
             >
               {{ item.label }}
-            </button>
+            </NuxtLink>
           </template>
         </nav>
       </div>
@@ -343,21 +373,42 @@ const barHidden = computed(
            Centering lives on this static wrapper (flex) — the animated child
            can't carry translate classes since .mega-pop animates transform. -->
       <div class="pointer-events-none absolute inset-x-4 top-full z-50 hidden lg:flex lg:justify-center">
+        <!-- The bar↔card gap is PADDING (pt-2), not margin, so it belongs to this
+             pointer-events-auto box: moving trigger → gap → card stays hovered,
+             leaving no dead zone that would flicker the panel closed. -->
         <div
           v-if="openMenu"
-          :id="`mega-${openMenu}`"
-          :key="openMenu"
-          role="region"
-          :aria-label="menus[openMenu].label"
-          class="pointer-events-auto mt-6 min-w-0"
-          :class="closing ? 'mega-pop-out' : swapped ? 'mega-swap' : 'mega-pop'"
+          class="pointer-events-auto pt-2"
           @mouseenter="cancelClose"
           @mouseleave="scheduleClose"
         >
-          <NavMegaMenu
-            :links="menus[openMenu].links"
-            :promo="menus[openMenu].promo"
-          />
+          <!-- Resizing card frame: persists across an Иргэнд ↔ Бизнесд switch, so
+               `.t-resize` tweens its measured width between the two menus. The card
+               chrome (bg/shadow/ring/rounding) lives HERE so overflow-hidden clips
+               the inner content without clipping the box-shadow. Capped to the
+               viewport so a wide menu can't force a horizontal scrollbar. -->
+          <div
+            class="t-resize max-w-[calc(100vw-2rem)] shrink-0 overflow-hidden rounded-[24px] bg-white shadow-[0_16px_44px_-24px_rgba(0,0,0,0.22)] ring-1 ring-black/[0.05]"
+            :style="megaSize"
+          >
+            <!-- Inner content remounts per menu (keyed) to replay the pop/swap; it
+                 stays at its natural width (w-max) so the frame clips it during the
+                 tween instead of reflowing the columns. -->
+            <div
+              ref="megaContent"
+              :id="`mega-${openMenu}`"
+              :key="openMenu"
+              role="region"
+              :aria-label="menus[openMenu].label"
+              class="w-max"
+              :class="closing ? 'mega-pop-out' : swapped ? 'mega-swap' : 'mega-pop'"
+            >
+              <NavMegaMenu
+                :links="menus[openMenu].links"
+                :promo="menus[openMenu].promo"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -382,23 +433,34 @@ const barHidden = computed(
               {{ item.label }}
             </NuxtLink>
 
-            <!-- mega items become accordion sections on mobile -->
+            <!-- mega items: the label links to its section page; the chevron
+                 toggles the sub-links accordion. -->
             <div v-else>
-              <button
-                type="button"
-                :tabindex="mobileOpen ? undefined : -1"
-                class="flex w-full items-center justify-between rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-light text-dark transition-colors hover:bg-black/5"
-                :aria-expanded="mobileExpanded === item.audience"
-                @click="mobileExpanded = mobileExpanded === item.audience ? null : item.audience"
-              >
-                {{ item.label }}
-                <Icon
-                  name="lucide:chevron-down"
-                  class="size-4 text-black/50 transition-transform duration-200"
-                  :class="mobileExpanded === item.audience ? 'rotate-180' : ''"
-                  aria-hidden="true"
-                />
-              </button>
+              <div class="flex items-center rounded-[var(--radius-sm)] text-dark transition-colors hover:bg-black/5">
+                <NuxtLink
+                  :to="localePath(item.to)"
+                  :tabindex="mobileOpen ? undefined : -1"
+                  class="flex-1 px-3 py-2.5 text-sm font-light"
+                  active-class="font-normal"
+                >
+                  {{ item.label }}
+                </NuxtLink>
+                <button
+                  type="button"
+                  :tabindex="mobileOpen ? undefined : -1"
+                  class="flex items-center self-stretch px-3"
+                  :aria-label="item.label"
+                  :aria-expanded="mobileExpanded === item.audience"
+                  @click="mobileExpanded = mobileExpanded === item.audience ? null : item.audience"
+                >
+                  <Icon
+                    name="lucide:chevron-down"
+                    class="size-4 text-black/50 transition-transform duration-200"
+                    :class="mobileExpanded === item.audience ? 'rotate-180' : ''"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
               <div
                 class="grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none"
                 :class="mobileExpanded === item.audience ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"

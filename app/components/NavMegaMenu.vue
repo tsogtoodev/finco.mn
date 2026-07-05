@@ -33,9 +33,10 @@ const columns = computed<MenuLink[][]>(() => {
 </script>
 
 <template>
-  <div
-    class="flex gap-3 overflow-hidden rounded-[24px] bg-white p-6 shadow-[0_16px_44px_-24px_rgba(0,0,0,0.22)] ring-1 ring-black/[0.05]"
-  >
+  <!-- Card chrome (bg/rounding/shadow/ring/overflow) is applied by the caller's
+       resizing frame in SiteHeader so `.t-resize` can clip + tween it; here we
+       only lay out the promo + link columns. -->
+  <div class="flex gap-3 p-6">
     <NavPromoCard v-bind="promo" />
 
     <!-- fixed 440px columns per Figma; min-w-0 lets them shrink (text wraps)

@@ -26,10 +26,10 @@ defineProps<{ ceo: AboutContent['ceo'] }>()
         </p>
       </MotionReveal>
 
-      <div class="mt-12 lg:mt-20 lg:flex lg:items-stretch">
+      <div class="mt-12 lg:mt-20 lg:flex lg:items-stretch lg:items-center lg:justify-center">
         <!-- Portrait -->
         <MotionReveal
-          class="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] bg-[#f9f9f9] sm:aspect-[3/2] lg:aspect-auto lg:w-[42%] lg:shrink-0"
+          class="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] bg-[#f9f9f9] sm:aspect-[3/2] lg:aspect-auto lg:w-[50%] lg:shrink-0"
         >
           <NuxtImg
             :src="ceo.portrait"
@@ -45,28 +45,28 @@ defineProps<{ ceo: AboutContent['ceo'] }>()
           />
         </MotionReveal>
 
-        <!-- Greeting card -->
+        <!-- Greeting card — A4 letter sheet (210:297) -->
         <MotionReveal
           :delay="0.1"
-          class="relative z-10 mt-6 rounded-[2rem] bg-[#fbfbfb] p-7 shadow-[0_4px_24px_rgba(0,0,0,0.1)] sm:p-9 lg:-ml-16 lg:mt-0 lg:flex-1 lg:self-center lg:p-12"
+          class="relative z-10 mx-auto mt-6 flex aspect-[210/297] w-full max-w-[520px] flex-col rounded-[2rem] bg-white p-8 shadow-[0_4px_24px_rgba(0,0,0,0.1)] sm:p-10 lg:mx-0 lg:-ml-16 lg:mt-0 lg:max-w-[560px] lg:self-center lg:p-14"
         >
           <!-- tilted duplicate card peeking out behind the letter -->
           <div
             aria-hidden="true"
-            class="pointer-events-none absolute inset-0 -z-10 rotate-[6.46deg] rounded-[2rem] bg-[#fbfbfb] shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
+            class="pointer-events-none absolute inset-0 -z-10 rotate-[6.46deg] rounded-[2rem] bg-white shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
           />
           <div
             aria-hidden="true"
-            class="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-[#fbfbfb] shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
+            class="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-white shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
           />
           <h3 class="text-lg font-medium text-[#141414]">{{ ceo.greetingTitle }}</h3>
-          <div class="mt-5 space-y-4 text-sm font-light leading-6 text-[rgba(0,0,0,0.7)]">
+          <div class="mt-5 space-y-4 overflow-y-auto text-sm font-light leading-6 text-[rgba(0,0,0,0.7)]">
             <p v-for="(para, i) in ceo.greetingBody" :key="i">{{ para }}</p>
           </div>
           <p class="mt-6 text-sm font-medium text-[#4c41d8]">{{ ceo.tagline }}</p>
-          <div class="mt-6 flex items-center justify-end gap-4">
+          <div class="mt-auto flex items-center justify-end gap-4 pt-6">
             <span class="text-sm text-[rgba(0,0,0,0.6)]">{{ ceo.signatureLabel }}</span>
-            <img :src="signature" alt="" class="h-9 w-auto opacity-90">
+            <img :src="signature" alt="" class="h-12 w-auto opacity-90">
             <span class="text-base font-semibold text-[#141414]">{{ ceo.signatureName }}</span>
           </div>
         </MotionReveal>

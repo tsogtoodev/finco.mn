@@ -36,12 +36,56 @@
   --font-display: "Geologica", ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Registered so --announcement-h can be *animated* — unregistered custom
+   properties aren't interpolable, so the collapse-on-dismiss ease below relies on
+   this. See the body:has() rules further down. */
+@property --announcement-h {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
 :root {
   color-scheme: light;
+  /* Height of the dismissible announcement strip; full-viewport heroes subtract
+     it so they fit exactly below it. Toggled by the :has() rules below. */
+  --announcement-h: 0px;
 }
 
 body {
   @apply bg-background text-foreground font-sans antialiased;
+}
+
+/* Expose the announcement strip's height while it's on screen so heroes can
+   subtract it (`h-[calc(100svh-var(--announcement-h))]`). It leaves the DOM via
+   v-if on dismiss, so :has() re-evaluates and the hero reclaims the space. This
+   plain rule carries NO transition, so the strip's height is reserved instantly
+   on load (no intro animation). The 36px lives here now — the bar's own height is
+   `h-[var(--announcement-h)]`, so keep this in sync with AnnouncementBar's markup. */
+body:has(.announcement-bar) {
+  --announcement-h: 36px;
+}
+
+/* Dismiss: the bar keeps its `.announcement-bar` class but gains `.is-collapsing`
+   for the exit (see AnnouncementBar.vue — it stays mounted for the animation, then
+   v-if removes it). This more-specific rule wins and eases --announcement-h to 0,
+   which simultaneously collapses the bar's own height, slides the nav row up to the
+   top, and grows every `calc(100svh - var(--announcement-h))` hero from the top with
+   its bottom pinned — one variable, everything in lockstep, no snap. The transition
+   lives ONLY here so it never plays on initial load. */
+body:has(.announcement-bar.is-collapsing) {
+  --announcement-h: 0px;
+  transition: --announcement-h 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.announcement-bar.is-collapsing {
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  body:has(.announcement-bar.is-collapsing),
+  .announcement-bar.is-collapsing {
+    transition: none;
+  }
 }
 
 * {
@@ -271,4 +315,31 @@ body {
   .t-backdrop {
     animation-duration: 0.01ms;
   }
+}
+
+/* Transitions.dev — Card resize */
+
+/*
+  Usage:
+    <div class="t-resize">…</div>
+
+  Put `.t-resize` on any element and change its width/height
+  (directly, or via a state class such as `.is-small`). The
+  transition will tween the two sizes.
+*/
+
+:root {
+  --resize-dur: 300ms;
+  --resize-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.t-resize {
+  transition:
+    width  var(--resize-dur) var(--resize-ease),
+    height var(--resize-dur) var(--resize-ease);
+  will-change: width, height;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-resize { transition: none !important; }
 }

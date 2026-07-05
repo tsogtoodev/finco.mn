@@ -23,12 +23,13 @@ const other = computed(() => items.value.find((l) => l.code !== locale.value))
 </script>
 
 <template>
-  <div class="group relative">
+  <div class="group relative t-resize">
     <!-- trigger: shows the active locale, click toggles to the other -->
     <button
       v-if="other"
+      :key="locale"
       type="button"
-      class="flex items-center gap-2 rounded-full py-2 pl-2 pr-2 text-sm font-normal transition-colors"
+      class="locale-pill flex items-center gap-2 rounded-full py-2 pl-2 pr-2 text-sm font-normal transition-colors"
       :class="
         variant === 'overlay'
           ? 'bg-white/10 text-white hover:bg-white/20'
@@ -44,6 +45,9 @@ const other = computed(() => items.value.find((l) => l.code !== locale.value))
           stroke-width="1.5"
         />
       </svg>
+      <span class="locale-label text-sm font-normal">
+        {{ locale.toUpperCase() }}
+      </span>
     </button>
 
     <!-- hover dropdown: both locales; each switches straight to itself.
@@ -80,3 +84,33 @@ const other = computed(() => items.value.find((l) => l.code !== locale.value))
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Locale-change transition. The trigger button is keyed by `locale`, so it
+   re-mounts only on an actual switch — these enter animations then play. The
+   pill scales (no opacity, so it never blinks out) while the label fades and
+   slides in, reading as the code smoothly swapping. */
+.locale-pill {
+  animation: locale-pill-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes locale-pill-in {
+  from { transform: scale(0.93); }
+  to { transform: scale(1); }
+}
+
+.locale-label {
+  display: inline-block;
+  animation: locale-label-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes locale-label-in {
+  from { opacity: 0; transform: translateY(-0.45em); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .locale-pill,
+  .locale-label {
+    animation: none;
+  }
+}
+</style>
