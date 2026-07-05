@@ -1,6 +1,6 @@
 // Dynamic sitemap source — emits locale-prefixed URLs for content-driven
-// detail routes (products, services, jobs) that @nuxtjs/sitemap can't discover
-// from the static page tree. Registered via `sitemap.sources` in nuxt.config.
+// detail routes (products, services, jobs, news) that @nuxtjs/sitemap can't
+// discover from the static page tree. Registered via `sitemap.sources`.
 export default defineSitemapEventHandler(async (event) => {
   const locales = ['mn', 'en'] as const
   const urls: { loc: string }[] = []
@@ -14,6 +14,9 @@ export default defineSitemapEventHandler(async (event) => {
 
     const jobs = await queryCollection(event, 'jobs').where('locale', '=', locale).all()
     for (const j of jobs) urls.push({ loc: `/${locale}/careers/${j.slug}` })
+
+    const news = await queryCollection(event, 'news').where('locale', '=', locale).all()
+    for (const n of news) urls.push({ loc: `/${locale}/news/${n.slug}` })
   }
 
   return urls

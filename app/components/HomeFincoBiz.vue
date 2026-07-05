@@ -7,7 +7,18 @@
 // card's body) overlaid with two white masks + crisp/translatable live text;
 // the other two cards carry abstract skeleton UIs in the same design language.
 // All geometry is % of the card / cqw of the stack so it tracks any width.
+// Copy (subtext, callout, card tab titles) comes from the `pages` home doc's
+// fincobiz group, with i18n as fallback.
 const { t } = useI18n()
+
+const page = await usePageContent('home')
+const copy = computed(() => ({
+  subtext: page.value?.fincobiz?.subtext ?? t('home.fincobiz.subtext'),
+  calloutHeading: page.value?.fincobiz?.calloutHeading ?? t('home.fincobiz.calloutHeading'),
+  calloutSubtext: page.value?.fincobiz?.calloutSubtext ?? t('home.fincobiz.calloutSubtext'),
+}))
+const cardTitle = (id: CardId) =>
+  page.value?.fincobiz?.cards?.[id] ?? t(`home.fincobiz.cards.${id}`)
 
 type CardId = 'eligibility' | 'receivables' | 'request'
 
@@ -35,7 +46,7 @@ function promote(id: CardId) {
         <div class="max-w-[750px]">
           <img src="/images/home/fincobiz-logo.svg" alt="FincoBiz" class="block h-auto w-[190px]">
           <p class="mt-4 text-lg font-extralight leading-7 tracking-[0.01em] text-black/60">
-            {{ t('home.fincobiz.subtext') }}
+            {{ copy.subtext }}
           </p>
         </div>
         <AppButton to="/business" variant="accent" pill arrow class="h-10 shrink-0">
@@ -67,7 +78,7 @@ function promote(id: CardId) {
                 >
                   <span aria-hidden="true" class="biz-dot" :style="{ background: card.dot }" />
                   <span class="text-sm font-normal text-black/80 sm:text-base">
-                    {{ t(`home.fincobiz.cards.${card.id}`) }}
+                    {{ cardTitle(card.id) }}
                   </span>
                 </button>
 
@@ -75,7 +86,7 @@ function promote(id: CardId) {
                 <div v-if="card.id === 'request'" class="relative">
                   <NuxtImg
                     src="/images/home/fincobiz-mockup-body.png"
-                    :alt="t('home.fincobiz.calloutHeading')"
+                    :alt="copy.calloutHeading"
                     width="2872"
                     height="1322"
                     sizes="1200px"
@@ -89,13 +100,13 @@ function promote(id: CardId) {
                       class="absolute whitespace-nowrap font-display font-semibold tracking-[0.01em] text-black"
                       style="left:3.088%;top:7.858%;font-size:2.4cqw;line-height:2.74cqw"
                     >
-                      {{ t('home.fincobiz.calloutHeading') }}
+                      {{ copy.calloutHeading }}
                     </h3>
                     <p
                       class="absolute font-light tracking-[0.01em] text-black/60"
                       style="left:3.088%;top:18.081%;width:36.033%;font-size:1.2cqw;line-height:2.06cqw"
                     >
-                      {{ t('home.fincobiz.calloutSubtext') }}
+                      {{ copy.calloutSubtext }}
                     </p>
                   </div>
                 </div>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Intro band below the hero (Figma 1:13719 / 1:13942). Soft brand-tinted gradient
 // surface with one centered extra-light tagline; copy + tint differ per audience.
-import type { Audience } from '~/data/productListing'
+import type { Audience } from '~/composables/useProducts'
 
 const props = defineProps<{ audience: Audience }>()
 const { t } = useI18n()

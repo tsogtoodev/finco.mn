@@ -91,6 +91,31 @@ export default defineNuxtConfig({
     exclude: ['/**/careers/exam'],
   },
 
+  // Image CDN — Cloudflare Image Transformations optimise the images served from
+  // public/ at the edge (URLs become `{baseURL}/cdn-cgi/image/{mods}/{src}`), then
+  // cache the resized/reformatted variants on Cloudflare. No upload step: public/
+  // images ride along with the normal Workers deploy. baseURL tracks the site URL.
+  // Requires "Transformations" enabled on the zone (dashboard → Images →
+  // Transformations). The provider is set per-environment below.
+  image: {
+    // Custom provider = built-in Cloudflare Transformations + a default
+    // `format=auto` (AVIF/WebP negotiation) that also bypasses SVGs.
+    // See app/providers/cloudflare-auto.ts.
+    providers: {
+      cloudflareAuto: {
+        provider: '~/providers/cloudflare-auto.ts',
+        options: {
+          baseURL: process.env.NUXT_PUBLIC_SITE_URL || 'https://finco.design',
+        },
+      },
+    },
+    quality: 80,
+  },
+  // The /cdn-cgi/image endpoint only exists on the deployed Cloudflare zone, so
+  // use IPX during local dev and the Cloudflare provider in production builds.
+  $development: { image: { provider: 'ipx' } },
+  $production: { image: { provider: 'cloudflareAuto' } },
+
   // Both locales prefixed (/mn, /en); root path resolves via detection.
   i18n: {
     strategy: 'prefix',

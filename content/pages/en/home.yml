@@ -12,29 +12,26 @@ hero:
     label: About us
     to: /about
 valueProps:
-  heading: Build the future you imagine —
+  heading: "Build it, own the future... "
   accent: let's finance it!
-  subheading: We centralize financial solutions and power your next stage of growth.
+  subheading: We bring financial solutions together in one place to power your next stage of growth.
   items:
     - title: Fast decisions
-      icon: hugeicons:time-quarter-pass
-      body: We resolve financing requests quickly through data-driven assessment and a streamlined process, keeping your business running without interruption.
-    - title: Flexible terms
-      icon: hugeicons:usb-connected-01
-      body: We offer financing on flexible terms tailored to your business profile, cash flow and financial needs.
-    - title: Data-driven scoring
-      icon: hugeicons:cpu
-      body: A behaviour-based scoring system assesses your financial capacity realistically and delivers better-fit decisions, faster.
-statsHeading: Financial solutions built on trust
+      body: Optimised technology and processes resolve your financing request in the shortest possible time.
+    - title: Fully secured
+      body: We fully meet international information-security standards and confidently honour the commitments we make to our customers.
+    - title: Smart scoring system
+      body: Our behaviour-based scoring system offers you better terms while reducing risk.
+statsHeading: Faster, smarter, trustworthy financial solutions
 stats:
   - value: 71000
-    suffix: "+"
     label: Customers using our financial services
   - value: 70
-    suffix: B+₮
-    label: Total financing issued
+    prefix: ₮
+    suffix: B+
+    label: Total financing disbursed
   - value: 26000
-    suffix: "+"
+    suffix: +
     label: App users
 showcases:
   - theme: dark
@@ -58,3 +55,33 @@ cta:
   button:
     label: Contact us
     to: /branches
+heroSlides:
+  - key: fincoBiz
+    tab: FincoBiz
+    headline: Finance your business faster and easier
+    subtext: A digital platform that delivers business loans and flexible financing for companies in the fastest, simplest way possible.
+  - key: beepWallet
+    tab: BeepWallet
+    headline: Manage your finances your way with a digital wallet
+    subtext: Payments, transfers, credit, rewards—all in one. Track your finances anytime, anywhere.
+  - key: loans
+    tab: Loan services
+    headline: Financial solutions tailored to your needs
+    subtext: Manage your money more easily and smartly with products built for both individuals and businesses.
+  - key: trust
+    tab: Trust services
+    headline: Grow your wealth through trust services
+    subtext: Put your assets to work under professional management and build steady, long-term returns.
+beep:
+  heading: Feel, Build, Stand out
+  subtext: BeepCU virtual credit card, loan products, savings and reward points — feel it every day, all in one place.
+  expandLead: A digital wallet that manages payments, transfers and purchases
+  expandRest: all in one place. Use QR payments, card linking and transaction tracking quickly and easily.
+fincobiz:
+  subtext: A digital platform that handles business loans and flexible financing for companies in the fastest, simplest and easiest way.
+  calloutHeading: Faster than you think
+  calloutSubtext: The FincoBiz platform makes the whole journey — from application to decision — simpler and faster.
+  cards:
+    request: Submit a loan request
+    receivables: Track receivables
+    eligibility: Check loan eligibility

@@ -4,16 +4,16 @@
 definePageMeta({ transparentHeader: true })
 
 const { t } = useI18n()
-const c = useAboutContent()
+const c = await useAboutContent()
 
 useSeoMeta({
-  title: () => `${c.value.hero.headline} · ${t('nav.about')}`,
-  description: () => c.value.hero.intro,
+  title: () => (c.value ? `${c.value.hero.headline} · ${t('nav.about')}` : t('nav.about')),
+  description: () => c.value?.hero.intro,
 })
 </script>
 
 <template>
-  <div>
+  <div v-if="c">
     <AboutHero :headline="c.hero.headline" :intro="c.hero.intro" :photo="c.hero.photo" />
     <AboutMission :blocks="c.mission.blocks" />
     <AboutValues :heading="c.values.heading" :subheading="c.values.subheading" :items="c.values.items" />

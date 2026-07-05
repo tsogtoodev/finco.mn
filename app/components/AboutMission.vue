@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Mission + vision (Figma 1:12287) — near-black section, two badge/heading/body
 // blocks stacked on the left, a glowing 3D torus + radiant wash on the right.
-import type { BadgeBlock } from '~/data/about'
+import type { BadgeBlock } from '~/composables/useAboutContent'
 import torus from '~/assets/images/about-mission-torus.svg'
 import radiant from '~/assets/images/fig-3d10041054.png'
 import fractalGlow from '~/assets/images/about-mission-fractal-glow.png'

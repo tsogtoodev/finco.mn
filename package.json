@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "NODE_OPTIONS=--max-old-space-size=6144 nuxt build",
+    "build": "node scripts/check-content.mjs && NODE_OPTIONS=--max-old-space-size=6144 nuxt build",
+    "check:content": "node scripts/check-content.mjs",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview"

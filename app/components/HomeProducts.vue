@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { homeProducts } from '~/data/homeProducts'
-
 // Product solutions (Figma 1:14174): heading + subtext + Иргэнд/Бизнест toggle
 // that filters a product-card carousel in place. (The products *pages* use the
 // shared navigating AudienceToggle; here the toggle filters, so it's local.)
-const { t, locale } = useI18n()
-const localePath = useLocalePath()
+// Cards come from the `products` collection: `featured: true` docs, both
+// audiences fetched once and filtered client-side by the toggle.
+const { t } = useI18n()
 
 const audience = ref<'individual' | 'business'>('individual')
 
@@ -14,10 +13,18 @@ const options = computed(() => [
   { key: 'business' as const, label: t('nav.business') },
 ])
 
+const catalog = await useProductList()
+
 const products = computed(() =>
-  (homeProducts[locale.value as 'mn' | 'en'] ?? homeProducts.mn).filter(
-    (p) => p.audience === audience.value,
-  ),
+  (catalog.value ?? [])
+    .filter((p) => p.featured && p.audience === audience.value)
+    .map((p) => ({
+      slug: p.slug,
+      audience: p.audience,
+      title: p.title,
+      summary: p.summary ?? '',
+      image: p.cardImage ?? p.heroImage ?? '',
+    })),
 )
 
 // Toggle accent follows the active product line: teal for Beep/individual

@@ -7,6 +7,16 @@
 // units, so it matches Figma exactly at ≥1440 and shrinks faithfully below.
 const { t } = useI18n()
 const localePath = useLocalePath()
+
+// Copy from the `pages` home doc's beep group (i18n fallback); the pill
+// cluster, photo and layout stay baked/component-side.
+const page = await usePageContent('home')
+const copy = computed(() => ({
+  heading: page.value?.beep?.heading ?? t('home.beep.heading'),
+  subtext: page.value?.beep?.subtext ?? t('home.beep.subtext'),
+  expandLead: page.value?.beep?.expandLead ?? t('home.beep.expandLead'),
+  expandRest: page.value?.beep?.expandRest ?? t('home.beep.expandRest'),
+}))
 </script>
 
 <template>
@@ -41,16 +51,16 @@ const localePath = useLocalePath()
 
           <!-- Heading -->
           <div class="beep-heading">
-            <h2 class="beep-title">{{ t('home.beep.heading') }}</h2>
-            <p class="beep-subtext">{{ t('home.beep.subtext') }}</p>
+            <h2 class="beep-title">{{ copy.heading }}</h2>
+            <p class="beep-subtext">{{ copy.subtext }}</p>
           </div>
 
           <!-- Info bar -->
           <div class="beep-bar">
             <div class="beep-bar-inner">
               <p class="beep-bar-text">
-                <span class="beep-bar-lead">{{ t('home.beep.expandLead') }}</span>
-                {{ ' ' }}<span class="beep-bar-rest">{{ t('home.beep.expandRest') }}</span>
+                <span class="beep-bar-lead">{{ copy.expandLead }}</span>
+                {{ ' ' }}<span class="beep-bar-rest">{{ copy.expandRest }}</span>
               </p>
               <div class="beep-bar-actions">
                 <button type="button" class="beep-btn beep-btn--download">

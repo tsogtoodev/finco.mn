@@ -17,6 +17,18 @@ import beepWordmark from '~/assets/icons/beep-wordmark-white.svg?url'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
+
+// Slide copy comes from the `pages` home doc (heroSlides, matched by slide
+// key) so editors manage it in /content; i18n remains the fallback.
+const page = await usePageContent('home')
+function slideCopy(key: string) {
+  const doc = page.value?.heroSlides?.find((s) => s.key === key)
+  return {
+    tab: doc?.tab ?? t(`hero.tabs.${key}`),
+    headline: doc?.headline ?? t(`hero.slides.${key}.headline`),
+    subtext: doc?.subtext ?? t(`hero.slides.${key}.subtext`),
+  }
+}
 // (carousel + marquee below)
 
 // Partner logos exported from Figma as white SVGs (muted to grey via mix-blend on
@@ -266,7 +278,7 @@ onBeforeUnmount(() => {
                   >
                   <BlurText
                     v-else
-                    :text="t(`hero.tabs.${slides[current].key}`)"
+                    :text="slideCopy(slides[current].key).tab"
                     as="span"
                     animate-by="words"
                     :delay="25"
@@ -276,7 +288,7 @@ onBeforeUnmount(() => {
                   />
 
                   <BlurText
-                    :text="t(`hero.slides.${slides[current].key}.headline`)"
+                    :text="slideCopy(slides[current].key).headline"
                     as="h1"
                     animate-by="words"
                     :delay="38"
@@ -286,7 +298,7 @@ onBeforeUnmount(() => {
                   />
 
                   <BlurText
-                    :text="t(`hero.slides.${slides[current].key}.subtext`)"
+                    :text="slideCopy(slides[current].key).subtext"
                     as="p"
                     animate-by="words"
                     :delay="20"
@@ -357,7 +369,7 @@ onBeforeUnmount(() => {
                   class="truncate text-base leading-5 transition-colors group-hover:text-white"
                   :class="i === current ? 'font-medium text-white' : 'font-normal text-white/80'"
                 >
-                  {{ t(`hero.tabs.${s.key}`) }}
+                  {{ slideCopy(s.key).tab }}
                 </span>
               </button>
             </li>

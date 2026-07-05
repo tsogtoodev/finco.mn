@@ -4,13 +4,16 @@ slug: auto-loan
 audience: individual
 heroImage: /images/products/auto.jpg
 title: Auto Loan
+menuDesc: Get behind the wheel in just a few hours
 summary: A flexible loan for purchasing a vehicle.
 category: Consumer loan
-order: 1
+order: 3
+cardImage: /images/home/product-2.png
+featured: true
 loanTerms:
-  amount: ₮5M–50M
-  rate: 1.8%/mo
-  period: 6–36 mo
+  amount: Up to ₮300M
+  rate: 3.3%/mo
+  period: Up to 60 mo
 tabs:
   requirements:
     - Citizen aged 21–60

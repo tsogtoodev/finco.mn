@@ -2,10 +2,11 @@
 // Products-listing hero (Figma 1:13610 / 1:13834). Dark lifestyle photo + scrim,
 // breadcrumb + "Буцах" back button top-left, centered headline, and the audience
 // toggle pinned below it. The global transparent nav overlays the top 96px, so the
-// content gets top clearance. Photo differs per audience; copy is shared.
-import { heroPhoto, type Audience } from '~/data/productListing'
+// content gets top clearance. Photo + headline come from the `pages` collection
+// (products/business docs) via the parent; i18n keeps the chrome labels.
+import type { Audience } from '~/composables/useProducts'
 
-const props = defineProps<{ audience: Audience }>()
+const props = defineProps<{ audience: Audience; photo?: string; headline?: string }>()
 const { t } = useI18n()
 const localePath = useLocalePath()
 
@@ -19,7 +20,7 @@ function goBack() {
   <section class="relative isolate flex min-h-[560px] flex-col overflow-hidden bg-dark text-white sm:min-h-[620px]">
     <!-- background photo + diagonal scrim (Figma: 250.94deg, 0.25 → 0.75 black) -->
     <NuxtImg
-      :src="heroPhoto[props.audience]"
+      :src="props.photo ?? `/images/products/hero-${props.audience}.jpg`"
       alt=""
       width="1920"
       height="660"
@@ -61,7 +62,7 @@ function goBack() {
       <!-- centered headline + audience toggle -->
       <div class="flex flex-1 flex-col items-center justify-center gap-10 pb-6 pt-10 text-center sm:gap-12">
         <BlurText
-          :text="t('productsPage.headline')"
+          :text="props.headline ?? t('productsPage.headline')"
           as="h1"
           animate-by="words"
           :delay="60"

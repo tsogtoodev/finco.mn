@@ -13,7 +13,7 @@
 //
 // The 36px AnnouncementBar lives above this row in the layout and scrolls away;
 // only this row is sticky (top:0). Height is 60px to match Figma.
-import { navMenus, type NavAudience } from '~/data/navMenus'
+import { navPromos, type NavAudience } from '~/data/navMenus'
 
 const props = withDefaults(defineProps<{ transparent?: boolean }>(), {
   transparent: false,
@@ -36,25 +36,29 @@ const navItems = computed<NavItem[]>(() => [
   { kind: 'link', to: '/news', label: t('nav.news') },
 ])
 
-// Resolve a menu's i18n copy into the shape NavMegaMenu expects. Slugs + promo
-// structure come from data; titles/descriptions/taglines come from i18n.
-// `label` names the panel for assistive tech (matches the trigger's label).
+// Menu links come from the `products` collection (audience + order) so the
+// menus track the CMS catalog; promo card structure comes from navPromos and
+// its copy from i18n. `label` names the panel for assistive tech.
+const catalog = await useProductList()
+
 function buildMenu(audience: NavAudience) {
-  const cfg = navMenus[audience]
+  const promo = navPromos[audience]
   return {
     label: t(audience === 'individual' ? 'nav.products' : 'nav.business'),
-    links: cfg.slugs.map((slug) => ({
-      to: `/products/${slug}`,
-      title: t(`megaMenu.items.${slug}.title`),
-      desc: t(`megaMenu.items.${slug}.desc`),
-    })),
+    links: (catalog.value ?? [])
+      .filter((p) => p.audience === audience)
+      .map((p) => ({
+        to: `/products/${p.slug}`,
+        title: p.menuTitle ?? p.title,
+        desc: p.menuDesc ?? p.summary,
+      })),
     promo: {
-      variant: cfg.promo.variant,
-      logo: cfg.promo.logo,
-      logoAlt: t(cfg.promo.logoAltKey),
-      tagline: t(cfg.promo.taglineKey),
+      variant: promo.variant,
+      logo: promo.logo,
+      logoAlt: t(promo.logoAltKey),
+      tagline: t(promo.taglineKey),
       ctaLabel: t('common.learnMore'),
-      ctaTo: cfg.promo.ctaTo,
+      ctaTo: promo.ctaTo,
     },
   }
 }

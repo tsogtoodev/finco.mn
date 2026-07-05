@@ -4,13 +4,16 @@ slug: auto-loan
 audience: individual
 heroImage: /images/products/auto.jpg
 title: Автомашины зээл
+menuDesc: Хэдхэн цагийн дотор машинтай болох шийдэл
 summary: Шинэ болон дугаартай автомашин худалдан авахад хамгийн хурдан шийдвэр, таатай нөхцөлийг зөвхөн эндээс.
 category: Хэрэглээний зээл
-order: 1
+order: 3
+cardImage: /images/home/product-2.png
+featured: true
 loanTerms:
-  amount: 5 - 500сая
-  rate: 3.1 - 3.5%
-  period: 6 - 36 сар
+  amount: 300 сая₮ хүртэл
+  rate: 3.3%/сар
+  period: 60 сар хүртэл
 tabs:
   info: Автомашины зээл нь шинэ болон ашиглалтад орсон автомашин худалдан авах зорилгоор олгогдох бөгөөд зээлийн хүү, хугацаа, урьдчилгаа төлбөрийн нөхцөл нь зээлдэгчийн орлого болон барьцаа хөрөнгийн үнэлгээнээс хамаарна.
   requirements:

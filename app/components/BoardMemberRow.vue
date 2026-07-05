@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // One board-of-directors row (Figma 1:7907) — portrait + name/title on the
 // left, bio on the right. Stacks (photo above text) on small screens.
-import type { BoardMember } from '~/data/about'
+import type { BoardMember } from '~/composables/useAboutContent'
 
 defineProps<{ member: BoardMember }>()
 </script>

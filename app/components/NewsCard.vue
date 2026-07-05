@@ -16,9 +16,14 @@ const localePath = useLocalePath()
 // element — resolve the real component so linked cards become real anchors.
 const NuxtLink = resolveComponent('NuxtLink')
 const title = computed(() => props.title ?? props.item?.title ?? '')
-const excerpt = computed(() => props.excerpt ?? props.item?.excerpt)
+// Doc field is `summary` (NOT `excerpt` — that's a reserved page-type field
+// that @nuxt/content nulls); the display prop keeps the `excerpt` name.
+const excerpt = computed(() => props.excerpt ?? props.item?.summary)
 const image = computed(() => props.image ?? props.item?.image)
-const to = computed(() => props.to ?? props.item?.to)
+// Cards link to the article page by default; `to` (prop or doc field) overrides.
+const to = computed(
+  () => props.to ?? props.item?.to ?? (props.item?.slug ? `/news/${props.item.slug}` : undefined),
+)
 </script>
 
 <template>

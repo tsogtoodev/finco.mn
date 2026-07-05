@@ -1,10 +1,30 @@
 <script setup lang="ts">
-import { homeNews } from '~/data/homeNews'
-
 // News (Figma 1:14236): heading + "Дэлгэрэнгүй" CTA, then a news-card carousel.
+// Cards are the latest articles from the `news` collection, so publishing in
+// /content (Studio) updates the homepage automatically.
 const { t, locale } = useI18n()
 
-const items = computed(() => homeNews[locale.value as 'mn' | 'en'] ?? homeNews.mn)
+const { data: articles } = await useAsyncData(
+  () => `news-home-${locale.value}`,
+  () =>
+    queryCollection('news')
+      .where('locale', '=', locale.value)
+      .order('publishedAt', 'DESC')
+      .limit(5)
+      .all(),
+  { watch: [locale], default: () => [] },
+)
+
+const items = computed(() =>
+  (articles.value ?? []).map((n) => ({
+    slug: n.slug,
+    title: n.title,
+    // doc field is `summary` (`excerpt` is reserved on page-type collections)
+    excerpt: n.summary,
+    image: n.image,
+    to: n.to ?? `/news/${n.slug}`,
+  })),
+)
 </script>
 
 <template>

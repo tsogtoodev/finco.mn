@@ -3,7 +3,7 @@
 // localized link to /products vs /business, so the audience swap is a real route
 // change (correct under the i18n locale prefix). Active pill matches the audience
 // brand: teal for individuals, blurple (accent) for business — per Figma 1:13616.
-import type { Audience } from '~/data/productListing'
+import type { Audience } from '~/composables/useProducts'
 
 defineProps<{ audience: Audience }>()
 const { t } = useI18n()

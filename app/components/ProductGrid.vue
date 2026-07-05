@@ -1,14 +1,14 @@
 <script setup lang="ts">
 // Products listing grid (Figma 1:13722 / 1:13945). 2-col grid of tall photo cards
 // with a dark overlay gradient and a centered white title; each links to its
-// /products/[slug] detail page. Card set is driven by audience.
-import { productListing, type Audience } from '~/data/productListing'
+// /products/[slug] detail page. Card set comes from the `products` collection
+// (audience + order), so the grid tracks the CMS catalog.
+import type { Audience } from '~/composables/useProducts'
 
 const props = defineProps<{ audience: Audience }>()
-const { t } = useI18n()
 const localePath = useLocalePath()
 
-const cards = computed(() => productListing[props.audience])
+const cards = await useProductList(props.audience)
 </script>
 
 <template>
@@ -21,8 +21,9 @@ const cards = computed(() => productListing[props.audience])
         class="group relative flex h-[260px] items-center justify-center overflow-hidden rounded-[var(--radius)] sm:h-[400px]"
       >
         <NuxtImg
-          :src="c.image"
-          :alt="t(`productsPage.cards.${c.slug}`)"
+          v-if="c.heroImage"
+          :src="c.heroImage"
+          :alt="c.title"
           width="713"
           height="400"
           class="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -34,7 +35,7 @@ const cards = computed(() => productListing[props.audience])
         <h3
           class="relative max-w-[80%] text-center font-display text-2xl font-extrabold leading-tight text-white sm:text-[32px] sm:leading-9"
         >
-          {{ t(`productsPage.cards.${c.slug}`) }}
+          {{ c.title }}
         </h3>
       </NuxtLink>
     </div>

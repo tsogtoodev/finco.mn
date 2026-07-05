@@ -8,7 +8,7 @@
 // Mobile: a stacked, semantic nested tree. Real text throughout — never an image.
 // Entrance uses the CSS `.hero-rise` stagger (not motion-v) so this below-the-
 // fold section is never stranded at opacity:0 on SSR.
-import type { AboutContent } from '~/data/about'
+import type { AboutContent } from '~/composables/useAboutContent'
 
 const props = defineProps<{ org: AboutContent['org'] }>()
 

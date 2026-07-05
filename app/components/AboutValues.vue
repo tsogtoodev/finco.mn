@@ -4,7 +4,7 @@
 // (see ValueCard). Light #fafafe background. Entrance uses the CSS `.hero-rise`
 // stagger rather than motion-v so below-the-fold content is never stranded at
 // opacity:0 on SSR (see app/assets/css/main.css).
-import type { ValueItem } from '~/data/about'
+import type { ValueItem } from '~/composables/useAboutContent'
 
 const props = defineProps<{ heading: string; subheading: string; items: ValueItem[] }>()
 

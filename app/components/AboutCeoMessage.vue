@@ -2,7 +2,7 @@
 // CEO message (Figma 1:12393) — heading + subtext, then a 2-up: portrait card
 // (left, purple wash) and a greeting card (right) carrying the long message,
 // tagline and signature. Purple radiant swirls drift in behind.
-import type { AboutContent } from '~/data/about'
+import type { AboutContent } from '~/composables/useAboutContent'
 import signature from '~/assets/images/about-ceo-signature.png'
 
 defineProps<{ ceo: AboutContent['ceo'] }>()

@@ -4,13 +4,16 @@ slug: investment-loan
 audience: business
 heroImage: /images/products/investment.jpg
 title: Investment Loan
+menuDesc: Financing aimed at production, equipment and long-term business growth
 summary: A loan to finance long-term investments and projects.
 category: Investment
-order: 2
+order: 3
+cardImage: /images/home/product-3.png
+featured: true
 loanTerms:
-  amount: ₮50M–1B
-  rate: 1.6%/mo
-  period: 12–60 mo
+  amount: Up to ₮500M
+  rate: 3.5%/mo
+  period: Up to 36 mo
 related:
   - business-loan
 ---

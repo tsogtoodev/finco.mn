@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Board of directors (Figma 1:12404) — heading + member rows with dividers.
-import type { AboutContent } from '~/data/about'
+import type { AboutContent } from '~/composables/useAboutContent'
 
 defineProps<{ board: AboutContent['board'] }>()
 </script>

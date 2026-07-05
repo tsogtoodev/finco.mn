@@ -6,7 +6,22 @@
 // mobile. The WebGL scene is client-only (ClientOnly) and never loaded on
 // phones — they keep the lightweight stats-wave.png poster, which also serves
 // as the SSR / no-JS / load-in-progress fallback so there's no flash.
+//
+// Heading + stat values/labels come from the `pages` home doc so editors
+// manage them in /content; i18n remains the fallback.
 const { t } = useI18n()
+
+const page = await usePageContent('home')
+
+const heading = computed(() => page.value?.statsHeading ?? t('home.stats.heading'))
+const stats = computed(
+  () =>
+    page.value?.stats ?? [
+      { value: 71000, label: t('home.stats.customers.label') },
+      { value: 70, prefix: '₮', suffix: t('home.stats.funding.unit'), label: t('home.stats.funding.label') },
+      { value: 26000, suffix: '+', label: t('home.stats.users.label') },
+    ],
+)
 </script>
 
 <template>
@@ -48,16 +63,12 @@ const { t } = useI18n()
         as="h2"
         class="max-w-[1015px] text-center font-display text-[24px] font-semibold leading-tight tracking-wide text-white"
       >
-        {{ t('home.stats.heading') }}
+        {{ heading }}
       </MotionReveal>
 
       <div class="mt-80 grid w-full grid-cols-1 gap-12 sm:grid-cols-3 sm:gap-6">
         <div
-          v-for="(s, i) in [
-            { value: 71000, label: t('home.stats.customers.label') },
-            { value: 70, prefix: '₮', suffix: t('home.stats.funding.unit'), label: t('home.stats.funding.label') },
-            { value: 26000, suffix: '+', label: t('home.stats.users.label') },
-          ]"
+          v-for="(s, i) in stats"
           :key="i"
           class="relative flex flex-col items-center gap-2 text-center"
         >

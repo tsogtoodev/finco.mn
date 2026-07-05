@@ -1,8 +1,17 @@
 <script setup lang="ts">
 // Site footer (Figma 1:14377 + legal block 1:14111): white link columns +
 // contact row, then a dark legal strip with disclaimer, ISO badges, copyright.
+// The two product columns render the top catalog entries from the `products`
+// collection so footer links always point at real, CMS-managed product pages.
 const { t, tm, rt } = useI18n()
 const localePath = useLocalePath()
+
+const catalog = await useProductList()
+const productLinks = (audience: 'individual' | 'business', count: number) =>
+  (catalog.value ?? [])
+    .filter((p) => p.audience === audience)
+    .slice(0, count)
+    .map((p) => ({ label: p.title, to: `/products/${p.slug}` }))
 
 const columns = computed(() => [
   {
@@ -15,21 +24,13 @@ const columns = computed(() => [
   },
   {
     heading: t('footer.individuals'),
-    links: [
-      { label: t('footer.links.consumerLoan'), to: '/products/consumer-loan' },
-      { label: t('footer.links.greenLoan'), to: '/products/green-loan' },
-      { label: t('footer.links.autoLease'), to: '/products/auto-loan' },
-      { label: t('footer.links.autoCollateral'), to: '/products/quick-collateral-loan' },
-    ],
+    links: productLinks('individual', 4),
   },
   {
     heading: t('footer.business'),
     links: [
       { label: t('footer.links.businessLoan'), to: '/business' },
-      { label: t('footer.links.investmentLoan'), to: '/products/investment-loan' },
-      { label: t('footer.links.purchaseLoan'), to: '/products/purchase-loan' },
-      { label: t('footer.links.greenBusinessLoan'), to: '/products/green-business-loan' },
-      { label: t('footer.links.womenLoan'), to: '/products/women-business-loan' },
+      ...productLinks('business', 4),
     ],
   },
   {

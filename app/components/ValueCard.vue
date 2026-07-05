@@ -9,7 +9,7 @@
 // The shared-cluster offsets only make sense once the cards sit side-by-side, so
 // they apply via CSS vars at that breakpoint (lg for the 3-col top row, sm for the
 // 2-col bottom row); while the cards are stacked the cluster is simply centred.
-import type { ValueItem } from '~/data/about'
+import type { ValueItem } from '~/composables/useAboutContent'
 import cube from '~/assets/images/fig-76f105c432.png'
 
 const props = defineProps<{

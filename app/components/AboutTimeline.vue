@@ -2,7 +2,7 @@
 // History timeline (Figma 238:7952) — heading + a series of year-PAIR rows.
 // Milestones are grouped two-per-row, and each row sits on its own full-bleed
 // band whose lavender tint deepens down the page (#fbfbfb → #f7f6ff → #efeefd).
-import type { Milestone } from '~/data/about'
+import type { Milestone } from '~/composables/useAboutContent'
 
 const props = defineProps<{ heading: string; subheading: string; milestones: Milestone[] }>()
 

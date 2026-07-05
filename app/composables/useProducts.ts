@@ -1,0 +1,27 @@
+import type { Collections } from '@nuxt/content'
+
+export type Audience = Collections['products']['audience']
+export type ProductDoc = Collections['products']
+
+// Locale-keyed, ordered fetch of the products catalog (optionally filtered to
+// one audience). The mega menu, footer, listing grids and home carousel all
+// render from this same CMS-managed catalog — adding a product doc in /content
+// propagates everywhere. Keys dedupe per (audience, locale), and `watch:
+// [locale]` re-queries on language switch instead of serving stale copy.
+export async function useProductList(audience?: Audience) {
+  const { locale } = useI18n()
+
+  const { data } = await useAsyncData(
+    () => `products-${audience ?? 'all'}-${locale.value}`,
+    () => {
+      let q = queryCollection('products')
+        .where('locale', '=', locale.value)
+        .order('order', 'ASC')
+      if (audience) q = q.where('audience', '=', audience)
+      return q.all()
+    },
+    { watch: [locale], default: () => [] as ProductDoc[] },
+  )
+
+  return data
+}

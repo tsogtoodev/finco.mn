@@ -25,9 +25,16 @@ const products = defineCollection({
     slug: z.string(),
     audience: z.enum(['individual', 'business']),
     title: z.string(),
+    // Mega-menu overrides: menuTitle allows decorations (e.g. the 🍀 prefix)
+    // without polluting the page title; menuDesc is the one-liner under the
+    // menu link (falls back to summary).
+    menuTitle: z.string().optional(),
+    menuDesc: z.string().optional(),
     summary: z.string().optional(),
     category: z.string().optional(), // e.g. "Ногоон зээл" → Chip
     heroImage: z.string().optional(),
+    cardImage: z.string().optional(), // home-carousel card art (≠ heroImage)
+    featured: z.boolean().optional(), // shown in the home products carousel
     order: z.number().optional(),
     loanTerms: z
       .object({
@@ -122,15 +129,20 @@ const jobs = defineCollection({
   }),
 })
 
-// ─── News / blog cards ───────────────────────────────────────────────────────
+// ─── News / blog articles ─────────────────────────────────────────────────────
+// `page` type so each article has a markdown body rendered at /news/[slug].
+// `to` remains as an optional external/override link for cards. NB: the card
+// teaser is `summary`, NOT `excerpt` — `excerpt` is a RESERVED page-type field
+// (@nuxt/content's rendered body excerpt) and silently nulls a frontmatter
+// string of the same name.
 const news = defineCollection({
-  type: 'data',
-  source: 'news/**/*.{md,yml,yaml}',
+  type: 'page',
+  source: 'news/**/*.md',
   schema: z.object({
     locale,
     slug: z.string(),
     title: z.string(),
-    excerpt: z.string().optional(),
+    summary: z.string().optional(),
     image: z.string().optional(),
     publishedAt: z.string(),
     to: z.string().optional(),
@@ -156,7 +168,14 @@ const pages = defineCollection({
       })
       .optional(),
     stats: z
-      .array(z.object({ value: z.number(), suffix: z.string().optional(), label: z.string() }))
+      .array(
+        z.object({
+          value: z.number(),
+          prefix: z.string().optional(),
+          suffix: z.string().optional(),
+          label: z.string(),
+        }),
+      )
       .optional(),
     statsHeading: z.string().optional(),
     // Bento value-prop block (home). `accent` renders in the blurple accent.
@@ -168,6 +187,41 @@ const pages = defineCollection({
         items: z.array(
           z.object({ title: z.string(), body: z.string(), icon: z.string().optional() }),
         ),
+      })
+      .optional(),
+    // Home hero carousel copy, keyed to the component's slide configs
+    // (fincoBiz / beepWallet / loans / trust). Art, routes and timing stay
+    // component-side; editors manage the words.
+    heroSlides: z
+      .array(
+        z.object({
+          key: z.string(),
+          tab: z.string(),
+          headline: z.string(),
+          subtext: z.string(),
+        }),
+      )
+      .optional(),
+    // Beep showcase copy (home). Pills/artwork are baked images.
+    beep: z
+      .object({
+        heading: z.string(),
+        subtext: z.string(),
+        expandLead: z.string(),
+        expandRest: z.string(),
+      })
+      .optional(),
+    // FincoBiz showcase copy (home) incl. the interactive card-deck tab titles.
+    fincobiz: z
+      .object({
+        subtext: z.string(),
+        calloutHeading: z.string(),
+        calloutSubtext: z.string(),
+        cards: z.object({
+          request: z.string(),
+          receivables: z.string(),
+          eligibility: z.string(),
+        }),
       })
       .optional(),
     // Dark/light product showcase panels (Beep, FincoBiz).
@@ -215,6 +269,63 @@ const pages = defineCollection({
       .array(z.object({ id: z.string(), heading: z.string().optional(), body: z.string().optional() }))
       .optional(),
     faq: z.array(faqItem).optional(),
+    // About page structure (mirrors the former app/data/about.ts shape); only
+    // present on the `about` docs.
+    about: z
+      .object({
+        hero: z.object({ headline: z.string(), intro: z.string(), photo: z.string() }),
+        mission: z.object({
+          blocks: z.array(z.object({ badge: z.string(), heading: z.string(), body: z.string() })),
+        }),
+        values: z.object({
+          heading: z.string(),
+          subheading: z.string(),
+          items: z.array(
+            z.object({
+              title: z.string(),
+              body: z.string(),
+              align: z.enum(['left', 'center', 'right']),
+            }),
+          ),
+        }),
+        history: z.object({
+          heading: z.string(),
+          subheading: z.string(),
+          milestones: z.array(z.object({ year: z.string(), body: z.string() })),
+        }),
+        ceo: z.object({
+          headingLead: z.string(),
+          headingAccent: z.string(),
+          subheading: z.string(),
+          greetingTitle: z.string(),
+          greetingBody: z.array(z.string()),
+          tagline: z.string(),
+          signatureLabel: z.string(),
+          signatureName: z.string(),
+          portrait: z.string(),
+        }),
+        board: z.object({
+          headingLead: z.string(),
+          headingAccent: z.string(),
+          members: z.array(
+            z.object({
+              name: z.string(),
+              role: z.string(),
+              bio: z.string(),
+              photo: z.string(),
+            }),
+          ),
+        }),
+        org: z.object({
+          headingLead: z.string(),
+          headingAccent: z.string(),
+          subheading: z.string(),
+          root: z.string(),
+          ceo: z.string(),
+          departments: z.array(z.string()),
+        }),
+      })
+      .optional(),
   }),
 })
 
