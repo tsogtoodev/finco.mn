@@ -3,24 +3,32 @@
 // redirects to the first service's detail page (ordered by `order`). The "Итгэлцэл"
 // nav item therefore lands on the polished detail page. If more services are added
 // later, replace this with a real listing built against its own design.
-const { locale } = useI18n()
-const localePath = useLocalePath()
-
-const { data: first } = await useAsyncData(
-  () => `services-first-${locale.value}`,
-  () =>
-    queryCollection('services')
-      .where('locale', '=', locale.value)
-      .order('order', 'ASC')
-      .first(),
-  { watch: [locale] },
-)
-
-if (first.value?.slug) {
-  await navigateTo(localePath(`/services/${first.value.slug}`), { redirectCode: 301 })
-} else {
-  throw createError({ statusCode: 404, statusMessage: 'No services found', fatal: true })
-}
+//
+// The redirect lives in route MIDDLEWARE, not setup: a navigateTo() awaited in
+// setup cancels the in-flight navigation after the out-in page transition has
+// started, which strands the previous page in the DOM while the URL updates.
+// Middleware redirects the navigation before the page (and transition) mounts.
+definePageMeta({
+  middleware: [
+    async () => {
+      // Everything after the awaited query runs outside the Nuxt async context
+      // on the server, so grab the instance up front and re-enter it for the
+      // navigateTo/abortNavigation calls.
+      const nuxtApp = useNuxtApp()
+      const locale = nuxtApp.$i18n.locale.value
+      const first = await queryCollection('services')
+        .where('locale', '=', locale)
+        .order('order', 'ASC')
+        .first()
+      return nuxtApp.runWithContext(() => {
+        if (!first?.slug) {
+          return abortNavigation(createError({ statusCode: 404, statusMessage: 'No services found' }))
+        }
+        return navigateTo(nuxtApp.$localePath(`/services/${first.slug}`), { redirectCode: 301 })
+      })
+    },
+  ],
+})
 </script>
 
 <template>

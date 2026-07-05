@@ -6,7 +6,12 @@
 // opacity:0 on SSR (see app/assets/css/main.css).
 import type { ValueItem } from '~/composables/useAboutContent'
 
-const props = defineProps<{ heading: string; subheading: string; items: ValueItem[] }>()
+const props = defineProps<{
+  headingLead: string
+  headingAccent: string
+  subheading: string
+  items: ValueItem[]
+}>()
 
 const rowTop = computed(() => props.items.slice(0, 3))
 const rowBottom = computed(() => props.items.slice(3))
@@ -18,7 +23,7 @@ const rowBottom = computed(() => props.items.slice(3))
     <div class="mx-auto max-w-7xl px-4 pb-8 pt-20 sm:pt-24 lg:pt-28">
       <div class="hero-rise flex flex-col items-center gap-3 text-center">
         <h2 class="max-w-[750px] font-display text-3xl font-medium leading-tight text-[#141414] sm:text-4xl lg:text-[36px] lg:leading-9">
-          {{ heading }}
+          {{ headingLead }}<span class="text-[#2de0c6]">{{ headingAccent }}</span>
         </h2>
         <p class="max-w-[1012px] text-lg font-extralight leading-7 text-[rgba(0,0,0,0.6)] sm:text-xl lg:text-[20px] lg:leading-7">
           {{ subheading }}

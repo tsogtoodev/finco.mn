@@ -16,9 +16,15 @@ useSeoMeta({
   <div v-if="c">
     <AboutHero :headline="c.hero.headline" :intro="c.hero.intro" :photo="c.hero.photo" />
     <AboutMission :blocks="c.mission.blocks" />
-    <AboutValues :heading="c.values.heading" :subheading="c.values.subheading" :items="c.values.items" />
+    <AboutValues
+      :heading-lead="c.values.headingLead"
+      :heading-accent="c.values.headingAccent"
+      :subheading="c.values.subheading"
+      :items="c.values.items"
+    />
     <AboutTimeline
-      :heading="c.history.heading"
+      :heading-lead="c.history.headingLead"
+      :heading-accent="c.history.headingAccent"
       :subheading="c.history.subheading"
       :milestones="c.history.milestones"
     />

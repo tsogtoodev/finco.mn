@@ -293,7 +293,8 @@ const pages = defineCollection({
           blocks: z.array(z.object({ badge: z.string(), heading: z.string(), body: z.string() })),
         }),
         values: z.object({
-          heading: z.string(),
+          headingLead: z.string(),
+          headingAccent: z.string(),
           subheading: z.string(),
           items: z.array(
             z.object({
@@ -304,7 +305,8 @@ const pages = defineCollection({
           ),
         }),
         history: z.object({
-          heading: z.string(),
+          headingLead: z.string(),
+          headingAccent: z.string(),
           subheading: z.string(),
           milestones: z.array(z.object({ year: z.string(), body: z.string() })),
         }),

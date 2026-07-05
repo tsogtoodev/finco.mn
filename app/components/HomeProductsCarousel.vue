@@ -3,10 +3,14 @@
 // ("main") card is the largest and is pinned to the first-item slot; every other
 // card shrinks with its distance from the active one, so it reads as a descending
 // staircase on BOTH sides. Prev/next step exactly one card at a time.
-const props = defineProps<{
-  products: { slug: string; title: string; summary: string; image: string }[]
-  label?: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    products: { slug: string; title: string; summary: string; image: string }[]
+    label?: string
+    basePath?: string
+  }>(),
+  { basePath: '/products' },
+)
 const { t } = useI18n()
 
 const GAP = 51
@@ -109,12 +113,37 @@ function measure() {
   rootW.value = rootEl.value.clientWidth
   edgePad.value = Number.parseFloat(getComputedStyle(trackEl.value).paddingLeft) || 0
 }
+// Staggered card reveal (see .carousel-reveal in main.css): SSR/no-JS renders
+// the cards visible; after hydration they hide (`hydrated`) until the carousel
+// enters the viewport, then rise in one by one via inline animation-delay.
+const hydrated = ref(false)
+const revealed = ref(false)
+let revealObserver: IntersectionObserver | null = null
+const revealDelay = (i: number) => `${Math.min(i, 6) * 80}ms`
+
 onMounted(() => {
   measure()
   resizeObserver = new ResizeObserver(measure)
   if (rootEl.value) resizeObserver.observe(rootEl.value)
+
+  if (!('IntersectionObserver' in window)) {
+    revealed.value = true
+    return
+  }
+  hydrated.value = true
+  revealObserver = new IntersectionObserver((entries) => {
+    if (entries.some((e) => e.isIntersecting)) {
+      revealed.value = true
+      revealObserver?.disconnect()
+      revealObserver = null
+    }
+  }, { threshold: 0.15 })
+  if (rootEl.value) revealObserver.observe(rootEl.value)
 })
-onBeforeUnmount(() => resizeObserver?.disconnect())
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  revealObserver?.disconnect()
+})
 
 // Cards before the active one hang left of the main slot; overflow when they
 // reach past the viewport's left edge. Before mount (rootW=0) fall back to the
@@ -171,9 +200,10 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
           :title="p.title"
           :summary="p.summary"
           :image="p.image"
-          :to="`/products/${p.slug}`"
-          :style="{ width: `${cardW(Math.abs(i - active))}px`, height: `${cardH(Math.abs(i - active))}px`, minHeight: 0 }"
+          :to="`${basePath}/${p.slug}`"
+          :style="{ width: `${cardW(Math.abs(i - active))}px`, height: `${cardH(Math.abs(i - active))}px`, minHeight: 0, animationDelay: revealed ? revealDelay(i) : undefined }"
           class="shrink-0 transition-[width,height] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+          :class="revealed ? 'carousel-reveal' : hydrated ? 'carousel-pre' : ''"
         />
       </div>
 

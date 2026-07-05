@@ -47,7 +47,7 @@ About Page
 [X] AboutCEOMessage-n letter hesegiig A4 hemjeetei bolgoh
 [X] AboutCEOMessage-n ariin letter hesegiig scroll doj viewport-n orj irhed smooth tilt hiih
 [X] AboutBoard -n description hover hiihed delgerengui description garch irdeg bolgoh
-[ ] AboutOrg deer chart-g zuragaar oruulah
+[ ] AboutValues has been redesigned, implement it.
 
 Detail Page
 [ ] Hero section dotorh buh element-n size-g bagasgah (figma deerh zaasan size uudiin daguu yuvah)
@@ -59,8 +59,8 @@ Detail Page
 [X] Tab bolon tab content-g smooth transition tavih
 [X] Hero bolon content hoorondiin zaig 2/1 -r hasah
 [ ] Hero dotorh tootsoolol-n card-n blur background-g yag zuv bolgoh
-[ ] RelatedProducts-n carousel home deer baidag shig carousel effect baih estoi
+[X] RelatedProducts-n carousel home deer baidag shig carousel effect baih estoi
 
 Services Page
-[ ] Hero section deer button baihgui baih estoi
+[X] Hero section deer button baihgui baih estoi
 [X] RelatedServices section title-n font weight zursun baigaag zasah

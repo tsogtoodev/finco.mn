@@ -129,6 +129,37 @@ body:has(.announcement-bar.is-collapsing) {
   }
 }
 
+/* Carousel card reveal — staggered fade-up for carousel items, same CSS-driven
+   rationale as hero-rise. The carousel component gates it with an
+   IntersectionObserver: cards render visible for SSR/no-JS, hide only after
+   hydration, then get this class (plus an inline `animation-delay` per index)
+   when the carousel scrolls into view. Because CSS animations re-run on freshly
+   mounted nodes, swapping the card list (audience toggle) replays the stagger. */
+@keyframes carousel-rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.carousel-reveal {
+  animation: carousel-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.carousel-pre {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .carousel-reveal {
+    animation: none;
+  }
+  .carousel-pre {
+    opacity: 1;
+  }
+}
+
 /* Nav mega-menu panel + dimming scrim open/close. CSS @keyframes (compositor-
    driven) rather than motion-v / Vue <Transition> — JS/rAF-driven presence
    animations can strand a toggling panel mid-opacity, same reason the hero uses a
@@ -364,17 +395,24 @@ rising slightly. Header/footer live in the layout so they stay put; the
 layout-* classes only fire on default ↔ minimal layout switches. */
 
 :root {
-  --page-dur: 250ms;
+  /* Asymmetric like the dropdowns: leave quickly, enter with more presence. */
+  --page-enter-dur: 300ms;
+  --page-leave-dur: 180ms;
   --page-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .page-enter-active,
+.layout-enter-active {
+  transition:
+    opacity var(--page-enter-dur) var(--page-ease),
+    transform var(--page-enter-dur) var(--page-ease);
+}
+
 .page-leave-active,
-.layout-enter-active,
 .layout-leave-active {
   transition:
-    opacity var(--page-dur) var(--page-ease),
-    transform var(--page-dur) var(--page-ease);
+    opacity var(--page-leave-dur) var(--page-ease),
+    transform var(--page-leave-dur) var(--page-ease);
 }
 
 .page-enter-from,

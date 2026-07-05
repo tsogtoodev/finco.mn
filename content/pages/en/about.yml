@@ -23,7 +23,8 @@ about:
         body: Grounded in technology and innovation, we deliver stable, accessible
           financial solutions to every customer.
   values:
-    heading: Our values
+    headingLead: "Our "
+    headingAccent: values
     subheading: We bring financial solutions together in one place and power your
       next stage of growth.
     items:
@@ -47,7 +48,8 @@ about:
           lasting, growing relationships.
         align: right
   history:
-    heading: Our journey
+    headingLead: "Our "
+    headingAccent: journey
     subheading: The customer is our centre. We deliver reliable, innovative, smart
       solutions with transparency and trust, building today's and tomorrow's
       growth through financial opportunity.

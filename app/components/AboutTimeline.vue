@@ -4,7 +4,12 @@
 // band whose lavender tint deepens down the page (#fbfbfb → #f7f6ff → #efeefd).
 import type { Milestone } from '~/composables/useAboutContent'
 
-const props = defineProps<{ heading: string; subheading: string; milestones: Milestone[] }>()
+const props = defineProps<{
+  headingLead: string
+  headingAccent: string
+  subheading: string
+  milestones: Milestone[]
+}>()
 
 // Full-bleed band tint per row, deepening down the section (Figma). Rows past
 // the last tint clamp to the deepest one.
@@ -26,7 +31,9 @@ const rows = computed(() => {
     <!-- pt-8 (32px) pairs with AboutValues' pb-8 for a fixed 64px gap between the two sections. -->
     <div class="mx-auto max-w-7xl px-4 pt-8">
       <MotionReveal class="max-w-5xl">
-        <h2 class="font-display text-3xl font-medium text-[#141414] sm:text-4xl">{{ heading }}</h2>
+        <h2 class="font-display text-3xl font-medium text-[#141414] sm:text-4xl">
+          {{ headingLead }}<span class="text-[#4c41d8]">{{ headingAccent }}</span>
+        </h2>
         <p class="mt-6 max-w-5xl text-lg font-extralight leading-7 text-[rgba(0,0,0,0.6)] sm:text-xl">
           {{ subheading }}
         </p>

@@ -50,6 +50,18 @@
     "next": "Next",
     "homeBreadcrumb": "Home"
   },
+  "errorPage": {
+    "notFound": {
+      "title": "Page not found",
+      "subtitle": "The page you're looking for may have been moved, renamed or no longer exists."
+    },
+    "error": {
+      "title": "Something went wrong",
+      "subtitle": "An unexpected error occurred. Please try again in a moment."
+    },
+    "backHome": "Back to home",
+    "quickLinksLabel": "Popular pages"
+  },
   "announcement": {
     "text": "Beep Wallet - New loan terms are live",
     "cta": "Learn more",

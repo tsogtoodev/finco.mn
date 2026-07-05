@@ -104,12 +104,37 @@ function measure() {
   rootW.value = rootEl.value.clientWidth
   edgePad.value = Number.parseFloat(getComputedStyle(trackEl.value).paddingLeft) || 0
 }
+// Staggered card reveal (see .carousel-reveal in main.css): SSR/no-JS renders
+// the cards visible; after hydration they hide (`hydrated`) until the carousel
+// enters the viewport, then rise in one by one via inline animation-delay.
+const hydrated = ref(false)
+const revealed = ref(false)
+let revealObserver: IntersectionObserver | null = null
+const revealDelay = (i: number) => `${Math.min(i, 6) * 80}ms`
+
 onMounted(() => {
   measure()
   resizeObserver = new ResizeObserver(measure)
   if (rootEl.value) resizeObserver.observe(rootEl.value)
+
+  if (!('IntersectionObserver' in window)) {
+    revealed.value = true
+    return
+  }
+  hydrated.value = true
+  revealObserver = new IntersectionObserver((entries) => {
+    if (entries.some((e) => e.isIntersecting)) {
+      revealed.value = true
+      revealObserver?.disconnect()
+      revealObserver = null
+    }
+  }, { threshold: 0.15 })
+  if (rootEl.value) revealObserver.observe(rootEl.value)
 })
-onBeforeUnmount(() => resizeObserver?.disconnect())
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  revealObserver?.disconnect()
+})
 
 // Before mount (rootW=0) fall back to the plain index checks so SSR matches
 // the common case.
@@ -156,14 +181,15 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
         :style="{ columnGap: `${GAP}px`, transform: `translateX(${trackOffset + dragX}px)` }"
       >
         <NewsCard
-          v-for="n in items"
+          v-for="(n, i) in items"
           :key="n.slug"
           :title="n.title"
           :excerpt="n.excerpt"
           :image="n.image"
           :to="n.to"
-          :style="{ width: `${CARD_W}px`, height: `${CARD_H}px` }"
+          :style="{ width: `${CARD_W}px`, height: `${CARD_H}px`, animationDelay: revealed ? revealDelay(i) : undefined }"
           class="shrink-0 overflow-hidden"
+          :class="revealed ? 'carousel-reveal' : hydrated ? 'carousel-pre' : ''"
         />
       </div>
 
