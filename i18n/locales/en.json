@@ -59,8 +59,7 @@
       "title": "Something went wrong",
       "subtitle": "An unexpected error occurred. Please try again in a moment."
     },
-    "backHome": "Back to home",
-    "quickLinksLabel": "Popular pages"
+    "backHome": "Home page"
   },
   "announcement": {
     "text": "Beep Wallet - New loan terms are live",

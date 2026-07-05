@@ -46,7 +46,7 @@ About Page
 [X] AboutCEOMessage-n letter hesegiig A4 hemjeetei bolgoh
 [X] AboutCEOMessage-n ariin letter hesegiig scroll doj viewport-n orj irhed smooth tilt hiih
 [X] AboutBoard -n description hover hiihed delgerengui description garch irdeg bolgoh
-[ ] AboutValues has been redesigned, implement it.
+[X] AboutValues has been redesigned, implement it.
 
 Detail Page
 [ ] Hero section dotorh buh element-n size-g bagasgah (figma deerh zaasan size uudiin daguu yuvah)

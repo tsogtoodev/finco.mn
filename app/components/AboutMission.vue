@@ -44,7 +44,7 @@ defineProps<{ blocks: BadgeBlock[] }>()
         alt=""
         class="absolute left-0 top-0 h-full w-[59%] max-w-[849px] object-fill"
       >
-      <div class="pointer-events-auto absolute bottom-0 right-0 translate-x-1/3 translate-y-1/5 scale-120">
+      <div class="pointer-events-auto absolute bottom-0 right-0 translate-x-1/3 translate-y-1/5">
         <ClientOnly>
           <SplineScene
             scene="https://prod.spline.design/5QI6kS8kPdn7j7Y3/scene.splinecode"
