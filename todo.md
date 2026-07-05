@@ -1,4 +1,3 @@
-[ ] about us page (value section) will be redesigned
 [ ] about us page (structure section) will be redesigned
 [ ] news list & news detail page is missing
 [ ] report list & report detail page is missing
@@ -43,7 +42,7 @@ About Page
 [ ] AboutMission section-g buten yanzlah
 [X] AboutValues bolon AboutTimeline hoorondiin zaig 64px bolgoh
 [X] AboutTimeline -n font-size, line-height, padding -g negen jigd bagasgah
-[ ] AboutMission, AboutValues, AboutTimeline, AboutCEOMessage uudiin title deer ungu dutuu bn
+[X] AboutMission, AboutValues, AboutTimeline, AboutCEOMessage uudiin title deer ungu dutuu bn
 [X] AboutCEOMessage-n letter hesegiig A4 hemjeetei bolgoh
 [X] AboutCEOMessage-n ariin letter hesegiig scroll doj viewport-n orj irhed smooth tilt hiih
 [X] AboutBoard -n description hover hiihed delgerengui description garch irdeg bolgoh

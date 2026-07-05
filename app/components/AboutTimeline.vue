@@ -29,7 +29,7 @@ const rows = computed(() => {
 <template>
   <section class="relative overflow-hidden bg-[#fbfbfb]">
     <!-- pt-8 (32px) pairs with AboutValues' pb-8 for a fixed 64px gap between the two sections. -->
-    <div class="mx-auto max-w-7xl px-4 pt-8">
+    <div class="mx-auto max-w-7xl px-4 pt-8 sm:pt-16">
       <MotionReveal class="max-w-5xl">
         <h2 class="font-display text-3xl font-medium text-[#141414] sm:text-4xl">
           {{ headingLead }}<span class="text-[#4c41d8]">{{ headingAccent }}</span>
