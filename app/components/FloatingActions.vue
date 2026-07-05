@@ -11,33 +11,106 @@ const showCalculator = ref(false)
 </script>
 
 <template>
-  <div
-    class="fixed bottom-6 right-6 z-50 flex flex-col items-center justify-end gap-3 rounded-full border border-[#e2e8eb] bg-[#f6f6ff] p-2 drop-shadow-[0_0_10px_rgba(0,0,0,0.05)]"
-  >
-    <!-- Calculator FAB -->
-    <button
-      type="button"
-      :aria-label="t('fab.calculator.label')"
-      class="fab-btn cursor-pointer"
-      @click="showCalculator = true"
-    >
-      <Icon name="f:calculator" class="text-[24px]" />
-    </button>
+  <div class="fixed bottom-6 right-6 z-50">
+    <!-- Liquid-glass pill (client-only: the effect relies on backdrop-filter +
+         SVG feature detection, so SSR would hydration-mismatch). -->
+    <ClientOnly>
+      <!-- Glass pill materialises on mount: scale + fade up from the corner. -->
+      <div class="fab-reveal">
+        <GlassSurface :width="64" :height="124" :border-radius="9999">
+        <div class="fab-buttons flex flex-col items-center justify-end gap-3">
+          <!-- Calculator FAB -->
+          <button
+            type="button"
+            :aria-label="t('fab.calculator.label')"
+            class="fab-btn cursor-pointer"
+            @click="showCalculator = true"
+          >
+            <Icon name="f:calculator" class="text-[24px]" />
+          </button>
 
-    <!-- Messenger FAB: contact link (TODO: swap for an in-app chatbot panel) -->
-    <NuxtLink
-      :to="localePath('/contact')"
-      :aria-label="t('fab.chat.label')"
-      class="fab-btn"
-    >
-      <Icon name="f:messenger" class="text-[24px]" />
-    </NuxtLink>
+          <!-- Messenger FAB: contact link (TODO: swap for an in-app chatbot panel) -->
+          <NuxtLink
+            :to="localePath('/contact')"
+            :aria-label="t('fab.chat.label')"
+            class="fab-btn"
+          >
+            <Icon name="f:messenger" class="text-[24px]" />
+          </NuxtLink>
+        </div>
+        </GlassSurface>
+      </div>
+    </ClientOnly>
 
     <LoanCalculatorDialog v-model:open="showCalculator" />
   </div>
 </template>
 
 <style scoped>
+/* Staggered entrance (CSS @keyframes, not a JS toggle, so nothing strands on the
+   ClientOnly node; `backwards` holds each element hidden through its delay — no
+   first-paint flash — and leaves no lingering transform, keeping the glass
+   backdrop-filter intact):
+     1. wait 0.9s after mount,
+     2. the glass pill rises out of the corner and settles with one soft
+        overshoot (0.55s),
+     3. the buttons follow with a quick bottom-up stagger — the one nearest the
+        pill's origin corner first — overlapping the settle. */
+.fab-reveal {
+  animation: fab-rise-in 0.55s cubic-bezier(0.22, 1.2, 0.36, 1) 0.9s backwards;
+  transform-origin: bottom right;
+}
+
+.fab-buttons > * {
+  animation: fab-item-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.fab-buttons > *:nth-child(1) {
+  animation-delay: 1.3s;
+}
+.fab-buttons > *:nth-child(2) {
+  animation-delay: 1.18s;
+}
+
+@keyframes fab-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fab-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fab-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fab-reveal {
+    animation: fab-fade-in 0.3s ease 1s backwards;
+  }
+  .fab-buttons > * {
+    animation: fab-fade-in 0.3s ease 1.3s backwards;
+  }
+}
+
 /* Button component states (Figma 256:7906): idle → hover → focus/click */
 .fab-btn {
   display: grid;
