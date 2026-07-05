@@ -22,22 +22,22 @@ Home Page
 [X] home-n hero bolon company logo section hoorondiin zaig bagasgaj zasah
 [X] home-n hero dotorh item uudaas beep item ni zuvhun nogoon ungutei button-tai baina, busad ni finco giin tsenher unguur yuvna.
 [X] HomeStats section 1920x1080 deer evdreltei haragdjin
-[ ] HomeProducts -n card-n description-g static 3 line-tai bolgoh
-[ ] HomeProducts -n card-n description-g line-height 24px bolgoh
-[ ] HomeProducts -n card-n title -n line-height -g 28px bolgoh
-[ ] HomeProducts -n carousel-g drag hiij boldog bolgoh
+[X] HomeProducts -n card-n description-g static 3 line-tai bolgoh
+[X] HomeProducts -n card-n description-g line-height 24px bolgoh
+[X] HomeProducts -n card-n title -n line-height -g 28px bolgoh
+[X] HomeProducts -n carousel-g drag hiij boldog bolgoh
 [ ] HomeProducts -n zuun/baruun tald Next button oruulah
 [X] HomeBeep deer hover hiihed footer section reveal hiij garch ireh
 [X] HomeBeep -n App tatah button hover/click hiihed QR Code-toi Popover gargaj ireh
 [X] HomeBeep -n Delgerengui button deer beep.finco.mn linkleh
-[ ] HomeFinco -n 5 second tutamd auto soligddog bailgah
-[ ] HomeFinco -n card uudiin unduriig bagasgah (300px havitsaa)
-[ ] HomeNews -n card description hesegiig 3 line bolgoh
-[ ] HomeNews -n card title -g 1 line bolgoh
-[ ] HomeNews -n card image hesegiig togtmol size-tai bolgoh
-[ ] HomeContactCTA section spline-g zoom out hiine
-[ ] SiteFooter-n legal strip deerees ni 48px -n zai avna
-[ ] SiteFooter-n legal strip dooroos ni 48px -n zai avna
+[X] HomeFinco -n 5 second tutamd auto soligddog bailgah
+[X] HomeFinco -n card uudiin unduriig bagasgah (300px havitsaa)
+[X] HomeNews -n card description hesegiig 3 line bolgoh
+[X] HomeNews -n card title -g 1 line bolgoh
+[X] HomeNews -n card image hesegiig togtmol size-tai bolgoh
+[X] HomeContactCTA section spline-g zoom out hiine
+[X] SiteFooter-n legal strip deerees ni 48px -n zai avna
+[X] SiteFooter-n legal strip dooroos ni 48px -n zai avna
 
 About Page
 [ ] AboutMission section-g buten yanzlah

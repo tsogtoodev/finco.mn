@@ -20,13 +20,73 @@ watch(() => props.items.map((n) => n.slug).join('|'), () => { active.value = 0 }
 const count = computed(() => props.items.length)
 const atStart = computed(() => active.value <= 0)
 const atEnd = computed(() => active.value >= count.value - 1)
+const clamp = (n: number) => Math.min(Math.max(n, 0), count.value - 1)
 function go(dir: 1 | -1) {
-  active.value = Math.min(Math.max(active.value + dir, 0), count.value - 1)
+  active.value = clamp(active.value + dir)
 }
 
 // Shift the track left so the active card's leading edge lands on the main slot
 // (the track's padding-left = --carousel-edge places that slot).
 const trackOffset = computed(() => -active.value * (CARD_W + GAP))
+
+// Pointer drag with deferred capture: a press alone does nothing — we only
+// engage drag (and capture the pointer, disabling the snap transition) once the
+// finger crosses DRAG_THRESHOLD. So a tap never becomes a drag and flows through
+// as a normal click that navigates the card link; only a real drag suppresses
+// that trailing click and steps by however many card-widths were dragged.
+const DRAG_THRESHOLD = 8
+const STEP = CARD_W + GAP // one card width
+const dragging = ref(false) // past threshold: track follows the finger
+const dragX = ref(0)
+let pressing = false // pointer down, not yet (maybe never) a drag
+let suppressClick = false // last gesture was a drag → cancel its click
+let startX = 0
+let pointerId: number | null = null
+
+function onPointerDown(e: PointerEvent) {
+  if (e.pointerType === 'mouse' && e.button !== 0) return
+  pressing = true
+  dragging.value = false
+  dragX.value = 0
+  startX = e.clientX
+  pointerId = e.pointerId
+}
+function onPointerMove(e: PointerEvent) {
+  if (!pressing) return
+  const dx = e.clientX - startX
+  if (!dragging.value) {
+    if (Math.abs(dx) < DRAG_THRESHOLD) return // still within tap tolerance
+    dragging.value = true
+    if (pointerId != null) {
+      try { (e.currentTarget as HTMLElement).setPointerCapture(pointerId) } catch { /* synthetic/invalid pointer */ }
+    }
+  }
+  dragX.value = dx
+}
+function onPointerUp(e: PointerEvent) {
+  if (!pressing) return
+  pressing = false
+  const wasDragging = dragging.value
+  const dx = dragX.value
+  dragging.value = false
+  dragX.value = 0
+  if (pointerId != null) {
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(pointerId) } catch { /* not captured */ }
+    pointerId = null
+  }
+  if (!wasDragging) return // a tap — let the click navigate the card
+  suppressClick = true // a drag — cancel the click that follows
+  const steps = Math.round(-dx / STEP)
+  if (steps !== 0) active.value = clamp(active.value + steps)
+  else if (Math.abs(dx) > 60) active.value = clamp(active.value + (dx < 0 ? 1 : -1))
+}
+function onClickCapture(e: MouseEvent) {
+  if (suppressClick) {
+    e.preventDefault()
+    e.stopPropagation()
+    suppressClick = false
+  }
+}
 
 const progress = computed(() => (count.value <= 1 ? 1 : active.value / (count.value - 1)))
 
@@ -37,18 +97,26 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
 <template>
   <div>
     <div
-      class="relative overflow-hidden"
+      class="relative touch-pan-y overflow-hidden select-none"
+      :class="dragging ? 'cursor-grabbing' : 'cursor-grab'"
       role="group"
       :aria-label="label"
       tabindex="0"
       @keydown.left.prevent="go(-1)"
       @keydown.right.prevent="go(1)"
+      @pointerdown="onPointerDown"
+      @pointermove="onPointerMove"
+      @pointerup="onPointerUp"
+      @pointercancel="onPointerUp"
+      @click.capture="onClickCapture"
+      @dragstart.prevent
     >
       <!-- Fixed card height keeps the row uniform (news text lengths vary);
            overflow-hidden clips any overflow. -->
       <div
-        class="flex h-[420px] items-start pl-[var(--carousel-edge,1.5rem)] transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
-        :style="{ columnGap: `${GAP}px`, transform: `translateX(${trackOffset}px)` }"
+        class="flex h-[420px] items-start pl-[var(--carousel-edge,1.5rem)] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+        :class="dragging ? '' : 'transition-transform duration-[600ms]'"
+        :style="{ columnGap: `${GAP}px`, transform: `translateX(${trackOffset + dragX}px)` }"
       >
         <NewsCard
           v-for="n in items"

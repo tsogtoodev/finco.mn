@@ -35,6 +35,32 @@ function promote(id: CardId) {
   if (order.value[0] === id) return
   order.value = [id, ...order.value.filter((c) => c !== id)]
 }
+
+// Auto-advance: every 5s bring the back card forward so the deck cycles on its
+// own. Any manual click restarts the timer; pointer hover pauses it so users can
+// read the peeked card, and it stops entirely off-screen / on unmount.
+const AUTO_MS = 5000
+let timer: ReturnType<typeof setInterval> | null = null
+function advance() {
+  const back = order.value[order.value.length - 1]
+  if (back) promote(back)
+}
+function stopAuto() {
+  if (timer) {
+    clearInterval(timer)
+    timer = null
+  }
+}
+function startAuto() {
+  stopAuto()
+  timer = setInterval(advance, AUTO_MS)
+}
+function onPromote(id: CardId) {
+  promote(id)
+  startAuto()
+}
+onMounted(startAuto)
+onBeforeUnmount(stopAuto)
 </script>
 
 <template>
@@ -54,21 +80,25 @@ function promote(id: CardId) {
         </AppButton>
       </MotionReveal>
 
-      <MotionReveal :delay="0.1" class="relative mt-24">
+      <MotionReveal :delay="0.1" class="relative mt-16">
         <div class="[container-type:inline-size]">
           <!-- headroom for the two peeked headers above the front card -->
-          <div class="biz-stack relative pt-[max(8cqw,88px)]">
+          <div
+            class="biz-stack relative pt-[max(8cqw,88px)]"
+            @pointerenter="stopAuto"
+            @pointerleave="startAuto"
+          >
             <div class="relative">
               <article
                 v-for="card in cards"
                 :key="card.id"
-                class="biz-card flex flex-col overflow-hidden rounded-xl bg-white shadow-[0_28px_70px_-34px_rgba(23,16,84,0.3)] ring-1 ring-black/[0.06] [will-change:transform]"
+                class="biz-card flex h-[450px] flex-col overflow-hidden rounded-xl bg-white shadow-[0_28px_70px_-34px_rgba(23,16,84,0.3)] ring-1 ring-black/[0.06] [will-change:transform]"
                 :class="[
                   depth(card.id) === 0 ? 'is-front' : '',
                   card.id === 'request' ? 'relative' : 'absolute inset-0',
                 ]"
                 :style="{ '--depth': depth(card.id), zIndex: 3 - depth(card.id) }"
-                @click="promote(card.id)"
+                @click="onPromote(card.id)"
               >
                 <!-- browser-chrome header: the clickable, translatable tab -->
                 <button

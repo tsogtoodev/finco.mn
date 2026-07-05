@@ -30,8 +30,14 @@ const props = withDefaults(
      * the time it fades in. 0 = reveal as soon as it loads (default).
      */
     revealDelay?: number
+    /**
+     * Camera zoom applied via the Spline runtime after the scene loads.
+     * < 1 zooms out (scene smaller/farther), > 1 zooms in. 1 = the scene's
+     * exported camera, untouched (default).
+     */
+    zoom?: number
   }>(),
-  { rootMargin: 200, noDrag: false, revealDelay: 0 },
+  { rootMargin: 200, noDrag: false, revealDelay: 0, zoom: 1 },
 )
 
 const emit = defineEmits<{ load: [] }>()
@@ -71,6 +77,7 @@ async function loadScene() {
     const { Application } = await import('@splinetool/runtime')
     app.value = new Application(canvas.value)
     await app.value.load(props.scene)
+    if (props.zoom !== 1) app.value.setZoom(props.zoom)
     loaded.value = true
     // Delay the fade-in without delaying the load/render itself.
     if (props.revealDelay > 0) revealTimer = setTimeout(() => { revealed.value = true }, props.revealDelay)

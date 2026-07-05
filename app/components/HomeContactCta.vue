@@ -9,10 +9,10 @@ const { t } = useI18n()
     <!-- Far-left blue glow -->
     <div class="pointer-events-none absolute inset-y-0 left-0 w-1/3 [background:radial-gradient(60%_80%_at_0%_50%,rgba(33,71,132,0.35),transparent_70%)]" />
     <div
-      class="absolute right-0 top-1/2 hidden h-[100%] w-[65%] max-w-[820px] -translate-y-1/2 md:block"
+      class="absolute right-0 top-1/2 hidden h-[100%] w-[80%] max-w-[1040px] -translate-y-1/2 md:block"
     >
       <ClientOnly>
-        <SplineScene scene="https://prod.spline.design/rAfqlL9pnx29yw5P/scene.splinecode" no-drag />
+        <SplineScene scene="https://prod.spline.design/rAfqlL9pnx29yw5P/scene.splinecode" no-drag :zoom="2" />
         <template #fallback>
           <NuxtImg
             src="/images/home/contact-cards.png"

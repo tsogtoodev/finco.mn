@@ -44,10 +44,10 @@ const to = computed(
       <div v-else class="size-full bg-gradient-to-br from-primary/15 via-accent/10 to-teal/15" />
     </div>
     <div class="flex flex-col gap-3">
-      <h3 class="font-display text-lg font-medium leading-snug text-black/90 transition-colors group-hover:text-primary">
+      <h3 class="truncate font-display text-lg font-medium leading-snug text-black/90 transition-colors group-hover:text-primary">
         {{ title }}
       </h3>
-      <p v-if="excerpt" class="text-base font-extralight leading-6 text-black/60">{{ excerpt }}</p>
+      <p v-if="excerpt" class="line-clamp-3 text-base font-extralight leading-6 text-black/60">{{ excerpt }}</p>
     </div>
   </component>
 </template>

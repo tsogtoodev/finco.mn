@@ -46,8 +46,8 @@ const to = computed(() =>
 
     <div class="relative flex flex-col gap-3 p-6 pb-7">
       <!-- <span v-if="category" class="text-xs font-medium text-teal">{{ category }}</span> -->
-      <h3 class="font-display text-xl font-extrabold leading-9 text-white">{{ title }}</h3>
-      <p v-if="summary" class="text-[15px] font-light leading-relaxed text-white/70">{{ summary }}</p>
+      <h3 class="font-display text-xl font-extrabold leading-7 text-white">{{ title }}</h3>
+      <p v-if="summary" class="line-clamp-3 text-[15px] font-light leading-6 text-white/70">{{ summary }}</p>
       <!-- On hover the row expands 0fr→1fr; because the card is justify-end, the
            title/subtitle lift as the "learn more" button reveals below them. -->
       <div class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out group-hover:grid-rows-[1fr] motion-reduce:transition-none">

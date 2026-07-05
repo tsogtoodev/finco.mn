@@ -21,8 +21,68 @@ watch(() => props.products.map((p) => p.slug).join('|'), () => { active.value = 
 const count = computed(() => props.products.length)
 const atStart = computed(() => active.value <= 0)
 const atEnd = computed(() => active.value >= count.value - 1)
+const clamp = (n: number) => Math.min(Math.max(n, 0), count.value - 1)
 function go(dir: 1 | -1) {
-  active.value = Math.min(Math.max(active.value + dir, 0), count.value - 1)
+  active.value = clamp(active.value + dir)
+}
+
+// Pointer drag with deferred capture: a press alone does nothing — we only
+// engage drag (and capture the pointer, disabling the snap transition) once the
+// finger crosses DRAG_THRESHOLD. So a tap never becomes a drag and flows through
+// as a normal click that navigates the card link; only a real drag suppresses
+// that trailing click and steps by however many card-widths were dragged.
+const DRAG_THRESHOLD = 8
+const STEP = cardW(0) + GAP // one active-card width
+const dragging = ref(false) // past threshold: track follows the finger
+const dragX = ref(0)
+let pressing = false // pointer down, not yet (maybe never) a drag
+let suppressClick = false // last gesture was a drag → cancel its click
+let startX = 0
+let pointerId: number | null = null
+
+function onPointerDown(e: PointerEvent) {
+  if (e.pointerType === 'mouse' && e.button !== 0) return
+  pressing = true
+  dragging.value = false
+  dragX.value = 0
+  startX = e.clientX
+  pointerId = e.pointerId
+}
+function onPointerMove(e: PointerEvent) {
+  if (!pressing) return
+  const dx = e.clientX - startX
+  if (!dragging.value) {
+    if (Math.abs(dx) < DRAG_THRESHOLD) return // still within tap tolerance
+    dragging.value = true
+    if (pointerId != null) {
+      try { (e.currentTarget as HTMLElement).setPointerCapture(pointerId) } catch { /* synthetic/invalid pointer */ }
+    }
+  }
+  dragX.value = dx
+}
+function onPointerUp(e: PointerEvent) {
+  if (!pressing) return
+  pressing = false
+  const wasDragging = dragging.value
+  const dx = dragX.value
+  dragging.value = false
+  dragX.value = 0
+  if (pointerId != null) {
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(pointerId) } catch { /* not captured */ }
+    pointerId = null
+  }
+  if (!wasDragging) return // a tap — let the click navigate the card
+  suppressClick = true // a drag — cancel the click that follows
+  const steps = Math.round(-dx / STEP)
+  if (steps !== 0) active.value = clamp(active.value + steps)
+  else if (Math.abs(dx) > 60) active.value = clamp(active.value + (dx < 0 ? 1 : -1))
+}
+function onClickCapture(e: MouseEvent) {
+  if (suppressClick) {
+    e.preventDefault()
+    e.stopPropagation()
+    suppressClick = false
+  }
 }
 
 // Shift the track left so the active card's leading edge lands on the main slot
@@ -42,19 +102,27 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
 <template>
   <div>
     <div
-      class="relative overflow-hidden"
+      class="relative touch-pan-y overflow-hidden select-none"
+      :class="dragging ? 'cursor-grabbing' : 'cursor-grab'"
       role="group"
       :aria-label="label"
       tabindex="0"
       @keydown.left.prevent="go(-1)"
       @keydown.right.prevent="go(1)"
+      @pointerdown="onPointerDown"
+      @pointermove="onPointerMove"
+      @pointerup="onPointerUp"
+      @pointercancel="onPointerUp"
+      @click.capture="onClickCapture"
+      @dragstart.prevent
     >
       <!-- Height pinned to the tallest (active) card. Without this the row height
            follows the animating card sizes and dips below 470 mid-step — springing
            back and bouncing the whole centred row. Cards just centre within it. -->
       <div
-        class="flex h-[470px] items-center pl-[var(--carousel-edge,1.5rem)] transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
-        :style="{ columnGap: `${GAP}px`, transform: `translateX(${trackOffset}px)` }"
+        class="flex h-[470px] items-center pl-[var(--carousel-edge,1.5rem)] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+        :class="dragging ? '' : 'transition-transform duration-[600ms]'"
+        :style="{ columnGap: `${GAP}px`, transform: `translateX(${trackOffset + dragX}px)` }"
       >
         <ProductCard
           v-for="(p, i) in products"
@@ -81,6 +149,24 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
         class="pointer-events-none absolute inset-y-0 right-0 hidden w-[120px] backdrop-blur-[6px] md:block lg:w-[156px]"
         :style="{ maskImage: MASK_R, WebkitMaskImage: MASK_R }"
       />
+
+      <!-- Floating nav on the blurred peeks (Figma 238:9754): a frosted arrow
+           button centred over each peek. Wrapper handles position + show/hide so
+           IconButton stays untouched; pointer-events only on the 44px circle so
+           the rest of the peek still accepts drag. `.stop` keeps a button press
+           from also starting a track drag. -->
+      <div
+        v-show="!atStart"
+        class="pointer-events-none absolute left-[38px] top-1/2 z-10 hidden -translate-y-1/2 md:block lg:left-[56px]"
+      >
+        <IconButton tone="dark" direction="prev" :label="t('common.prev')" class="pointer-events-auto" @click="go(-1)" @pointerdown.stop />
+      </div>
+      <div
+        v-show="!atEnd"
+        class="pointer-events-none absolute right-[38px] top-1/2 z-10 hidden -translate-y-1/2 md:block lg:right-[56px]"
+      >
+        <IconButton tone="dark" direction="next" :label="t('common.next')" class="pointer-events-auto" @click="go(1)" @pointerdown.stop />
+      </div>
     </div>
 
     <!-- Controls (stay aligned to the heading column) -->
