@@ -90,6 +90,41 @@ function onClickCapture(e: MouseEvent) {
 
 const progress = computed(() => (count.value <= 1 ? 1 : active.value / (count.value - 1)))
 
+// Peeks/floating nav only make sense while cards are actually cut off at that
+// edge — near the end the remaining cards may fit entirely on screen, and a
+// frosted button would float over blank background. Extents are derived from
+// the fixed card size (not the DOM) so mid-transition animation can't skew them.
+const rootEl = ref<HTMLElement | null>(null)
+const trackEl = ref<HTMLElement | null>(null)
+const rootW = ref(0)
+const edgePad = ref(0)
+let resizeObserver: ResizeObserver | null = null
+function measure() {
+  if (!rootEl.value || !trackEl.value) return
+  rootW.value = rootEl.value.clientWidth
+  edgePad.value = Number.parseFloat(getComputedStyle(trackEl.value).paddingLeft) || 0
+}
+onMounted(() => {
+  measure()
+  resizeObserver = new ResizeObserver(measure)
+  if (rootEl.value) resizeObserver.observe(rootEl.value)
+})
+onBeforeUnmount(() => resizeObserver?.disconnect())
+
+// Before mount (rootW=0) fall back to the plain index checks so SSR matches
+// the common case.
+const overflowsLeft = computed(() => {
+  if (atStart.value) return false
+  if (!rootW.value) return true
+  return active.value * (CARD_W + GAP) > edgePad.value
+})
+const overflowsRight = computed(() => {
+  if (atEnd.value) return false
+  if (!rootW.value) return true
+  const visible = count.value - active.value
+  return edgePad.value + visible * CARD_W + (visible - 1) * GAP > rootW.value
+})
+
 const MASK_R = 'linear-gradient(to right, transparent, #000 60%)'
 const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
 </script>
@@ -97,6 +132,7 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
 <template>
   <div>
     <div
+      ref="rootEl"
       class="relative touch-pan-y overflow-hidden select-none"
       :class="dragging ? 'cursor-grabbing' : 'cursor-grab'"
       role="group"
@@ -114,6 +150,7 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
       <!-- Fixed card height keeps the row uniform (news text lengths vary);
            overflow-hidden clips any overflow. -->
       <div
+        ref="trackEl"
         class="flex h-[420px] items-start pl-[var(--carousel-edge,1.5rem)] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
         :class="dragging ? '' : 'transition-transform duration-[600ms]'"
         :style="{ columnGap: `${GAP}px`, transform: `translateX(${trackOffset + dragX}px)` }"
@@ -132,17 +169,35 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
 
       <!-- Blurred peeks — previous cards on the left, upcoming on the right. -->
       <div
-        v-show="!atStart"
+        v-show="overflowsLeft"
         aria-hidden="true"
         class="pointer-events-none absolute inset-y-0 left-0 hidden w-[120px] backdrop-blur-[6px] md:block lg:w-[156px]"
         :style="{ maskImage: MASK_L, WebkitMaskImage: MASK_L }"
       />
       <div
-        v-show="!atEnd"
+        v-show="overflowsRight"
         aria-hidden="true"
         class="pointer-events-none absolute inset-y-0 right-0 hidden w-[120px] backdrop-blur-[6px] md:block lg:w-[156px]"
         :style="{ maskImage: MASK_R, WebkitMaskImage: MASK_R }"
       />
+
+      <!-- Floating nav on the blurred peeks (Figma 238:9754): a frosted arrow
+           button centred over each peek. Wrapper handles position + show/hide so
+           IconButton stays untouched; pointer-events only on the 44px circle so
+           the rest of the peek still accepts drag. `.stop` keeps a button press
+           from also starting a track drag. -->
+      <div
+        v-show="overflowsLeft"
+        class="pointer-events-none absolute left-[38px] top-1/2 z-10 hidden -translate-y-1/2 md:block lg:left-[56px]"
+      >
+        <IconButton tone="dark" direction="prev" :label="t('common.prev')" class="pointer-events-auto border border-white/40 backdrop-blur-[20px]" @click="go(-1)" @pointerdown.stop />
+      </div>
+      <div
+        v-show="overflowsRight"
+        class="pointer-events-none absolute right-[38px] top-1/2 z-10 hidden -translate-y-1/2 md:block lg:right-[56px]"
+      >
+        <IconButton tone="dark" direction="next" :label="t('common.next')" class="pointer-events-auto border border-white/40 backdrop-blur-[20px]" @click="go(1)" @pointerdown.stop />
+      </div>
     </div>
 
     <!-- Controls (stay aligned to the heading column) -->

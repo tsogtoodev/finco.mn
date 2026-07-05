@@ -123,10 +123,10 @@ function goBack() {
           <div
             v-for="s in statItems"
             :key="s.key"
-            class="flex flex-col items-center justify-center gap-3 rounded-[12px] bg-white/10 p-3"
+            class="flex flex-col items-center justify-center gap-3 whitespace-nowrap rounded-[12px] bg-white/10 p-3 shadow-[0_0_20px_rgba(0,0,0,0.15)]"
           >
-            <dt class="text-lg font-extralight text-white/80 sm:text-xl">{{ t(`loanTerms.${s.key}`) }}:</dt>
-            <dd class="text-2xl font-bold text-white">{{ s.value }}</dd>
+            <dt class="text-xl font-extralight leading-6 text-white/80">{{ t(`loanTerms.${s.key}`) }}:</dt>
+            <dd class="text-2xl font-bold leading-6 text-white">{{ s.value }}</dd>
           </div>
         </dl>
 

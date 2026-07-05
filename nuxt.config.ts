@@ -8,6 +8,12 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/png', href: '/favicon.png' },
       ],
     },
+    // Cross-page fade+rise (classes in main.css). `out-in` so the old page
+    // finishes leaving before the new one enters — no layout overlap. The
+    // layout transition covers default ↔ minimal switches, which would
+    // otherwise swap with no animation at all.
+    pageTransition: { name: 'page', mode: 'out-in' },
+    layoutTransition: { name: 'layout', mode: 'out-in' },
   },
 
   modules: [

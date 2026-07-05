@@ -56,6 +56,19 @@ body {
   @apply bg-background text-foreground font-sans antialiased;
 }
 
+/* Smooth in-page scrolling (anchor jumps, route-to-top). scroll-padding-top
+   clears the ~96px transparent fixed nav so anchored sections aren't hidden
+   under it. Disabled for reduced-motion users. */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 /* Expose the announcement strip's height while it's on screen so heroes can
    subtract it (`h-[calc(100svh-var(--announcement-h))]`). It leaves the DOM via
    v-if on dismiss, so :has() re-evaluates and the hero reclaims the space. This
@@ -342,4 +355,45 @@ body:has(.announcement-bar.is-collapsing) {
 
 @media (prefers-reduced-motion: reduce) {
   .t-resize { transition: none !important; }
+}
+
+/* ── Page transitions ─────────────────────────────────────────────────────────
+Wired via app.pageTransition / app.layoutTransition in nuxt.config.ts
+(mode: 'out-in'): the old page fades up and out, then the new one fades in
+rising slightly. Header/footer live in the layout so they stay put; the
+layout-* classes only fire on default ↔ minimal layout switches. */
+
+:root {
+  --page-dur: 250ms;
+  --page-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.page-enter-active,
+.page-leave-active,
+.layout-enter-active,
+.layout-leave-active {
+  transition:
+    opacity var(--page-dur) var(--page-ease),
+    transform var(--page-dur) var(--page-ease);
+}
+
+.page-enter-from,
+.layout-enter-from {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.page-leave-to,
+.layout-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active,
+  .layout-enter-active,
+  .layout-leave-active {
+    transition: none;
+  }
 }

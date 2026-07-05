@@ -26,7 +26,7 @@ Home Page
 [X] HomeProducts -n card-n description-g line-height 24px bolgoh
 [X] HomeProducts -n card-n title -n line-height -g 28px bolgoh
 [X] HomeProducts -n carousel-g drag hiij boldog bolgoh
-[ ] HomeProducts -n zuun/baruun tald Next button oruulah
+[X] HomeProducts -n zuun/baruun tald Next button oruulah
 [X] HomeBeep deer hover hiihed footer section reveal hiij garch ireh
 [X] HomeBeep -n App tatah button hover/click hiihed QR Code-toi Popover gargaj ireh
 [X] HomeBeep -n Delgerengui button deer beep.finco.mn linkleh
@@ -46,7 +46,7 @@ About Page
 [ ] AboutMission, AboutValues, AboutTimeline, AboutCEOMessage uudiin title deer ungu dutuu bn
 [X] AboutCEOMessage-n letter hesegiig A4 hemjeetei bolgoh
 [X] AboutCEOMessage-n ariin letter hesegiig scroll doj viewport-n orj irhed smooth tilt hiih
-[ ] AboutBoard -n description hover hiihed delgerengui description garch irdeg bolgoh
+[X] AboutBoard -n description hover hiihed delgerengui description garch irdeg bolgoh
 [ ] AboutOrg deer chart-g zuragaar oruulah
 
 Detail Page
@@ -57,7 +57,7 @@ Detail Page
 [X] FAQAccordion first item expanded bolgohgui bolgoh
 [X] RelatedProducts -n headline -g avch hayah
 [X] Tab bolon tab content-g smooth transition tavih
-[ ] Hero bolon content hoorondiin zaig 2/1 -r hasah
+[X] Hero bolon content hoorondiin zaig 2/1 -r hasah
 [ ] Hero dotorh tootsoolol-n card-n blur background-g yag zuv bolgoh
 [ ] RelatedProducts-n carousel home deer baidag shig carousel effect baih estoi
 

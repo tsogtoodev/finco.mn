@@ -255,10 +255,9 @@ const barHidden = computed(
 
 <template>
   <header
-    class="sticky top-0 z-50 [transition:background-color_300ms_cubic-bezier(0.33,1,0.68,1),box-shadow_300ms_cubic-bezier(0.33,1,0.68,1),translate_400ms_cubic-bezier(0.22,1,0.36,1)] [will-change:translate] motion-reduce:transition-none"
+    class="sticky top-0 z-50 [transition:box-shadow_300ms_cubic-bezier(0.33,1,0.68,1),translate_400ms_cubic-bezier(0.22,1,0.36,1)] [will-change:translate] motion-reduce:transition-none"
     :class="[
       barHidden ? '-translate-y-full' : 'translate-y-0',
-      solid ? 'bg-white' : 'bg-transparent',
       // shadow conveys separation on scroll; suppressed while a panel is open so the
       // bar reads as one clean surface with the floating panel
       showShadow && !menuVisible ? 'shadow-2xs' : 'shadow-none',
@@ -266,6 +265,18 @@ const barHidden = computed(
     ]"
     @keydown.esc="escClose"
   >
+    <!-- White surface: instead of cross-fading background-color in place (which
+         mid-fade reads as a muddy translucent slab bleaching the hero image), a
+         fully-opaque white sheet slides down behind the bar content — the same
+         motion language as the bar's own hide/reveal. Clipped by its own wrapper
+         (the header can't be overflow-hidden: the mega-menu panel hangs below). -->
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+      <div
+        class="absolute inset-0 bg-white transition-transform duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+        :class="solid ? 'translate-y-0' : '-translate-y-[101%]'"
+      />
+    </div>
+
     <!-- top-down scrim keeps the white nav legible over the hero before it solidifies -->
     <div
       aria-hidden="true"

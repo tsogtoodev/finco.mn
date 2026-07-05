@@ -13,6 +13,10 @@ export default <RouterConfig>{
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition
     if (stripLocale(to.path) === stripLocale(from.path)) return false
-    return { top: 0 }
+    // `behavior: 'smooth'` eases the jump to top on a page change; it defers to
+    // the user's reduced-motion preference via the `html { scroll-behavior }`
+    // rule in main.css, and to an in-page `#hash` anchor when one is present.
+    if (to.hash) return { el: to.hash, top: 96, behavior: 'smooth' }
+    return { top: 0, behavior: 'smooth' }
   },
 }
