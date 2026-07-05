@@ -29,7 +29,12 @@ const stats = computed(
     <!-- Background Spline scene (>= sm). pointer-events-none → pure backdrop,
          no drag/orbit; ClientOnly keeps WebGL off the server and shows the
          poster until the scene has loaded. -->
-    <div class="pointer-events-none absolute inset-0 hidden size-full scale-120 sm:block -translate-y-[100px]">
+    <!-- Full-bleed Spline backdrop. `min-h-[51vw]` caps the render aspect at
+         ~1.96:1 (the framing the wave was authored for) so ultra-wide screens
+         (≥~1440px) don't stretch the camera and leave the wave short of the
+         edges — the extra height clips (centered). Below ~1437px, 51vw < the
+         section height, so this is a no-op and the framing is unchanged. -->
+    <div class="pointer-events-none absolute left-1/2 top-1/2 hidden h-full min-h-[51vw] w-full -translate-x-1/2 -translate-y-[calc(50%+100px)] scale-120 sm:block">
       <ClientOnly>
         <SplineScene scene="/_tmp-stats-scene.splinecode" no-drag />
         <template #fallback>

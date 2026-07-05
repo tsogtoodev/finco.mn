@@ -4,9 +4,11 @@
 // A centred rounded-40 card on a near-white section. The card is a CAROUSEL of
 // four slides (one per product/service); each slide has its own full-bleed photo
 // (dark bottom→top gradient for legibility), product wordmark/eyebrow, headline,
-// subtext and a lime CTA. A four-tab switcher overlaps the card bottom; the active
-// tab's top line doubles as an auto-advance PROGRESS bar (teal, fills over the slide
-// duration then advances). Below the card, an infinite partner-logo marquee.
+// subtext and a CTA (lime on the BeepWallet slide, blurple accent on the others). A
+// four-tab switcher overlaps the card bottom; the active tab's top line doubles as an
+// auto-advance PROGRESS bar (lime on Beep matching its CTA, teal otherwise; fills
+// over the slide duration then advances).
+// Below the card, an infinite partner-logo marquee.
 //
 // Only the BeepWallet slide is fully designed in Figma; FincoBiz / Зээл / Итгэлцэл
 // reuse their product/service page photos + copy (sourced from i18n), flagged here.
@@ -65,6 +67,10 @@ const SLIDE_MS = 6000
 const current = ref(0) // start on the first tab (FincoBiz); cycles in tab order
 const reduced = ref(false)
 
+// CTA colour: only BeepWallet keeps its lime brand accent; every other slide
+// (FincoBiz / Зээл / Итгэлцэл) uses the blurple accent.
+const isBeepSlide = computed(() => slides[current.value].key === 'beepWallet')
+
 function go(i: number) {
   current.value = (i + slides.length) % slides.length
 }
@@ -73,7 +79,7 @@ function next() {
 }
 
 // ── CTA gating ────────────────────────────────────────────────────────────
-// The lime CTA holds until EVERY text block on the slide has finished its
+// The CTA holds until EVERY text block on the slide has finished its
 // BlurText reveal, then rises in. We count each eyebrow/headline/subtext
 // `@animation-complete` against the slide's text-block count — the designed
 // BeepWallet slide shows a wordmark <img> (not a text eyebrow) so it has 2 text
@@ -318,7 +324,10 @@ onBeforeUnmount(() => {
                 >
                   <NuxtLink
                     :to="localePath(slides[current].to)"
-                    class="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl bg-lime px-4 py-2 text-sm font-medium text-dark shadow-2xs transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
+                    class="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium shadow-2xs transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    :class="isBeepSlide
+                      ? 'bg-lime text-dark focus-visible:outline-lime'
+                      : 'bg-accent text-white focus-visible:outline-accent'"
                   >
                     {{ t('hero.cta') }}
                     <svg viewBox="0 0 16 16" class="size-4" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
@@ -354,13 +363,17 @@ onBeforeUnmount(() => {
                 @click="go(i)"
                 @keydown="onTabKey($event, i)"
               >
-                <!-- Top line: track + (active) animated teal progress fill -->
+                <!-- Top line: track + (active) animated progress fill — lime on
+                     BeepWallet (matching its CTA), teal on the other slides. -->
                 <span class="relative block h-0.5 w-full overflow-hidden bg-white/20">
                   <span
                     v-if="i === current"
                     :key="`prog-${current}-${reduced}`"
-                    class="absolute inset-0 origin-left bg-teal"
-                    :class="reduced ? 'scale-x-100' : 'hero-progress'"
+                    class="absolute inset-0 origin-left"
+                    :class="[
+                      isBeepSlide ? 'bg-lime' : 'bg-teal',
+                      reduced ? 'scale-x-100' : 'hero-progress',
+                    ]"
                     :style="reduced ? undefined : { animationDuration: `${SLIDE_MS}ms` }"
                     @animationend="next"
                   />

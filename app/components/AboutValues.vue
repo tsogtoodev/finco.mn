@@ -14,7 +14,8 @@ const rowBottom = computed(() => props.items.slice(3))
 
 <template>
   <section class="relative overflow-hidden bg-[#fafafe]">
-    <div class="mx-auto max-w-7xl px-4 pb-24 pt-20 sm:pb-32 sm:pt-24 lg:pb-40 lg:pt-28">
+    <!-- pb-8 (32px) pairs with AboutTimeline's pt-8 for a fixed 64px gap between the two sections. -->
+    <div class="mx-auto max-w-7xl px-4 pb-8 pt-20 sm:pt-24 lg:pt-28">
       <div class="hero-rise flex flex-col items-center gap-3 text-center">
         <h2 class="max-w-[750px] font-display text-3xl font-medium leading-tight text-[#141414] sm:text-4xl lg:text-[36px] lg:leading-9">
           {{ heading }}

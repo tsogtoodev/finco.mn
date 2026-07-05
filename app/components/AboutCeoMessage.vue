@@ -6,6 +6,37 @@ import type { AboutContent } from '~/composables/useAboutContent'
 import signature from '~/assets/images/about-ceo-signature.png'
 
 defineProps<{ ceo: AboutContent['ceo'] }>()
+
+// The duplicate card peeking out behind the letter tilts to 6.46° once the whole
+// sheet is inside the viewport — a threshold reveal, not a scroll-tracked value.
+const TILT_MAX = 6.46
+const letterRef = ref<{ $el?: HTMLElement } | null>(null)
+const tilted = ref(false)
+let observer: IntersectionObserver | null = null
+
+onMounted(() => {
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    tilted.value = true
+    return
+  }
+  const el = letterRef.value?.$el
+  if (!el) return
+  observer = new IntersectionObserver(([entry]) => {
+    const r = entry.boundingClientRect
+    const vh = window.innerHeight || document.documentElement.clientHeight
+    // "fully in viewport": the sheet fits entirely inside — or, on short
+    // viewports where it can't, it spans the whole viewport height.
+    const fullyInView = (r.top >= 0 && r.bottom <= vh) || (r.top <= 0 && r.bottom >= vh)
+    // Once tilted, latch it — never tilt back until the page reloads.
+    if (fullyInView) {
+      tilted.value = true
+      observer?.disconnect()
+      observer = null
+    }
+  }, { threshold: [0, 0.5, 0.9, 0.99, 1] })
+  observer.observe(el)
+})
+onBeforeUnmount(() => observer?.disconnect())
 </script>
 
 <template>
@@ -45,15 +76,17 @@ defineProps<{ ceo: AboutContent['ceo'] }>()
           />
         </MotionReveal>
 
-        <!-- Greeting card — A4 letter sheet (210:297) -->
+        <!-- Greeting card — letter sheet, A4-ish but a touch shorter (210:272) -->
         <MotionReveal
+          ref="letterRef"
           :delay="0.1"
-          class="relative z-10 mx-auto mt-6 flex aspect-[210/297] w-full max-w-[520px] flex-col rounded-[2rem] bg-white p-8 shadow-[0_4px_24px_rgba(0,0,0,0.1)] sm:p-10 lg:mx-0 lg:-ml-16 lg:mt-0 lg:max-w-[560px] lg:self-center lg:p-14"
+          class="relative z-10 mx-auto mt-6 flex aspect-[210/272] w-full max-w-[520px] flex-col rounded-[2rem] bg-white px-8 py-6 shadow-[0_4px_24px_rgba(0,0,0,0.1)] sm:px-10 sm:py-8 lg:mx-0 lg:-ml-16 lg:mt-0 lg:max-w-[560px] lg:self-center lg:px-14 lg:py-10"
         >
-          <!-- tilted duplicate card peeking out behind the letter -->
+          <!-- duplicate card peeking out behind the letter; tilts in when fully in view -->
           <div
             aria-hidden="true"
-            class="pointer-events-none absolute inset-0 -z-10 rotate-[6.46deg] rounded-[2rem] bg-white shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
+            class="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-white shadow-[0_4px_24px_rgba(0,0,0,0.1)] will-change-transform"
+            :style="{ transform: `rotate(${tilted ? TILT_MAX : 0}deg)`, transition: 'transform 0.6s cubic-bezier(0.22,1,0.36,1)' }"
           />
           <div
             aria-hidden="true"

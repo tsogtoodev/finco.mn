@@ -11,7 +11,7 @@ const { t } = useI18n()
 <template>
   <section v-if="products?.length" class="mx-auto max-w-7xl px-4 py-16 sm:py-20">
     <MotionReveal>
-      <h2 class="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
+      <h2 class="font-display text-2xl font-regular tracking-tight text-foreground sm:text-3xl md:text-4xl">
         {{ heading || t('related.heading') }}
       </h2>
     </MotionReveal>

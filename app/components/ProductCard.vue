@@ -45,7 +45,7 @@ const to = computed(() =>
     <div class="absolute inset-0 bg-gradient-to-t from-[rgba(4,20,18,0.85)] via-[rgba(4,20,18,0.35)] to-transparent" />
 
     <div class="relative flex flex-col gap-3 p-6 pb-7">
-      <span v-if="category" class="text-xs font-medium text-teal">{{ category }}</span>
+      <!-- <span v-if="category" class="text-xs font-medium text-teal">{{ category }}</span> -->
       <h3 class="font-display text-xl font-extrabold leading-9 text-white">{{ title }}</h3>
       <p v-if="summary" class="text-[15px] font-light leading-relaxed text-white/70">{{ summary }}</p>
       <!-- On hover the row expands 0fr→1fr; because the card is justify-end, the

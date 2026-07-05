@@ -1,14 +1,13 @@
 <script setup lang="ts">
 // Service-detail hero (Figma 1:14671). Mirrors ProductsHero: blurred dark
 // lifestyle photo + diagonal scrim, breadcrumb + "Буцах" back button top-left,
-// centered headline + subtext, and a light CTA pill (reuses AppButton `light`).
+// and a centered headline + subtext.
 // The global transparent nav overlays the top ~96px, so content gets top clearance.
 const props = defineProps<{
   image?: string
   title?: string
   subtitle?: string
   breadcrumbCurrent?: string
-  cta?: { label: string; to: string }
 }>()
 
 const { t } = useI18n()
@@ -86,11 +85,6 @@ function goBack() {
           :start-delay="0.15"
           class="max-w-[640px] justify-center text-base font-extralight leading-7 text-white/90 sm:text-lg md:text-xl"
         />
-        <div v-if="props.cta" class="hero-rise pt-2" style="animation-delay: 0.36s">
-          <AppButton :to="props.cta.to" variant="light" size="lg" arrow>
-            {{ props.cta.label }}
-          </AppButton>
-        </div>
       </div>
     </div>
   </section>

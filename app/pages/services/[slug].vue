@@ -46,7 +46,6 @@ useSeoMeta({
       :title="service.title"
       :subtitle="service.summary"
       :breadcrumb-current="service.breadcrumb || service.title"
-      :cta="service.cta"
     />
 
     <RelatedProductsCarousel :products="related ?? []" />

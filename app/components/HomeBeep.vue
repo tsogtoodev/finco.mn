@@ -6,7 +6,6 @@
 // fixed 1440×704 coordinate stage that scales proportionally via container
 // units, so it matches Figma exactly at ≥1440 and shrinks faithfully below.
 const { t } = useI18n()
-const localePath = useLocalePath()
 
 // Copy from the `pages` home doc's beep group (i18n fallback); the pill
 // cluster, photo and layout stay baked/component-side.
@@ -17,6 +16,100 @@ const copy = computed(() => ({
   expandLead: page.value?.beep?.expandLead ?? t('home.beep.expandLead'),
   expandRest: page.value?.beep?.expandRest ?? t('home.beep.expandRest'),
 }))
+
+// ── "Download app" → QR popover ────────────────────────────────────────────
+// The info bar and the card both clip their overflow, so the popover is
+// teleported to <body> and positioned `fixed`, anchored just above the button.
+const BEEP_URL = 'https://beep.finco.mn'
+const qrOpen = ref(false)
+const downloadBtn = ref<HTMLElement | null>(null)
+const qrPop = ref<HTMLElement | null>(null)
+const POP_W = 184 // px; matches the popover's fixed width for centering math
+const qrStyle = ref<Record<string, string>>({})
+// Hover-intent timers so the button↔popover gap doesn't flicker it closed.
+let qrOpenTimer: ReturnType<typeof setTimeout> | undefined
+let qrCloseTimer: ReturnType<typeof setTimeout> | undefined
+const QR_OPEN_DELAY = 100
+const QR_CLOSE_DELAY = 160
+function clearQrTimers() {
+  clearTimeout(qrOpenTimer)
+  clearTimeout(qrCloseTimer)
+}
+
+function positionQr() {
+  const el = downloadBtn.value
+  if (!el) return
+  const r = el.getBoundingClientRect()
+  const GAP = 12
+  // centre on the button, clamped into the viewport
+  const left = Math.min(
+    Math.max(8, r.left + r.width / 2 - POP_W / 2),
+    window.innerWidth - POP_W - 8,
+  )
+  qrStyle.value = {
+    left: `${Math.round(left)}px`,
+    // grow upward from just above the button (no transform → free for the tween)
+    bottom: `${Math.round(window.innerHeight - r.top + GAP)}px`,
+    width: `${POP_W}px`,
+  }
+}
+function openQr() {
+  clearQrTimers()
+  qrOpen.value = true
+  nextTick(positionQr)
+}
+function closeQr() {
+  clearQrTimers()
+  qrOpen.value = false
+}
+function toggleQr() {
+  qrOpen.value ? closeQr() : openQr()
+}
+// Hover: open on button enter (after a short intent delay); close once the
+// pointer has left BOTH the button and the popover (the delay bridges the gap).
+function hoverOpenQr() {
+  clearTimeout(qrCloseTimer)
+  if (qrOpen.value) return
+  qrOpenTimer = setTimeout(openQr, QR_OPEN_DELAY)
+}
+function scheduleQrClose() {
+  clearTimeout(qrOpenTimer)
+  qrCloseTimer = setTimeout(closeQr, QR_CLOSE_DELAY)
+}
+function cancelQrClose() {
+  clearTimeout(qrCloseTimer)
+}
+
+// Dismiss on outside press / Escape; reposition while open on scroll/resize.
+function onDocPointer(e: Event) {
+  if (!qrOpen.value) return
+  const target = e.target as Node
+  if (downloadBtn.value?.contains(target) || qrPop.value?.contains(target)) return
+  closeQr()
+}
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && qrOpen.value) {
+    closeQr()
+    downloadBtn.value?.focus()
+  }
+}
+function onReflow() {
+  if (qrOpen.value) positionQr()
+}
+
+onMounted(() => {
+  document.addEventListener('pointerdown', onDocPointer, true)
+  document.addEventListener('keydown', onKeydown)
+  window.addEventListener('scroll', onReflow, { passive: true })
+  window.addEventListener('resize', onReflow)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', onDocPointer, true)
+  document.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('scroll', onReflow)
+  window.removeEventListener('resize', onReflow)
+  clearQrTimers()
+})
 </script>
 
 <template>
@@ -56,28 +149,59 @@ const copy = computed(() => ({
           </div>
 
           <!-- Info bar -->
-          <div class="beep-bar">
+          <div class="beep-bar" :class="{ 'beep-bar--pinned': qrOpen }">
             <div class="beep-bar-inner">
               <p class="beep-bar-text">
                 <span class="beep-bar-lead">{{ copy.expandLead }}</span>
                 {{ ' ' }}<span class="beep-bar-rest">{{ copy.expandRest }}</span>
               </p>
               <div class="beep-bar-actions">
-                <button type="button" class="beep-btn beep-btn--download">
+                <button
+                  ref="downloadBtn"
+                  type="button"
+                  class="beep-btn beep-btn--download"
+                  aria-haspopup="dialog"
+                  :aria-expanded="qrOpen"
+                  @click="toggleQr"
+                  @mouseenter="hoverOpenQr"
+                  @mouseleave="scheduleQrClose"
+                >
                   <img src="/images/home/beep-playstore.svg" alt="" aria-hidden="true" class="beep-store-icon beep-store-icon--play">
                   <img src="/images/home/beep-apple.svg" alt="" aria-hidden="true" class="beep-store-icon beep-store-icon--apple">
                   <span class="beep-btn-label">{{ t('home.beep.appDownload') }}</span>
                 </button>
-                <NuxtLink :to="localePath('/products')" class="beep-btn">
+                <a :href="BEEP_URL" target="_blank" rel="noopener" class="beep-btn">
                   <span class="beep-btn-label">{{ t('common.learnMore') }}</span>
                   <Icon name="lucide:arrow-right" class="beep-arrow" />
-                </NuxtLink>
+                </a>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- QR popover for "Download app" — teleported out of the clipped card -->
+    <Teleport to="body">
+      <Transition name="qr-pop">
+        <div
+          v-if="qrOpen"
+          ref="qrPop"
+          role="dialog"
+          :aria-label="t('home.beep.scanToDownload')"
+          class="beep-qr-pop"
+          :style="qrStyle"
+          @mouseenter="cancelQrClose"
+          @mouseleave="scheduleQrClose"
+        >
+          <span class="beep-qr-inner">
+            <img src="/images/home/beep-qr.svg" alt="" width="140" height="140" class="beep-qr-img">
+            <span class="beep-qr-cap">{{ t('home.beep.scanToDownload') }}</span>
+          </span>
+          <span class="beep-qr-caret" aria-hidden="true" />
+        </div>
+      </Transition>
+    </Teleport>
   </section>
 </template>
 
@@ -211,6 +335,37 @@ const copy = computed(() => ({
     inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   overflow: hidden;
 }
+
+/* Reveal-on-hover: where a pointer can hover, the bar is tucked below the clip's
+   edge (overflow:hidden hides it) and slides up when the card is hovered or a
+   button inside it is focused. On touch / no-hover devices it stays visible so
+   it's never unreachable. */
+@media (hover: hover) {
+  .beep-bar {
+    transform: translateY(100%);
+    opacity: 0;
+    transition:
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.3s ease;
+  }
+  .beep-card:hover .beep-bar,
+  .beep-card:focus-within .beep-bar {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@media (hover: hover) and (prefers-reduced-motion: reduce) {
+  /* honour reduced-motion: still reveal, but without the slide/fade tween */
+  .beep-bar {
+    transition: none;
+  }
+}
+/* Keep the bar revealed while the QR popover is open. A button click doesn't
+   reliably move focus on macOS, so :focus-within alone won't hold it — pin it. */
+.beep-bar--pinned {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+}
 .beep-bar-inner {
   position: relative;
   width: 91.042%;
@@ -278,5 +433,74 @@ const copy = computed(() => ({
   width: 1.1111cqw; /* 16px */
   height: 1.1111cqw;
   color: #fff;
+}
+
+/* ── "Download app" QR popover ─────────────────────────────────────────────
+   Teleported to <body>, so it lives outside the card's container context —
+   sized in plain px (no cqw) and positioned `fixed` via the inline qrStyle. */
+.beep-qr-pop {
+  position: fixed;
+  z-index: 70;
+  box-sizing: border-box;
+  padding: 14px;
+  border-radius: 18px;
+  background: #0f2c23;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.55);
+}
+.beep-qr-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.beep-qr-img {
+  display: block;
+  width: 140px;
+  height: 140px;
+  padding: 8px;
+  border-radius: 10px;
+  background: #fff;
+  box-sizing: content-box; /* keep the QR crisp at 140px + an 8px quiet zone */
+}
+.beep-qr-cap {
+  max-width: 156px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.82);
+}
+.beep-qr-caret {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  background: #0f2c23;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  transform: translateX(-50%) rotate(45deg);
+}
+.qr-pop-enter-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.qr-pop-leave-active {
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease;
+}
+.qr-pop-enter-from,
+.qr-pop-leave-to {
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+}
+@media (prefers-reduced-motion: reduce) {
+  .qr-pop-enter-from,
+  .qr-pop-leave-to {
+    transform: none;
+  }
 }
 </style>
