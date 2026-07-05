@@ -8,12 +8,14 @@ export default defineEventHandler(async (event) => {
     name?: string
     email?: string
     phone?: string
+    type?: string
     message?: string
   }>(event)
 
   const name = body?.name?.trim()
   const email = body?.email?.trim()
   const phone = body?.phone?.trim()
+  const type = body?.type?.trim() // optional feedback topic (FeedbackDialog)
   const message = body?.message?.trim()
 
   if (!name || !email || !phone || !message) {
@@ -28,7 +30,7 @@ export default defineEventHandler(async (event) => {
 
   // TODO(P8): persist the message (D1) and/or notify the team (email/webhook).
   // Wire the real handler here — do not hardcode a third-party endpoint.
-  console.info('[contact] received feedback from', name, `<${email}>`)
+  console.info('[contact] received feedback from', name, `<${email}>`, type ? `[${type}]` : '')
 
   return { ok: true }
 })

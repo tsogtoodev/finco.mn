@@ -3,18 +3,21 @@
 // a dimmed/blurred backdrop, centers a white rounded-24 card, closes on
 // Esc / backdrop / × , locks body scroll, and restores focus to the opener.
 //
-// Animation lives in main.css (.t-modal / .t-backdrop). Enter plays on mount;
-// on close we set `closing`, wait --modal-close-dur (150ms) for the exit
-// animation, then unmount.
+// Animation lives in main.css (.t-modal / .t-backdrop, Transitions.dev modal).
+// Enter: mount closed, force a reflow so the initial scale/opacity is
+// committed, then add `.is-open` — the forced reflow (not rAF) is what keeps
+// the transition from stranding on teleported nodes. Exit: swap `.is-open`
+// for `.is-closing`, wait --modal-close-dur (150ms), then unmount.
 const props = withDefaults(
-  defineProps<{ open: boolean; title?: string; labelClose?: string }>(),
-  { labelClose: 'Close' },
+  defineProps<{ open: boolean; title?: string; labelClose?: string; maxWidth?: string }>(),
+  { labelClose: 'Close', maxWidth: '840px' },
 )
 const emit = defineEmits<{ 'update:open': [value: boolean] }>()
 
 const CLOSE_DUR = 150 // keep in sync with --modal-close-dur
 
 const visible = ref(false) // mounted in the DOM?
+const opened = ref(false) // has `.is-open` (drives the enter transition)?
 const closing = ref(false) // playing the exit animation?
 const card = ref<HTMLElement | null>(null)
 let lastFocused: HTMLElement | null = null
@@ -34,10 +37,17 @@ watch(
       document.body.style.overflow = 'hidden'
       document.addEventListener('keydown', onKeydown)
       visible.value = true
-      nextTick(() => card.value?.focus())
+      nextTick(() => {
+        card.value?.focus()
+        // Commit the closed state before flipping `.is-open` so the enter
+        // transition always plays (see main.css).
+        void card.value?.offsetWidth
+        opened.value = true
+      })
     }
     else {
       if (!visible.value) return
+      opened.value = false
       closing.value = true
       document.removeEventListener('keydown', onKeydown)
       closeTimer = setTimeout(() => {
@@ -74,13 +84,14 @@ onBeforeUnmount(() => {
           aria-modal="true"
           :aria-label="title"
           tabindex="-1"
-          class="t-modal relative z-[1] max-h-[90vh] w-full max-w-[840px] overflow-y-auto rounded-[24px] bg-white p-6 shadow-2xl outline-none sm:p-8"
-          :class="{ 'is-closing': closing }"
+          class="t-modal relative z-[1] max-h-[90vh] w-full overflow-y-auto rounded-[24px] bg-white p-6 shadow-2xl outline-none sm:p-8"
+          :class="{ 'is-open': opened, 'is-closing': closing }"
+          :style="{ maxWidth }"
         >
           <button
             type="button"
             :aria-label="labelClose"
-            class="dialog-close absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-white shadow-md"
+            class="dialog-close absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-white shadow-md cursor-pointer hover:bg-gray-100 transition-all duration-300"
             @click="close"
           >
             <Icon name="f:remove" class="text-[24px] text-foreground/70" />
@@ -103,7 +114,7 @@ onBeforeUnmount(() => {
     filter 200ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 .dialog-close:active {
-  transform: scale(0.98);
-  filter: blur(1px);
+  transform: scale(0.88);
+  /* filter: blur(1px); */
 }
 </style>

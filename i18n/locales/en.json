@@ -143,6 +143,7 @@
       "scanToDownload": "Scan to download the Beep app",
       "expandLead": "A digital wallet that manages payments, transfers and purchases",
       "expandRest": "all in one place. Use QR payments, card linking and transaction tracking quickly and easily.",
+      "teaser": "👉 Loyal customer rewards",
       "pills": {
         "purchase": "Purchases",
         "loan": "Loans",
@@ -204,6 +205,33 @@
     "phone": "+976 7017 3311",
     "email": "info{'@'}finco.mn",
     "address": "Olympiin Street 7/2, Suite 706/707, Soyol Amralt 14240, 1st khoroo, Sukhbaatar District, Ulaanbaatar"
+  },
+  "feedback": {
+    "title": "Get in touch",
+    "subtitle": "Send us your feedback and partnership inquiries.",
+    "name": "Full name",
+    "phone": "Phone number",
+    "email": "Email address",
+    "type": "Feedback type",
+    "typePlaceholder": "Select",
+    "types": {
+      "cooperation": "Partnership proposal",
+      "business": "Business proposal / partnership",
+      "marketing": "Marketing & co-promotion",
+      "suggestion": "Suggestion",
+      "complaint": "Complaint",
+      "other": "Other"
+    },
+    "message": "Feedback",
+    "messagePlaceholder": "Write your feedback...",
+    "submit": "Send",
+    "submitting": "Sending...",
+    "success": {
+      "title": "Sent successfully",
+      "body": "Thank you for sending us your feedback"
+    },
+    "error": "Something went wrong. Please try again.",
+    "close": "Close"
   },
   "contactPage": {
     "hero": {

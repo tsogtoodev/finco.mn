@@ -15,6 +15,7 @@ const copy = computed(() => ({
   subtext: page.value?.beep?.subtext ?? t('home.beep.subtext'),
   expandLead: page.value?.beep?.expandLead ?? t('home.beep.expandLead'),
   expandRest: page.value?.beep?.expandRest ?? t('home.beep.expandRest'),
+  teaser: page.value?.beep?.teaser ?? t('home.beep.teaser'),
 }))
 
 // ── "Download app" → QR popover ────────────────────────────────────────────
@@ -113,9 +114,19 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section data-section="home-beep" class="bg-white px-6 py-10">
+  <!-- Top padding reserves room for the photo head-bleed (71.45px above the
+       card at 1440, scaling down with it) so it never overlaps the section
+       above; Figma gives the card the same 71px headroom. -->
+  <section data-section="home-beep" class="bg-white px-6 pb-10 pt-[max(2.5rem,min(4.97vw,4.5rem))]">
     <div class="mx-auto w-full max-w-[1440px]">
       <div class="beep-card">
+        <!-- Unclipped copy of the lifestyle photo — Figma keeps a second
+             "image 2058" outside the clip frame so the model's head bleeds
+             above the card's top edge. Inside the card the clip's solid
+             background covers this copy, so only the overflow shows. -->
+        <div class="beep-person beep-person--bleed" aria-hidden="true">
+          <img src="/images/home/beep-lifestyle.png" alt="" class="beep-person-img">
+        </div>
         <div class="beep-clip">
           <!-- Pill cluster (baked raster, bleeds off the right edge) -->
           <img src="/images/home/beep-pills.png" alt="" aria-hidden="true" class="beep-pills">
@@ -147,6 +158,16 @@ onBeforeUnmount(() => {
             <h2 class="beep-title">{{ copy.heading }}</h2>
             <p class="beep-subtext">{{ copy.subtext }}</p>
           </div>
+
+          <!-- Loyalty teaser — sits under the info bar, so it only reads in the
+               unhovered state (Figma Variant2); the revealed bar covers it. -->
+          <p class="beep-teaser">{{ copy.teaser }}</p>
+
+          <!-- Plus affordance, top-right (Figma Huge-icon/solid/plus: 22.5px
+               white cross in a 40px box) — hints that the card expands. -->
+          <svg class="beep-plus" viewBox="0 0 40 40" aria-hidden="true">
+            <path d="M20 8.75v22.5M8.75 20h22.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
 
           <!-- Info bar -->
           <div class="beep-bar" :class="{ 'beep-bar--pinned': qrOpen }">
@@ -256,7 +277,10 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-/* Lifestyle photo — left 776.29 top -71.45 w 663.709 h 775.564 */
+/* Lifestyle photo — left 776.29 top -71.45 w 663.709 h 775.564.
+   Rendered twice like Figma: once inside .beep-clip (composited under the
+   bottom fade) and once as .beep-person--bleed directly in .beep-card, where
+   nothing clips it, so the head rises above the card's top edge. */
 .beep-person {
   position: absolute;
   left: 53.909%;
@@ -284,6 +308,31 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 38.46%;
   background: linear-gradient(180deg, rgba(0, 31, 22, 0) 0%, #001f16 100%);
+  pointer-events: none;
+}
+
+/* Loyalty teaser — left 783.75, centre-y 691.02 of 704; black 90% on the dark
+   fade (per Figma), painted below the info bar so the bar hides it on hover */
+.beep-teaser {
+  position: absolute;
+  left: 54.427%;
+  top: 98.156%;
+  transform: translateY(-50%);
+  font-weight: 200;
+  font-size: 1.1111cqw; /* 16px */
+  line-height: normal;
+  color: rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Plus affordance — 40×40 box at left 1370.2 / top 33 */
+.beep-plus {
+  position: absolute;
+  left: 95.153%;
+  top: 4.688%;
+  width: 2.7778cqw; /* 40px */
+  height: 2.7778cqw;
   pointer-events: none;
 }
 
@@ -342,11 +391,14 @@ onBeforeUnmount(() => {
    it's never unreachable. */
 @media (hover: hover) {
   .beep-bar {
-    transform: translateY(100%);
+    /* Figma Variant2 (unhovered): bar sits at y 691.13 vs 496 docked —
+       195.13/208 = 93.81% of its own height — at opacity 0; the hover
+       reaction smart-animates to Default over ~0.51s (Gentle). */
+    transform: translateY(93.81%);
     opacity: 0;
     transition:
-      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 0.3s ease;
+      transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.35s ease;
   }
   .beep-card:hover .beep-bar,
   .beep-card:focus-within .beep-bar {

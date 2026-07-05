@@ -338,56 +338,63 @@ body:has(.announcement-bar.is-collapsing) {
   }
 }
 
-/* Modal (loan calculator etc.) open/close — scale-up + fade with a dimmed,
-   blurred backdrop. Enter plays on mount via @keyframes (same reason as
-   .mega-pop above: transition/rAF-toggle enters can strand on hydrated/teleported
-   nodes). Exit plays via `.is-closing` for --modal-close-dur before the element
-   unmounts (driven by a `closing` flag + timer in AppDialog). */
+/* Transitions.dev — Modal open / close */
+
+/*
+  Usage:
+    <div class="t-modal" role="dialog">…</div>
+
+  State:
+    - Add `.is-open` to open (scales up from --modal-scale).
+    - On close, swap `.is-open` for `.is-closing`, then remove
+      `.is-closing` after --modal-close-dur.
+
+  AppDialog drives the classes; it forces a reflow before adding `.is-open`
+  so the enter transition can't strand on hydrated/teleported nodes.
+*/
+
 :root {
   --modal-open-dur: 250ms;
   --modal-close-dur: 150ms;
   --modal-scale: 0.96;
+  --modal-scale-close: 0.96;
   --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
-@keyframes modal-in {
-  from {
-    opacity: 0;
-    transform: scale(var(--modal-scale));
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-@keyframes modal-out {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(var(--modal-scale));
-  }
-}
+
 .t-modal {
   transform-origin: center;
-  animation: modal-in var(--modal-open-dur) var(--modal-ease) both;
+  transform: scale(var(--modal-scale));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--modal-open-dur) var(--modal-ease),
+    opacity   var(--modal-open-dur) var(--modal-ease);
   will-change: transform, opacity;
 }
-.t-modal.is-closing {
-  animation: modal-out var(--modal-close-dur) var(--modal-ease) both;
+.t-modal.is-open {
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
 }
+.t-modal.is-closing {
+  transform: scale(var(--modal-scale-close));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--modal-close-dur) var(--modal-ease),
+    opacity   var(--modal-close-dur) var(--modal-ease);
+}
+
 .t-backdrop {
   animation: scrim-fade var(--modal-open-dur) var(--modal-ease) both;
 }
 .t-backdrop.is-closing {
   animation: scrim-fade-out var(--modal-close-dur) var(--modal-ease) both;
 }
+
 @media (prefers-reduced-motion: reduce) {
-  .t-modal,
-  .t-backdrop {
-    animation-duration: 0.01ms;
-  }
+  .t-modal { transition: none !important; }
+  .t-backdrop { animation-duration: 0.01ms; }
 }
 
 /* Transitions.dev — Card resize */

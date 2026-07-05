@@ -63,10 +63,13 @@ const routeD = computed(() => {
 
       <div class="relative mx-auto mt-12 max-w-[1200px] sm:mt-16 md:mt-20 lg:mt-[120px]">
         <!-- Teal cube-cluster raster (Figma 464:9715), scaled to fit the left slot
-             within the max-w-7xl column — no bleed or mid-frame crop. -->
+             within the max-w-7xl column — no bleed or mid-frame crop. Pointer
+             events stay enabled so the Spline scene receives the cursor and runs
+             its hover/cursor-follow interaction; this column sits left of the
+             cards (ml-[367px]) so it never intercepts their clicks. -->
         <div
           aria-hidden="true"
-          class="pointer-events-none absolute inset-y-0 left-0 hidden w-[367px] lg:block"
+          class="absolute inset-y-0 left-0 hidden w-[367px] lg:block"
         >
           <!-- <img
             :src="cluster"
@@ -74,7 +77,7 @@ const routeD = computed(() => {
             class="size-full object-contain object-right mix-blend-multiply scale-300"
           > -->
           <ClientOnly>
-            <SplineScene scene="https://prod.spline.design/n2ZpeSHKKA8Olc1E/scene.splinecode" no-drag :zoom="1" />
+            <SplineScene scene="https://prod.spline.design/n2ZpeSHKKA8Olc1E/scene.splinecode" :zoom="1" />
             <template #fallback>
               <img :src="cluster" alt="" class="size-full object-contain object-right mix-blend-multiply scale-300">
             </template>
@@ -99,10 +102,13 @@ const routeD = computed(() => {
           </div>
         </div>
 
-        <div class="relative hidden items-center gap-8 lg:flex">
+        <!-- pointer-events-none on the row so its empty left gutter (the 367px
+             cluster slot) falls through to the Spline canvas beneath it; the
+             interactive children below re-enable pointer events for themselves. -->
+        <div class="pointer-events-none relative hidden items-center gap-8 lg:flex">
           <!-- Connector spine + numbered diamond markers. The 367px offset stands
                in for the cluster's slot in the row (Figma 464:9723). -->
-          <div class="hero-rise relative z-10 hidden h-[568px] w-[241px] shrink-0 lg:ml-[367px] lg:block" style="animation-delay: 0.1s">
+          <div class="hero-rise pointer-events-auto relative z-10 hidden h-[568px] w-[241px] shrink-0 lg:ml-[367px] lg:block" style="animation-delay: 0.1s">
             <svg
             class="absolute left-0 top-[20px] h-[528px] w-[192px]"
             viewBox="0 0 193.981 530.413"
@@ -165,7 +171,7 @@ const routeD = computed(() => {
           </button>
           </div>
 
-          <div class="relative z-10 flex min-w-0 flex-1 flex-col gap-6">
+          <div class="pointer-events-auto relative z-10 flex min-w-0 flex-1 flex-col gap-6">
             <button
               v-for="(it, i) in items"
               :key="`v-${i}`"

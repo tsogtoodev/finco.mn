@@ -10,7 +10,10 @@ defineProps<{ blocks: BadgeBlock[] }>()
 </script>
 
 <template>
-  <section class="relative isolate overflow-hidden bg-[#080a12] text-white lg:min-h-[1080px]">
+  <!-- lg min-height tracks the 1920×1080 Figma frame's aspect (1080/1920 =
+       56.25vw) so the whole section scales proportionally, capped at the
+       design's native 1080px on ultra-wide screens. -->
+  <section class="relative isolate overflow-hidden bg-[#080a12] text-white lg:min-h-[min(56.25vw,1080px)]">
 
     <div class="relative mx-auto max-w-7xl px-4 py-24 sm:py-28">
       <div class="flex max-w-[640px] h-[400px] flex-col gap-20 lg:gap-32">
@@ -44,12 +47,18 @@ defineProps<{ blocks: BadgeBlock[] }>()
         alt=""
         class="absolute left-0 top-0 h-full w-[59%] max-w-[849px] object-fill"
       >
-      <!-- Dynamic Prismatic Discs (Figma 464:11016) — artboard 1920×1080 slot at
-           left 812px / top 171px, size 1524×857px; bleeds off the right edge.
-           The .splinecode scene paints a 1920×1080 canvas, so we clip the slot
-           and scale it down by 1524/1920 to match Figma's object-cover frame. -->
-      <div class="pointer-events-auto absolute left-[42.297vw] top-[171px] h-[857px] w-[79.373vw] overflow-hidden">
-        <div class="h-[1080px] w-[1920px] origin-top-left scale-[79.373%]">
+      <!-- Dynamic Prismatic Discs (Figma 464:11016) — 1920×1080-frame slot at
+           left 812px / top 171px, size 1524×857px (the full 16:9 scene scaled
+           by 0.79373); bleeds off the right edge. All values are fractions of
+           the 1920 frame so the slot scales with the viewport, capped at the
+           design's native size past 1920.
+           The Spline camera does NOT rescale its framing when the canvas
+           resizes (it crops), so the canvas must stay at the scene's native
+           1920×1080 and be CSS-scaled to the slot. tan(atan2(w, 1920px))
+           divides the slot width by 1920px into the unitless factor scale()
+           needs — i.e. 0.79373 at 1920, shrinking proportionally below. -->
+      <div class="pointer-events-auto absolute left-[42.297%] top-[min(8.894vw,171px)] aspect-video w-[min(79.373vw,1524px)] overflow-hidden">
+        <div class="h-[1080px] w-[1920px] origin-top-left scale-[calc(tan(atan2(min(79.373vw,1524px),1920px)))]">
           <ClientOnly>
             <SplineScene
               scene="https://prod.spline.design/KnmKTc7BCVBdA827/scene.splinecode"
@@ -63,9 +72,10 @@ defineProps<{ blocks: BadgeBlock[] }>()
           </ClientOnly>
         </div>
       </div>
-      <!-- Bottom fades (Figma 238:7867 left, 238:7882 full-width). -->
-      <div class="pointer-events-none absolute bottom-0 left-0 h-[309px] w-[46.6%] max-w-[894px] bg-gradient-to-b from-[rgba(8,10,18,0)] to-[#080a12]" />
-      <div class="pointer-events-none absolute bottom-0 left-1/2 h-[265px] w-full max-w-[1910px] -translate-x-1/2 bg-gradient-to-b from-[rgba(8,10,18,0)] to-[#080a12]" />
+      <!-- Bottom fades (Figma 238:7867 left, 238:7882 full-width); heights scale
+           with the frame like the disc slot (309/1920 and 265/1920). -->
+      <div class="pointer-events-none absolute bottom-0 left-0 h-[min(16.094vw,309px)] w-[46.6%] max-w-[894px] bg-gradient-to-b from-[rgba(8,10,18,0)] to-[#080a12]" />
+      <div class="pointer-events-none absolute bottom-0 left-1/2 h-[min(13.802vw,265px)] w-full max-w-[1910px] -translate-x-1/2 bg-gradient-to-b from-[rgba(8,10,18,0)] to-[#080a12]" />
       <!-- soft blue glow, lower-left -->
       <div class="absolute -bottom-24 -left-24 size-[420px] rounded-full bg-[#214784]/25 blur-[120px]" />
     </div>
