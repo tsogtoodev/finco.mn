@@ -69,13 +69,13 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
       <div
         v-show="!atStart"
         aria-hidden="true"
-        class="pointer-events-none absolute inset-y-0 left-0 w-[100px] backdrop-blur-[6px] lg:w-[156px]"
+        class="pointer-events-none absolute inset-y-0 left-0 hidden w-[120px] backdrop-blur-[6px] md:block lg:w-[156px]"
         :style="{ maskImage: MASK_L, WebkitMaskImage: MASK_L }"
       />
       <div
         v-show="!atEnd"
         aria-hidden="true"
-        class="pointer-events-none absolute inset-y-0 right-0 w-[100px] backdrop-blur-[6px] lg:w-[156px]"
+        class="pointer-events-none absolute inset-y-0 right-0 hidden w-[120px] backdrop-blur-[6px] md:block lg:w-[156px]"
         :style="{ maskImage: MASK_R, WebkitMaskImage: MASK_R }"
       />
     </div>
