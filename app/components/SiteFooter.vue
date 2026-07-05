@@ -130,7 +130,7 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
         aria-hidden="true"
         class="pointer-events-none absolute bottom-0 right-0 h-auto w-[80%] min-w-[720px] max-w-none translate-x-[8%] translate-y-[6%]"
       >
-      <div class="relative mx-auto w-full max-w-[1200px] px-6 py-16 lg:py-24">
+      <div class="relative mx-auto w-full max-w-[1200px] px-6 py-10 lg:py-12">
         <div class="flex flex-col gap-4 text-center text-sm font-thin leading-5 tracking-wide text-white/60">
           <p v-for="(para, i) in disclaimer" :key="i">{{ para }}</p>
         </div>
