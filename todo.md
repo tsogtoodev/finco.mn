@@ -52,15 +52,15 @@ About Page
 Detail Page
 [ ] Hero section dotorh buh element-n size-g bagasgah (figma deerh zaasan size uudiin daguu yuvah)
 [ ] Hero section image deer predefined blur mask-g bolgoh
-[ ] RelatedProductsCarousel deerh products uudiig duudaj bga hesegiig zasah
-[ ] FAQAccordion dotorh + button background-g zasah
-[ ] FAQAccordion first item expanded bolgohgui bolgoh
-[ ] RelatedProducts -n headline -g avch hayah
-[ ] Tab bolon tab content-g smooth transition tavih
+[X] RelatedProductsCarousel deerh products uudiig duudaj bga hesegiig zasah
+[X] FAQAccordion dotorh + button background-g zasah
+[X] FAQAccordion first item expanded bolgohgui bolgoh
+[X] RelatedProducts -n headline -g avch hayah
+[X] Tab bolon tab content-g smooth transition tavih
 [ ] Hero bolon content hoorondiin zaig 2/1 -r hasah
 [ ] Hero dotorh tootsoolol-n card-n blur background-g yag zuv bolgoh
 [ ] RelatedProducts-n carousel home deer baidag shig carousel effect baih estoi
 
 Services Page
 [ ] Hero section deer button baihgui baih estoi
-[ ] RelatedServices section title-n font weight zursun baigaag zasah
+[X] RelatedServices section title-n font weight zursun baigaag zasah

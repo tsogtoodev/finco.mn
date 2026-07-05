@@ -15,7 +15,7 @@ const uid = useId()
       <button
         :id="`${uid}-btn`"
         type="button"
-        class="flex w-full items-center justify-between gap-4 px-3 py-5 text-left sm:px-6 sm:py-6"
+        class="flex w-full items-center justify-between gap-4 px-3 py-5 text-left sm:px-6 sm:py-6 cursor-pointer"
         :aria-expanded="open"
         :aria-controls="`${uid}-panel`"
         @click="open = !open"
@@ -28,9 +28,19 @@ const uid = useId()
         </span>
         <span
           class="grid size-9 shrink-0 place-items-center rounded-full transition-colors"
-          :class="open ? 'bg-black/5 text-black/70' : 'bg-accent text-white'"
+          :class="open ? 'bg-black/5 text-black/70' : 'bg-transparent text-black/70'"
         >
-          <Icon :name="open ? 'lucide:minus' : 'lucide:plus'" class="size-5" />
+          <!-- Both icons stacked in the same grid cell so the swap can cross-fade/rotate -->
+          <Icon
+            name="lucide:plus"
+            class="col-start-1 row-start-1 size-5 transition duration-300 ease-out"
+            :class="open ? 'rotate-90 opacity-0' : 'rotate-0 opacity-100'"
+          />
+          <Icon
+            name="lucide:minus"
+            class="col-start-1 row-start-1 size-5 transition duration-300 ease-out"
+            :class="open ? 'rotate-0 opacity-100' : '-rotate-90 opacity-0'"
+          />
         </span>
       </button>
     </h3>

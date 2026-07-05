@@ -21,8 +21,20 @@ defineProps<{ member: BoardMember }>()
         <p class="text-base font-light text-[rgba(0,0,0,0.6)] sm:text-lg">{{ member.role }}</p>
       </div>
     </div>
-    <p class="text-sm font-light leading-6 text-[rgba(0,0,0,0.6)] sm:text-base md:max-w-[720px] md:pt-1">
-      {{ member.bio }}
-    </p>
+    <!-- Bio column. When the member has a `bioHover` career timeline, hovering
+         the description cross-fades the bio out and the timeline in (they're
+         stacked, so no layout shift). The row's photo keeps it tall enough for
+         the timeline to reveal in place without pushing into the next row. -->
+    <div class="group/bio relative text-sm font-light leading-6 text-[rgba(0,0,0,0.6)] sm:text-base md:max-w-[720px] md:pt-1">
+      <p :class="member.bioHover && 'transition-opacity duration-300 group-hover/bio:opacity-0'">
+        {{ member.bio }}
+      </p>
+      <p
+        v-if="member.bioHover"
+        class="absolute inset-x-0 top-0 whitespace-pre-line opacity-0 transition-opacity duration-300 group-hover/bio:opacity-100 md:pt-1"
+      >
+        {{ member.bioHover }}
+      </p>
+    </div>
   </div>
 </template>

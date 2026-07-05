@@ -60,7 +60,7 @@ const tuzGlow = 'background: linear-gradient(125deg, #ffa6e9 0%, #b89bf1 55%, #8
 
 <template>
   <section class="bg-white">
-    <div class="mx-auto max-w-7xl px-4 py-20 sm:py-24 lg:py-32">
+    <div class="mx-auto max-w-7xl px-4 py-20 sm:py-24">
       <div class="hero-rise flex max-w-[1012px] flex-col gap-6">
         <h2
           class="max-w-[750px] font-display text-3xl font-normal leading-tight text-[#141414] sm:text-4xl lg:text-[36px] lg:leading-[44px]"

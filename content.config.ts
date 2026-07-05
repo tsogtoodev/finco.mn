@@ -149,6 +149,21 @@ const news = defineCollection({
   }),
 })
 
+// ─── Legal / policy pages (terms, privacy) ──────────────────────────────────
+// `page` type so each doc has a markdown body rendered at /legal/[slug]. Slug
+// shared across locales; only title/summary/body are translated.
+const legal = defineCollection({
+  type: 'page',
+  source: 'legal/**/*.md',
+  schema: z.object({
+    locale,
+    slug: z.string(),
+    title: z.string(),
+    summary: z.string().optional(),
+    updatedAt: z.string().optional(), // last-revised date, shown under the title
+  }),
+})
+
 // ─── Structured copy for the static pages (home/about/…) ─────────────────────
 const pages = defineCollection({
   type: 'data',
@@ -312,6 +327,9 @@ const pages = defineCollection({
               name: z.string(),
               role: z.string(),
               bio: z.string(),
+              // Optional career timeline shown on hover, cross-fading over `bio`.
+              // Newlines are preserved (rendered with whitespace-pre-line).
+              bioHover: z.string().optional(),
               photo: z.string(),
             }),
           ),
@@ -330,5 +348,5 @@ const pages = defineCollection({
 })
 
 export default defineContentConfig({
-  collections: { products, services, branches, jobs, news, pages },
+  collections: { products, services, branches, jobs, news, legal, pages },
 })

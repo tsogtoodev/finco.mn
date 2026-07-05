@@ -159,13 +159,13 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
         v-show="!atStart"
         class="pointer-events-none absolute left-[38px] top-1/2 z-10 hidden -translate-y-1/2 md:block lg:left-[56px]"
       >
-        <IconButton tone="dark" direction="prev" :label="t('common.prev')" class="pointer-events-auto" @click="go(-1)" @pointerdown.stop />
+        <IconButton tone="dark" direction="prev" :label="t('common.prev')" class="pointer-events-auto border border-white/40 backdrop-blur-[20px]" @click="go(-1)" @pointerdown.stop />
       </div>
       <div
         v-show="!atEnd"
         class="pointer-events-none absolute right-[38px] top-1/2 z-10 hidden -translate-y-1/2 md:block lg:right-[56px]"
       >
-        <IconButton tone="dark" direction="next" :label="t('common.next')" class="pointer-events-auto" @click="go(1)" @pointerdown.stop />
+        <IconButton tone="dark" direction="next" :label="t('common.next')" class="pointer-events-auto border border-white/40 backdrop-blur-[20px]" @click="go(1)" @pointerdown.stop />
       </div>
     </div>
 

@@ -24,7 +24,7 @@ withDefaults(
   >
     <Icon
       name="f:arrow-right"
-      class="text-[30px]"
+      class="text-[28px]"
       :class="{ '-scale-x-100': direction === 'prev' }"
     />
   </button>

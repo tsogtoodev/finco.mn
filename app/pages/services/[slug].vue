@@ -22,13 +22,14 @@ if (!service.value) {
 
 const { data: related } = await useAsyncData(
   () => `service-related-${locale.value}-${slug.value}`,
-  () => {
-    const slugs = service.value?.related ?? []
-    if (!slugs.length) return Promise.resolve([])
-    return queryCollection('products')
+  async () => {
+    // Related = the OTHER trust services, ordered like the catalog, current
+    // one excluded.
+    const items = await queryCollection('services')
       .where('locale', '=', locale.value)
-      .where('slug', 'IN', slugs)
+      .order('order', 'ASC')
       .all()
+    return items.filter((s) => s.slug !== slug.value)
   },
   { watch: [locale, slug] },
 )
@@ -48,7 +49,7 @@ useSeoMeta({
       :breadcrumb-current="service.breadcrumb || service.title"
     />
 
-    <RelatedProductsCarousel :products="related ?? []" />
+    <RelatedProductsCarousel :items="related ?? []" base-path="/services" />
     <FaqAccordion :items="service.faq" />
   </div>
 </template>

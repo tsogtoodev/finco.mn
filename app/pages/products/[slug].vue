@@ -22,13 +22,17 @@ if (!product.value) {
 
 const { data: related } = await useAsyncData(
   () => `product-related-${locale.value}-${slug.value}`,
-  () => {
-    const slugs = product.value?.related ?? []
-    if (!slugs.length) return Promise.resolve([])
-    return queryCollection('products')
+  async () => {
+    const audience = product.value?.audience
+    if (!audience) return []
+    // Related = other products of the SAME audience (business ↔ business,
+    // individual ↔ individual), ordered like the catalog, current one excluded.
+    const items = await queryCollection('products')
       .where('locale', '=', locale.value)
-      .where('slug', 'IN', slugs)
+      .where('audience', '=', audience)
+      .order('order', 'ASC')
       .all()
+    return items.filter((p) => p.slug !== slug.value)
   },
   { watch: [locale, slug] },
 )
@@ -62,7 +66,7 @@ useSeoMeta({
       </div>
     </section>
 
-    <RelatedProductsCarousel :products="related ?? []" />
+    <RelatedProductsCarousel :items="related ?? []" />
     <FaqAccordion :items="product.faq" />
   </div>
 </template>

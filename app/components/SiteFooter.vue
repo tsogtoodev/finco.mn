@@ -143,8 +143,8 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
             class="h-12 w-auto opacity-80"
           >
           <div class="flex items-center gap-8 text-sm font-light text-white/95">
-            <NuxtLink :to="localePath('/')" class="hover:text-white">{{ t('footer.terms') }}</NuxtLink>
-            <NuxtLink :to="localePath('/')" class="hover:text-white">{{ t('footer.privacy') }}</NuxtLink>
+            <NuxtLink :to="localePath('/legal/terms')" class="hover:text-white">{{ t('footer.terms') }}</NuxtLink>
+            <NuxtLink :to="localePath('/legal/privacy')" class="hover:text-white">{{ t('footer.privacy') }}</NuxtLink>
           </div>
         </div>
       </div>

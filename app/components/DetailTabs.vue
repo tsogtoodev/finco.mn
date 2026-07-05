@@ -21,49 +21,64 @@ const available = computed(() => {
 const active = ref(
   available.value.find((to) => to.key === 'requirements')?.key ?? available.value[0]?.key ?? 'info',
 )
+// Drives the sliding underline: tabs are equal-width, so the indicator just
+// translates by one slot-width per index.
+const activeIndex = computed(() =>
+  Math.max(0, available.value.findIndex((to) => to.key === active.value)),
+)
 </script>
 
 <template>
   <div v-if="available.length">
     <!-- Underline tablist -->
-    <div role="tablist" :aria-label="t('tabs.requirements')" class="flex w-full">
+    <div role="tablist" :aria-label="t('tabs.requirements')" class="relative flex w-full">
       <button
         v-for="tab in available"
         :key="tab.key"
         type="button"
         role="tab"
         :aria-selected="active === tab.key"
-        class="relative flex-1 cursor-pointer px-2 pb-6 pt-2 text-center text-base leading-5 transition-colors"
+        class="relative flex-1 cursor-pointer px-2 pb-6 pt-2 text-center text-base leading-5 transition-colors duration-300"
         :class="active === tab.key ? 'font-medium text-black/80' : 'font-light text-black/60 hover:text-black/80'"
         @click="active = tab.key"
       >
         {{ tab.label }}
-        <span class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-black/10" />
-        <span
-          v-if="active === tab.key"
-          class="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 bg-black/80"
-        />
       </button>
+      <span class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-black/10" />
+      <!-- Sliding active indicator: one slot wide, translated to the active tab -->
+      <span
+        class="pointer-events-none absolute bottom-0 left-0 h-0.5 bg-black/80 transition-transform duration-300 ease-out"
+        :style="{ width: `${100 / available.length}%`, transform: `translateX(${activeIndex * 100}%)` }"
+      />
     </div>
 
-    <!-- Panels -->
-    <div class="mt-6">
-      <div v-show="active === 'info'" class="prose max-w-none text-base font-light leading-7 text-black/80">
-        <ContentRenderer v-if="body" :value="{ body } as any" />
-        <p v-else-if="tabs.info">{{ tabs.info }}</p>
-      </div>
+    <!-- Panels: keyed by active tab so switching cross-fades out-in -->
+    <AnimatePresence mode="wait">
+      <Motion
+        :key="active"
+        :initial="{ opacity: 0, y: 8 }"
+        :animate="{ opacity: 1, y: 0 }"
+        :exit="{ opacity: 0, y: -8 }"
+        :transition="{ duration: 0.2, ease: 'easeOut' }"
+        class="mt-6"
+      >
+        <div v-if="active === 'info'" class="prose max-w-none text-base font-light leading-7 text-black/80">
+          <ContentRenderer v-if="body" :value="{ body } as any" />
+          <p v-else-if="tabs.info">{{ tabs.info }}</p>
+        </div>
 
-      <ol v-show="active === 'requirements'" class="flex flex-col gap-3 rounded-[12px] px-3 py-6">
-        <template v-for="(r, i) in tabs.requirements" :key="i">
-          <li class="flex gap-2 text-base font-light leading-7 text-black/80">
-            <span class="shrink-0 tabular-nums">{{ i + 1 }}.</span>
-            <span>{{ r }}</span>
-          </li>
-          <div v-if="i < (tabs.requirements?.length ?? 0) - 1" class="h-px w-full bg-black/10" />
-        </template>
-      </ol>
+        <ol v-else-if="active === 'requirements'" class="flex flex-col gap-3 rounded-[12px] px-3 py-6">
+          <template v-for="(r, i) in tabs.requirements" :key="i">
+            <li class="flex gap-2 text-base font-light leading-7 text-black/80">
+              <span class="shrink-0 tabular-nums">{{ i + 1 }}.</span>
+              <span>{{ r }}</span>
+            </li>
+            <div v-if="i < (tabs.requirements?.length ?? 0) - 1" class="h-px w-full bg-black/10" />
+          </template>
+        </ol>
 
-      <p v-show="active === 'other'" class="text-base font-light leading-7 text-black/80">{{ tabs.other }}</p>
-    </div>
+        <p v-else-if="active === 'other'" class="text-base font-light leading-7 text-black/80">{{ tabs.other }}</p>
+      </Motion>
+    </AnimatePresence>
   </div>
 </template>
