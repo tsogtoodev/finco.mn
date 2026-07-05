@@ -83,6 +83,28 @@ async function loadScene() {
   }
 }
 
+// Warm the cache during browser idle so a below-the-fold scene loads (near-)
+// instantly once it scrolls into view: pull the shared @splinetool/runtime chunk
+// (the ~1MB payload; the ESM module cache dedupes it across every scene) and this
+// scene's .splinecode into the HTTP cache ahead of the scroll trigger. `loadScene`
+// then reuses both. Skipped on data-saver / 2G so we don't spend metered bandwidth
+// a bouncing visitor never uses.
+function schedulePrefetch() {
+  if (app.value || typeof window === 'undefined') return
+  const conn = (navigator as Navigator & {
+    connection?: { saveData?: boolean; effectiveType?: string }
+  }).connection
+  if (conn?.saveData || /(?:^|-)2g$/.test(conn?.effectiveType ?? '')) return
+
+  const warm = () => {
+    if (app.value) return
+    import('@splinetool/runtime').catch(() => {})
+    fetch(props.scene).catch(() => {})
+  }
+  if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 3000 })
+  else setTimeout(warm, 1500)
+}
+
 // --- render gating (perf / thermals) ----------------------------------------
 // The Spline runtime renders every frame for as long as it's alive and does NOT
 // pause when scrolled offscreen, so each scene keeps the GPU busy continuously.
@@ -211,6 +233,7 @@ onMounted(() => {
   }
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('resize', onScroll, { passive: true })
+  schedulePrefetch()
 })
 
 onBeforeUnmount(() => {
