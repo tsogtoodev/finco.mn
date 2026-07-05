@@ -12,7 +12,7 @@ const cards = await useProductList(props.audience)
 </script>
 
 <template>
-  <section class="bg-[#fbfbfc] px-6 pb-20 pt-16 sm:pt-24">
+  <section class="max-w-7xl mx-auto bg-[#fbfbfc] px-6 pb-20 pt-16 sm:pt-24">
     <div class="mx-auto grid max-w-[1426px] gap-6 sm:grid-cols-2">
       <NuxtLink
         v-for="c in cards"

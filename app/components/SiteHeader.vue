@@ -39,6 +39,10 @@ const navItems = computed<NavItem[]>(() => [
   { kind: 'link', to: '/news', label: t('nav.news') },
 ])
 
+// Main nav links sit in the viewport permanently — prefetch on hover/focus only
+// (not visibility) so we don't pull every destination's chunks/assets on load.
+const navPrefetchOn = { interaction: true, visibility: false } as const
+
 // Menu links come from the `products` collection (audience + order) so the
 // menus track the CMS catalog; promo card structure comes from navPromos and
 // its copy from i18n. `label` names the panel for assistive tech.
@@ -330,6 +334,7 @@ const barHidden = computed(
             <NuxtLink
               v-if="item.kind === 'link'"
               :to="localePath(item.to)"
+              :prefetch-on="navPrefetchOn"
               class="rounded-full px-4 py-2 text-sm font-light transition-colors"
               :class="solid ? 'text-dark hover:bg-black/5' : 'text-white hover:bg-white/10'"
               :active-class="solid ? 'bg-black/[0.06] font-normal' : 'bg-white/15 font-normal'"
@@ -341,6 +346,7 @@ const barHidden = computed(
               v-else
               :ref="(el) => setTrigger(item.audience, el)"
               :to="localePath(item.to)"
+              :prefetch-on="navPrefetchOn"
               class="rounded-full px-4 py-2 text-sm font-light transition-colors"
               :class="[
                 solid ? 'text-dark hover:bg-black/5' : 'text-white hover:bg-white/10',

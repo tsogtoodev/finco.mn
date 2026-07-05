@@ -10,13 +10,14 @@ defineProps<{ headline: string; intro: string; photo: string }>()
   <section
     class="relative isolate flex min-h-[100svh] flex-col justify-end overflow-hidden bg-[#080a12] text-white"
   >
-    <NuxtImg
+    <HeroBackgroundImage
       :src="photo"
       :alt="headline"
-      width="1920"
-      height="1228"
+      :width="1920"
+      :height="1228"
       fetchpriority="high"
-      class="absolute inset-0 -z-20 size-full object-cover object-center"
+      wrapper-class="-z-20"
+      img-class="size-full object-cover object-center"
     />
     <!-- Legibility gradient: solid dark bottom → lightly tinted top (Figma) -->
     <div

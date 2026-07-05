@@ -149,6 +149,12 @@ export default defineNuxtConfig({
     },
   },
 
+  // Forward destination-page preload hints (hero images via NuxtImg, etc.) when
+  // a link is prefetched — pairs with nav hover prefetch in SiteHeader.
+  experimental: {
+    prefetchPreloadTags: true,
+  },
+
   devtools: { enabled: true },
   // ≥ 2024-09-19 makes the cloudflare-module preset use modern Workers Static
   // Assets (ASSETS binding) instead of the legacy Workers Sites/KV approach.

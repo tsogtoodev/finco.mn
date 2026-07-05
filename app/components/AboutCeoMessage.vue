@@ -48,11 +48,11 @@ onBeforeUnmount(() => observer?.disconnect())
     </div>
 
     <div class="relative mx-auto max-w-7xl px-4 py-20 sm:py-24 lg:py-32">
-      <MotionReveal class="max-w-3xl">
+      <MotionReveal class="max-w-4xl">
         <h2 class="font-display text-3xl font-normal leading-tight text-[#141414] sm:text-4xl">
           {{ ceo.headingLead }}<span class="text-[#4c41d8]">{{ ceo.headingAccent }}</span>
         </h2>
-        <p class="mt-6 max-w-3xl text-lg font-extralight leading-7 text-[rgba(0,0,0,0.6)] sm:text-xl">
+        <p class="mt-6 max-w-4xl text-lg font-extralight leading-7 text-[rgba(0,0,0,0.6)] sm:text-xl">
           {{ ceo.subheading }}
         </p>
       </MotionReveal>

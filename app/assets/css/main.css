@@ -129,6 +129,35 @@ body:has(.announcement-bar.is-collapsing) {
   }
 }
 
+/* Full-bleed hero photo — load-gated entrance fade + pull-back zoom. Hidden until
+   the img fires @load; HeroBackgroundImage toggles `.is-revealed` on the wrapper.
+   Parent section needs overflow-hidden + a matching fallback bg colour. */
+@keyframes hero-image-reveal {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.hero-image-reveal {
+  opacity: 0;
+  transform: scale(1.08);
+}
+.hero-image-reveal.is-revealed {
+  animation: hero-image-reveal 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-image-reveal.is-revealed {
+    animation: none;
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* Carousel card reveal — staggered fade-up for carousel items, same CSS-driven
    rationale as hero-rise. The carousel component gates it with an
    IntersectionObserver: cards render visible for SSR/no-JS, hide only after

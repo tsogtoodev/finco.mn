@@ -22,13 +22,14 @@ function goBack() {
 <template>
   <section class="relative isolate flex min-h-[560px] flex-col overflow-hidden bg-dark text-white sm:min-h-[620px] lg:min-h-[660px]">
     <!-- blurred background photo + diagonal scrim (Figma: 251.2deg, 0.25 → 1.0 black) -->
-    <NuxtImg
+    <HeroBackgroundImage
       v-if="props.image"
       :src="props.image"
       alt=""
-      width="1920"
-      height="660"
-      class="absolute inset-0 -z-10 size-full scale-110 object-cover blur-[5px]"
+      :width="1920"
+      :height="660"
+      wrapper-class="-z-10"
+      img-class="size-full scale-110 object-cover blur-[5px]"
       preload
     />
     <div

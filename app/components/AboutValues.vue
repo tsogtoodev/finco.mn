@@ -48,22 +48,25 @@ const routeD = computed(() => {
         </p>
       </div>
 
-      <div class="relative mx-auto mt-12 flex max-w-[1200px] items-center gap-8 sm:mt-16 lg:mt-[120px]">
-        <!-- Giant cluster raster bleeding past the section edges, multiply-blended
-             onto the light background exactly as in Figma (node 464:9715 renders
-             at 2224px wide); clipped by the section's overflow-hidden. -->
-        <img
-          :src="cluster"
+      <div class="relative mx-auto mt-12 max-w-[1200px] sm:mt-16 lg:mt-[120px]">
+        <!-- Teal cube-cluster raster (Figma 464:9715), scaled to fit the left slot
+             within the max-w-7xl column — no bleed or mid-frame crop. -->
+        <div
           aria-hidden="true"
-          alt=""
-          class="pointer-events-none absolute hidden max-w-none -translate-x-1/2 -translate-y-1/2 mix-blend-multiply lg:block"
-          style="width: 2224px; left: 107px; top: calc(50% - 70px)"
+          class="pointer-events-none absolute inset-y-0 left-0 hidden w-[367px] lg:block"
         >
+          <img
+            :src="cluster"
+            alt=""
+            class="size-full object-contain object-right mix-blend-multiply scale-300"
+          >
+        </div>
 
-        <!-- Connector spine + numbered diamond markers. The 367px offset stands
-             in for the cluster's slot in the row (Figma 464:9723). -->
-        <div class="hero-rise relative z-10 hidden h-[568px] w-[241px] shrink-0 lg:ml-[367px] lg:block" style="animation-delay: 0.1s">
-          <svg
+        <div class="relative flex items-center gap-8">
+          <!-- Connector spine + numbered diamond markers. The 367px offset stands
+               in for the cluster's slot in the row (Figma 464:9723). -->
+          <div class="hero-rise relative z-10 hidden h-[568px] w-[241px] shrink-0 lg:ml-[367px] lg:block" style="animation-delay: 0.1s">
+            <svg
             class="absolute left-0 top-[20px] h-[528px] w-[192px]"
             viewBox="0 0 193.981 530.413"
             fill="none"
@@ -123,33 +126,34 @@ const routeD = computed(() => {
               :class="active === i ? 'text-black' : 'text-black/50'"
             >{{ i + 1 }}</span>
           </button>
-        </div>
+          </div>
 
-        <div class="relative z-10 flex min-w-0 flex-1 flex-col gap-6">
-          <button
-            v-for="(it, i) in items"
-            :key="`v-${i}`"
-            type="button"
-            class="hero-rise flex w-full flex-col gap-2 rounded-[12px] p-4 text-left transition-[background-color,box-shadow] duration-300"
-            :style="{ animationDelay: `${0.1 + i * 0.08}s` }"
-            :class="active === i
-              ? 'bg-white shadow-[0px_0px_20px_0px_rgba(0,0,0,0.05)]'
-              : 'hover:bg-[#f3fafb]'"
-            @click="active = i"
-          >
-            <h3
-              class="text-[18px] leading-7 transition-colors duration-300"
-              :class="active === i ? 'font-semibold text-[#2de0c6]' : 'font-normal text-[rgba(0,0,0,0.6)]'"
+          <div class="relative z-10 flex min-w-0 flex-1 flex-col gap-6">
+            <button
+              v-for="(it, i) in items"
+              :key="`v-${i}`"
+              type="button"
+              class="hero-rise flex w-full flex-col gap-2 rounded-[12px] p-4 text-left transition-[background-color,box-shadow] duration-300 cursor-pointer"
+              :style="{ animationDelay: `${0.1 + i * 0.08}s` }"
+              :class="active === i
+                ? 'bg-white shadow-[0px_0px_20px_0px_rgba(0,0,0,0.05)]'
+                : 'hover:bg-[#f3fafb]'"
+              @click="active = i"
             >
-              {{ it.title }}
-            </h3>
-            <p
-              class="text-base font-light leading-6 transition-colors duration-300"
-              :class="active === i ? 'text-[rgba(0,0,0,0.6)]' : 'text-[rgba(0,0,0,0.4)]'"
-            >
-              {{ it.body }}
-            </p>
-          </button>
+              <h3
+                class="text-[18px] leading-7 transition-colors duration-300"
+                :class="active === i ? 'font-semibold text-[#2de0c6]' : 'font-normal text-[rgba(0,0,0,0.6)]'"
+              >
+                {{ it.title }}
+              </h3>
+              <p
+                class="text-base font-light leading-6 transition-colors duration-300"
+                :class="active === i ? 'text-[rgba(0,0,0,0.6)]' : 'text-[rgba(0,0,0,0.4)]'"
+              >
+                {{ it.body }}
+              </p>
+            </button>
+          </div>
         </div>
       </div>
     </div>
