@@ -12,6 +12,9 @@ const props = defineProps<{
 }>()
 
 const localePath = useLocalePath()
+// `:is="'NuxtLink'"` (string) renders a literal, non-navigating <nuxt-link>
+// element — resolve the real component so linked cards become real anchors.
+const NuxtLink = resolveComponent('NuxtLink')
 const title = computed(() => props.title ?? props.item?.title ?? '')
 const excerpt = computed(() => props.excerpt ?? props.item?.excerpt)
 const image = computed(() => props.image ?? props.item?.image)
@@ -20,7 +23,7 @@ const to = computed(() => props.to ?? props.item?.to)
 
 <template>
   <component
-    :is="to ? 'NuxtLink' : 'div'"
+    :is="to ? NuxtLink : 'div'"
     :to="to ? localePath(to) : undefined"
     class="group flex flex-col gap-6"
   >

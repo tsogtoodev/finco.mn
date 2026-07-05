@@ -1,24 +1,23 @@
 <script setup lang="ts">
-// Home product carousel — a "spotlight" carousel (Figma 238:9718). The active
-// ("main") card is the largest and is pinned to the first-item slot; every other
-// card shrinks with its distance from the active one, so it reads as a descending
-// staircase on BOTH sides. Prev/next step exactly one card at a time.
+// Home news carousel — full-bleed carousel of uniform-width cards that steps one
+// at a time; the active card is pinned to the first-item slot with blurred peeks
+// on either side. (Mirrors HomeProductsCarousel's layout/interaction, without the
+// size ramp — every card is the same size.)
 const props = defineProps<{
-  products: { slug: string; title: string; summary: string; image: string }[]
+  items: { slug: string; title: string; excerpt?: string; image?: string; to?: string }[]
   label?: string
 }>()
 const { t } = useI18n()
 
-const GAP = 51
-// Symmetric size fall-off from the active card (distance 0 = biggest).
-const cardW = (d: number) => Math.max(293, 353 - d * 15)
-const cardH = (d: number) => Math.max(390, 470 - d * 20)
+const GAP = 40
+const CARD_W = 408
+const CARD_H = 420
 
 const active = ref(0)
-// Snap back to the first card whenever the list changes (audience toggle).
-watch(() => props.products.map((p) => p.slug).join('|'), () => { active.value = 0 })
+// Snap back to the first card whenever the list changes (locale switch).
+watch(() => props.items.map((n) => n.slug).join('|'), () => { active.value = 0 })
 
-const count = computed(() => props.products.length)
+const count = computed(() => props.items.length)
 const atStart = computed(() => active.value <= 0)
 const atEnd = computed(() => active.value >= count.value - 1)
 function go(dir: 1 | -1) {
@@ -27,11 +26,7 @@ function go(dir: 1 | -1) {
 
 // Shift the track left so the active card's leading edge lands on the main slot
 // (the track's padding-left = --carousel-edge places that slot).
-const trackOffset = computed(() => {
-  let x = 0
-  for (let k = 0; k < active.value; k++) x += cardW(active.value - k) + GAP
-  return -x
-})
+const trackOffset = computed(() => -active.value * (CARD_W + GAP))
 
 const progress = computed(() => (count.value <= 1 ? 1 : active.value / (count.value - 1)))
 
@@ -49,22 +44,21 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
       @keydown.left.prevent="go(-1)"
       @keydown.right.prevent="go(1)"
     >
-      <!-- Height pinned to the tallest (active) card. Without this the row height
-           follows the animating card sizes and dips below 470 mid-step — springing
-           back and bouncing the whole centred row. Cards just centre within it. -->
+      <!-- Fixed card height keeps the row uniform (news text lengths vary);
+           overflow-hidden clips any overflow. -->
       <div
-        class="flex h-[470px] items-center pl-[var(--carousel-edge,1.5rem)] transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+        class="flex h-[420px] items-start pl-[var(--carousel-edge,1.5rem)] transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
         :style="{ columnGap: `${GAP}px`, transform: `translateX(${trackOffset}px)` }"
       >
-        <ProductCard
-          v-for="(p, i) in products"
-          :key="p.slug"
-          :title="p.title"
-          :summary="p.summary"
-          :image="p.image"
-          :to="`/products/${p.slug}`"
-          :style="{ width: `${cardW(Math.abs(i - active))}px`, height: `${cardH(Math.abs(i - active))}px`, minHeight: 0 }"
-          class="shrink-0 transition-[width,height] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+        <NewsCard
+          v-for="n in items"
+          :key="n.slug"
+          :title="n.title"
+          :excerpt="n.excerpt"
+          :image="n.image"
+          :to="n.to"
+          :style="{ width: `${CARD_W}px`, height: `${CARD_H}px` }"
+          class="shrink-0 overflow-hidden"
         />
       </div>
 

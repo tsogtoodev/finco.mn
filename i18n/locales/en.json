@@ -200,7 +200,12 @@
     "fincobiz": {
       "subtext": "A digital platform that handles business loans and flexible financing for companies in the fastest, simplest and easiest way.",
       "calloutHeading": "Faster than you think",
-      "calloutSubtext": "The FincoBiz platform makes the whole journey — from application to decision — simpler and faster."
+      "calloutSubtext": "The FincoBiz platform makes the whole journey — from application to decision — simpler and faster.",
+      "cards": {
+        "request": "Submit a loan request",
+        "receivables": "Track receivables",
+        "eligibility": "Check loan eligibility"
+      }
     },
     "contact": {
       "heading": "Get in touch",

@@ -18,19 +18,14 @@ const items = computed(() => homeNews[locale.value as 'mn' | 'en'] ?? homeNews.m
           {{ t('common.learnMore') }}
         </AppButton>
       </MotionReveal>
+    </div>
 
-      <MotionReveal :delay="0.1" class="mt-12">
-        <ProductCarousel :label="t('nav.news')">
-          <NewsCard
-            v-for="n in items"
-            :key="n.slug"
-            :title="n.title"
-            :excerpt="n.excerpt"
-            :image="n.image"
-            :to="n.to"
-            class="w-[300px] shrink-0 snap-start sm:w-[408px]"
-          />
-        </ProductCarousel>
+    <!-- Full-bleed spotlight carousel: heading + controls stay in the 1200 column
+         while the card track scrolls edge-to-edge. --carousel-edge aligns the
+         first/last card (and the controls) to the heading column. -->
+    <div class="mt-12" :style="{ '--carousel-edge': 'max(1.5rem, calc((100vw - 1200px) / 2 + 1.5rem))' }">
+      <MotionReveal :delay="0.1">
+        <HomeNewsCarousel :items="items" :label="t('nav.news')" />
       </MotionReveal>
     </div>
   </section>

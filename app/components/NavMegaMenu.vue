@@ -1,9 +1,9 @@
 <script setup lang="ts">
 // The white dropdown panel for a nav mega-menu (Figma 1:11916 Иргэнд /
 // 1:11775 Бизнесд). Generic + config-driven: promo card on the left plus a
-// link grid chunked column-major into columns of at most five links, hairline
-// dividers between columns (Иргэнд: 5, Бизнесд: 5 + 3). The panel is
-// content-sized; the caller centers it under the nav bar.
+// link grid chunked column-major into columns of at most five links
+// (Иргэнд: 5, Бизнесд: 5 + 3). The panel is content-sized; the caller
+// centers it under the nav bar.
 interface MenuLink {
   to: string
   title: string
@@ -38,23 +38,20 @@ const columns = computed<MenuLink[][]>(() => {
   >
     <NavPromoCard v-bind="promo" />
 
-    <template v-for="(col, ci) in columns" :key="ci">
-      <div
-        v-if="ci > 0"
-        aria-hidden="true"
-        class="w-px shrink-0 self-stretch bg-black/10"
+    <!-- fixed 440px columns per Figma; min-w-0 lets them shrink (text wraps)
+         when the viewport caps the panel below its natural width -->
+    <div
+      v-for="(col, ci) in columns"
+      :key="ci"
+      class="flex w-[440px] min-w-0 flex-col gap-1"
+    >
+      <NavMenuLink
+        v-for="link in col"
+        :key="link.to + link.title"
+        :to="link.to"
+        :title="link.title"
+        :desc="link.desc"
       />
-      <!-- fixed 440px columns per Figma; min-w-0 lets them shrink (text wraps)
-           when the viewport caps the panel below its natural width -->
-      <div class="flex w-[440px] min-w-0 flex-col gap-1">
-        <NavMenuLink
-          v-for="link in col"
-          :key="link.to + link.title"
-          :to="link.to"
-          :title="link.title"
-          :desc="link.desc"
-        />
-      </div>
-    </template>
+    </div>
   </div>
 </template>

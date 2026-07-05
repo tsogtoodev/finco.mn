@@ -80,21 +80,38 @@ body {
 @keyframes mega-pop {
   from {
     opacity: 0;
-    transform: translateY(-6px) scale(0.99);
+    transform: translateY(-10px) scale(0.98);
+    filter: blur(6px);
   }
   to {
     opacity: 1;
     transform: none;
+    filter: none;
   }
 }
 @keyframes mega-pop-out {
   from {
     opacity: 1;
     transform: none;
+    filter: none;
   }
   to {
     opacity: 0;
-    transform: translateY(-6px) scale(0.99);
+    transform: translateY(-8px) scale(0.985);
+    filter: blur(4px);
+  }
+}
+/* Switching between two open menus (Иргэнд ↔ Бизнесд): the panel remounts
+   (keyed on the open menu), so a light settle reads as a content swap rather
+   than replaying the full pop. */
+@keyframes mega-swap {
+  from {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 @keyframes scrim-fade {
@@ -115,21 +132,26 @@ body {
 }
 .mega-pop {
   transform-origin: top center;
-  animation: mega-pop 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: mega-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .mega-pop-out {
   transform-origin: top center;
-  animation: mega-pop-out 0.15s cubic-bezier(0.4, 0, 1, 1) both;
+  animation: mega-pop-out 0.18s cubic-bezier(0.4, 0, 1, 1) both;
+}
+.mega-swap {
+  transform-origin: top center;
+  animation: mega-swap 0.18s cubic-bezier(0.33, 1, 0.68, 1) both;
 }
 .scrim-fade {
-  animation: scrim-fade 0.22s ease both;
+  animation: scrim-fade 0.3s ease both;
 }
 .scrim-fade-out {
-  animation: scrim-fade-out 0.15s ease both;
+  animation: scrim-fade-out 0.18s ease both;
 }
 @media (prefers-reduced-motion: reduce) {
   .mega-pop,
   .mega-pop-out,
+  .mega-swap,
   .scrim-fade,
   .scrim-fade-out {
     animation-duration: 0.01ms;

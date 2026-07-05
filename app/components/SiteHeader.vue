@@ -66,14 +66,17 @@ const menus = computed(() => ({
 // ── mega-menu open/close with hover intent ─────────────────────────────────
 // `openMenu` holds the visible menu; `closing` plays the exit animation for
 // EXIT_MS before the panel actually unmounts (so close is animated, not abrupt).
+// `swapped` marks an open→open switch (Иргэнд ↔ Бизнесд): the keyed panel
+// remounts with the lighter .mega-swap settle instead of the full pop.
 const openMenu = ref<NavAudience | null>(null)
 const closing = ref(false)
+const swapped = ref(false)
 let openTimer: ReturnType<typeof setTimeout> | undefined
 let closeTimer: ReturnType<typeof setTimeout> | undefined
 let exitTimer: ReturnType<typeof setTimeout> | undefined
 const OPEN_DELAY = 110
 const CLOSE_DELAY = 150
-const EXIT_MS = 150
+const EXIT_MS = 180 // keep in sync with .mega-pop-out / .scrim-fade-out (0.18s)
 
 function clearTimers() {
   clearTimeout(openTimer)
@@ -83,6 +86,7 @@ function clearTimers() {
 function showMenu(a: NavAudience) {
   clearTimers()
   clearTimeout(exitTimer)
+  swapped.value = openMenu.value !== null && openMenu.value !== a
   closing.value = false
   openMenu.value = a
 }
@@ -223,7 +227,7 @@ const barHidden = computed(
 
 <template>
   <header
-    class="sticky top-0 z-50 [transition:background-color_200ms_ease-out,box-shadow_200ms_ease-out,translate_400ms_cubic-bezier(0.22,1,0.36,1)] [will-change:translate] motion-reduce:transition-none"
+    class="sticky top-0 z-50 [transition:background-color_300ms_cubic-bezier(0.33,1,0.68,1),box-shadow_300ms_cubic-bezier(0.33,1,0.68,1),translate_400ms_cubic-bezier(0.22,1,0.36,1)] [will-change:translate] motion-reduce:transition-none"
     :class="[
       barHidden ? '-translate-y-full' : 'translate-y-0',
       solid ? 'bg-white' : 'bg-transparent',
@@ -237,7 +241,7 @@ const barHidden = computed(
     <!-- top-down scrim keeps the white nav legible over the hero before it solidifies -->
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute inset-x-0 top-0 h-[120px] bg-gradient-to-b from-black/35 to-transparent transition-opacity duration-200"
+      class="pointer-events-none absolute inset-x-0 top-0 h-[120px] bg-gradient-to-b from-black/35 to-transparent transition-opacity duration-300"
       :class="showScrim ? 'opacity-100' : 'opacity-0'"
     />
 
@@ -266,12 +270,12 @@ const barHidden = computed(
         >
           <FincoLogo
             variant="color"
-            class="absolute inset-0 size-full transition-opacity duration-200"
+            class="absolute inset-0 size-full transition-opacity duration-300"
             :class="solid ? 'opacity-100' : 'opacity-0'"
           />
           <FincoLogo
             variant="white"
-            class="absolute inset-0 size-full transition-opacity duration-200"
+            class="absolute inset-0 size-full transition-opacity duration-300"
             :class="solid ? 'opacity-0' : 'opacity-100'"
           />
         </NuxtLink>
@@ -338,10 +342,11 @@ const barHidden = computed(
         <div
           v-if="openMenu"
           :id="`mega-${openMenu}`"
+          :key="openMenu"
           role="region"
           :aria-label="menus[openMenu].label"
           class="pointer-events-auto mt-6 min-w-0"
-          :class="closing ? 'mega-pop-out' : 'mega-pop'"
+          :class="closing ? 'mega-pop-out' : swapped ? 'mega-swap' : 'mega-pop'"
           @mouseenter="cancelClose"
           @mouseleave="scheduleClose"
         >
