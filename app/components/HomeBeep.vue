@@ -165,9 +165,9 @@ onBeforeUnmount(() => {
 
           <!-- Plus affordance, top-right (Figma Huge-icon/solid/plus: 22.5px
                white cross in a 40px box) — hints that the card expands. -->
-          <svg class="beep-plus" viewBox="0 0 40 40" aria-hidden="true">
+          <!-- <svg class="beep-plus" viewBox="0 0 40 40" aria-hidden="true">
             <path d="M20 8.75v22.5M8.75 20h22.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" />
-          </svg>
+          </svg> -->
 
           <!-- Info bar -->
           <div class="beep-bar" :class="{ 'beep-bar--pinned': qrOpen }">
