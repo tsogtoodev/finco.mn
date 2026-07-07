@@ -119,20 +119,58 @@ function schedulePrefetch() {
 // even the pure-CSS hero, where no scene is visible — still burns every scene's
 // render loop, which heats the machine over a few minutes.
 //
-// Once loaded we drive app.stop()/play() off the canvas's viewport visibility
+// Once loaded we gate rendering off the canvas's viewport visibility
 // (IntersectionObserver) AND the tab's visibility, so only an on-screen scene in
-// a foregrounded tab renders. stop() halts the rAF loop (0 GPU) and keeps the last
-// frame on the canvas, so resuming is seamless. If IO is unavailable the scene
-// just keeps rendering — i.e. the prior behaviour, never worse.
+// a foregrounded tab renders. If IO is unavailable the scene just keeps
+// rendering — i.e. the prior behaviour, never worse.
+//
+// Gating detaches ONLY the render loop (renderer.setAnimationLoop(null) → rAF
+// off, 0 GPU, last frame stays on the canvas). It must NOT use the public
+// app.stop()/play() pair: stop() is a destructive teardown — it deactivates the
+// whole event manager and runs mixer.stopAllAction(), killing every playing
+// animation — and play() re-dispatches the scene's Start events into a frame
+// clock whose _lastTime was never reset, so the first resumed frame gets
+// dt = the entire time spent offscreen. That giant delta fast-forwards every
+// finite (non-looping) animation to its end, where clampWhenFinished freezes it
+// until a full page reload. Resetting _lastTime before re-attaching the loop
+// makes resume seamless: animations continue mid-flight from where they paused.
 let io: IntersectionObserver | null = null
 let onScreen = true
+let renderActive = true
+
+// Private runtime internals (verified against @splinetool/runtime 1.12.98).
+// `render` is a bound arrow field on Application — exactly what the runtime's
+// own play() passes to setAnimationLoop.
+type RuntimeInternals = {
+  _renderer?: { setAnimationLoop: (fn: ((t: number) => void) | null) => void }
+  _lastTime?: number
+  render?: (t: number) => void
+}
 
 function syncRender() {
   const a = app.value
   if (!a) return
   const active = onScreen && !document.hidden
-  if (active && a.isStopped) a.play()
-  else if (!active && !a.isStopped) a.stop()
+  if (active === renderActive) return
+  renderActive = active
+  const g = a as unknown as RuntimeInternals
+  if (g._renderer?.setAnimationLoop && typeof g.render === 'function') {
+    if (active) {
+      // Falsy _lastTime → the runtime skips the dt computation on the first
+      // resumed frame instead of seeing the whole offscreen gap as one delta.
+      g._lastTime = 0
+      g._renderer.setAnimationLoop(g.render)
+    }
+    else {
+      g._renderer.setAnimationLoop(null)
+    }
+  }
+  else {
+    // Internals moved in a runtime upgrade — fall back to the public pair.
+    // Coarser (animations restart / can freeze) but never renders offscreen.
+    if (active && a.isStopped) a.play()
+    else if (!active && !a.isStopped) a.stop()
+  }
 }
 
 function startRenderGating() {
