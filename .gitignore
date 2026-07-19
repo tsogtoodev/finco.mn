@@ -30,3 +30,6 @@ app/assets/videos/
 .env
 .env.*
 !.env.example
+
+# Scripts
+Makefile

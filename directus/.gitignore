@@ -1,0 +1,4 @@
+# Never commit secrets or runtime data
+.env
+database/
+backups/

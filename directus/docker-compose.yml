@@ -1,0 +1,41 @@
+# Directus CMS for finco — single-box deploy
+# Target host: 1 vCPU / 1 GB RAM Ubuntu VPS, SQLite database, Cloudflare R2 media, Cloudflare Tunnel.
+# Pin the Directus image to an EXACT version. Never use :latest or a moving major tag —
+# upgrades must be deliberate and tested in staging first.
+services:
+  directus:
+    image: directus/directus:11.3.5 # PIN: verify the current patch at https://hub.docker.com/r/directus/directus/tags
+    container_name: directus
+    restart: unless-stopped
+    mem_limit: 768m # leave ~256 MB for the OS on a 1 GB box; the 2 GB swapfile is the backstop
+    ports:
+      - "127.0.0.1:8055:8055" # localhost-only. Cloudflare Tunnel reaches it; the public internet cannot.
+    volumes:
+      - ./database:/directus/database # SQLite file lives here (persistent — back this up)
+      - ./extensions:/directus/extensions
+    env_file:
+      - .env
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=640" # cap Node heap so it can't OOM the box
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8055/server/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Cloudflare Tunnel — publishes cms.finco.design WITHOUT opening any port on the VPS.
+  # Setup (one time): Zero Trust > Networks > Tunnels > Create a tunnel (token type).
+  #   Add a Public Hostname:  cms.finco.design  ->  Service: http://directus:8055
+  #   Copy the tunnel token into CF_TUNNEL_TOKEN in .env.
+  # cloudflared reaches Directus over the compose network by service name (directus:8055),
+  # independent of the localhost port binding above.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CF_TUNNEL_TOKEN}
+    depends_on:
+      - directus
