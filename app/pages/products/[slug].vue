@@ -1,18 +1,23 @@
 <script setup lang="ts">
+import type { Collections } from '@nuxt/content'
+
 // Product detail — (locale, slug) query + batched related lookup.
 definePageMeta({ transparentHeader: true })
 
 const route = useRoute()
 const { locale, t } = useI18n()
 const slug = computed(() => route.params.slug as string)
+const provider = useCmsProvider()
 
 const { data: product } = await useAsyncData(
   () => `product-${locale.value}-${slug.value}`,
   () =>
-    queryCollection('products')
-      .where('locale', '=', locale.value)
-      .where('slug', '=', slug.value)
-      .first(),
+    provider === 'directus'
+      ? fetchCms<Collections['products'] | null>('products', { locale: locale.value, slug: slug.value })
+      : queryCollection('products')
+          .where('locale', '=', locale.value)
+          .where('slug', '=', slug.value)
+          .first(),
   { watch: [locale, slug] },
 )
 
@@ -27,11 +32,16 @@ const { data: related } = await useAsyncData(
     if (!audience) return []
     // Related = other products of the SAME audience (business ↔ business,
     // individual ↔ individual), ordered like the catalog, current one excluded.
-    const items = await queryCollection('products')
-      .where('locale', '=', locale.value)
-      .where('audience', '=', audience)
-      .order('order', 'ASC')
-      .all()
+    const items =
+      provider === 'directus'
+        ? (await fetchCms<Collections['products'][]>('products', { locale: locale.value })).filter(
+            (p) => p.audience === audience,
+          )
+        : await queryCollection('products')
+            .where('locale', '=', locale.value)
+            .where('audience', '=', audience)
+            .order('order', 'ASC')
+            .all()
     return items.filter((p) => p.slug !== slug.value)
   },
   { watch: [locale, slug] },

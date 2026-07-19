@@ -46,7 +46,17 @@ export default defineNuxtConfig({
   // (session secret = NUXT_SESSION_PASSWORD, a Cloudflare secret in prod).
   // Firebase web config is public; values come from NUXT_PUBLIC_FIREBASE_*.
   runtimeConfig: {
+    // Directus CMS boundary (server-only; see server/utils/directus.ts).
+    // NUXT_CMS_TOKEN is the read-only api-reader token — published content only.
+    // NUXT_CMS_MEDIA_URL (optional) = public R2 hostname; when set, media bytes
+    // are served by Cloudflare instead of the Directus VPS.
+    cmsUrl: '', // NUXT_CMS_URL
+    cmsToken: '', // NUXT_CMS_TOKEN
+    cmsMediaUrl: '', // NUXT_CMS_MEDIA_URL
     public: {
+      // '' = @nuxt/content (current), 'directus' = the /api/cms boundary.
+      // Flip per-environment via NUXT_PUBLIC_CMS_PROVIDER; rollback = unset.
+      cmsProvider: '', // NUXT_PUBLIC_CMS_PROVIDER
       firebase: {
         apiKey: '',
         authDomain: '',
@@ -116,6 +126,9 @@ export default defineNuxtConfig({
       },
     },
     quality: 80,
+    // CMS media originates from these hosts (Directus assets / public R2 bind);
+    // required for IPX (dev) to proxy remote images.
+    domains: ['cms.finco.design', 'media.finco.design'],
   },
   // The /cdn-cgi/image endpoint only exists on the deployed Cloudflare zone, so
   // use IPX during local dev and the Cloudflare provider in production builds.

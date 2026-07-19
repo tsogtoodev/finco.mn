@@ -1,17 +1,22 @@
 <script setup lang="ts">
+import type { Collections } from '@nuxt/content'
+
 // Branches — interactive: selectable list drives a photo + an animated map.
 // Light/centered header; the nav stays in its SOLID/light mode (page default).
 const { locale, t } = useI18n()
 
 const page = await usePageContent('branches')
 
+const provider = useCmsProvider()
 const { data: branches } = await useAsyncData(
   () => `branches-${locale.value}`,
   () =>
-    queryCollection('branches')
-      .where('locale', '=', locale.value)
-      .order('order', 'ASC')
-      .all(),
+    provider === 'directus'
+      ? fetchCms<Collections['branches'][]>('branches', { locale: locale.value })
+      : queryCollection('branches')
+          .where('locale', '=', locale.value)
+          .order('order', 'ASC')
+          .all(),
   { watch: [locale] },
 )
 

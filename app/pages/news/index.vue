@@ -1,16 +1,21 @@
 <script setup lang="ts">
+import type { Collections } from '@nuxt/content'
+
 // News index — backs the "Мэдээ мэдээлэл" nav item. Overlay nav over a dark hero.
 definePageMeta({ transparentHeader: true })
 
 const { locale, t } = useI18n()
 
+const provider = useCmsProvider()
 const { data: news } = await useAsyncData(
   () => `news-index-${locale.value}`,
   () =>
-    queryCollection('news')
-      .where('locale', '=', locale.value)
-      .order('publishedAt', 'DESC')
-      .all(),
+    provider === 'directus'
+      ? fetchCms<Collections['news'][]>('news', { locale: locale.value })
+      : queryCollection('news')
+          .where('locale', '=', locale.value)
+          .order('publishedAt', 'DESC')
+          .all(),
   { watch: [locale] },
 )
 

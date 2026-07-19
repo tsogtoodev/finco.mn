@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Collections } from '@nuxt/content'
+
 // Job detail + data-driven application form.
 definePageMeta({ transparentHeader: true })
 
@@ -6,13 +8,16 @@ const route = useRoute()
 const { locale, t } = useI18n()
 const slug = computed(() => route.params.slug as string)
 
+const provider = useCmsProvider()
 const { data: job } = await useAsyncData(
   () => `job-${locale.value}-${slug.value}`,
   () =>
-    queryCollection('jobs')
-      .where('locale', '=', locale.value)
-      .where('slug', '=', slug.value)
-      .first(),
+    provider === 'directus'
+      ? fetchCms<Collections['jobs'] | null>('jobs', { locale: locale.value, slug: slug.value })
+      : queryCollection('jobs')
+          .where('locale', '=', locale.value)
+          .where('slug', '=', slug.value)
+          .first(),
   { watch: [locale, slug] },
 )
 

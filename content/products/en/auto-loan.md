@@ -21,6 +21,8 @@ tabs:
     - No adverse credit history
 related:
   - green-loan
+  - business-loan
+  - investment-loan
 faq:
   - question: What documents are required to apply?
     answer: A national ID and proof of income are required.

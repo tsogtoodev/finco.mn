@@ -1,17 +1,22 @@
 <script setup lang="ts">
+import type { Collections } from '@nuxt/content'
+
 // News (Figma 1:14236): heading + "Дэлгэрэнгүй" CTA, then a news-card carousel.
 // Cards are the latest articles from the `news` collection, so publishing in
 // /content (Studio) updates the homepage automatically.
 const { t, locale } = useI18n()
 
+const provider = useCmsProvider()
 const { data: articles } = await useAsyncData(
   () => `news-home-${locale.value}`,
   () =>
-    queryCollection('news')
-      .where('locale', '=', locale.value)
-      .order('publishedAt', 'DESC')
-      .limit(5)
-      .all(),
+    provider === 'directus'
+      ? fetchCms<Collections['news'][]>('news', { locale: locale.value, limit: 5 })
+      : queryCollection('news')
+          .where('locale', '=', locale.value)
+          .order('publishedAt', 'DESC')
+          .limit(5)
+          .all(),
   { watch: [locale], default: () => [] },
 )
 

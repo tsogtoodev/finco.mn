@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Collections } from '@nuxt/content'
+
 // Careers — recruitment timeline (horizontal), perks, open positions.
 definePageMeta({ transparentHeader: true })
 
@@ -6,9 +8,13 @@ const { locale, t } = useI18n()
 
 const page = await usePageContent('careers')
 
+const provider = useCmsProvider()
 const { data: jobs } = await useAsyncData(
   () => `jobs-${locale.value}`,
-  () => queryCollection('jobs').where('locale', '=', locale.value).all(),
+  () =>
+    provider === 'directus'
+      ? fetchCms<Collections['jobs'][]>('jobs', { locale: locale.value })
+      : queryCollection('jobs').where('locale', '=', locale.value).all(),
   { watch: [locale] },
 )
 

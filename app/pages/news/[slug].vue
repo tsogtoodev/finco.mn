@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Collections } from '@nuxt/content'
+
 // News article page — renders a `news` collection doc (markdown body). No
 // dedicated Figma design: dark PageHero (matching /news) + a narrow prose
 // column, image on top, date + back link. 404s when the slug/locale pair is
@@ -8,13 +10,16 @@ const localePath = useLocalePath()
 const route = useRoute()
 const slug = computed(() => String(route.params.slug ?? ''))
 
+const provider = useCmsProvider()
 const { data: article } = await useAsyncData(
   () => `news-${slug.value}-${locale.value}`,
   () =>
-    queryCollection('news')
-      .where('locale', '=', locale.value)
-      .where('slug', '=', slug.value)
-      .first(),
+    provider === 'directus'
+      ? fetchCms<Collections['news'] | null>('news', { locale: locale.value, slug: slug.value })
+      : queryCollection('news')
+          .where('locale', '=', locale.value)
+          .where('slug', '=', slug.value)
+          .first(),
   { watch: [locale, slug] },
 )
 

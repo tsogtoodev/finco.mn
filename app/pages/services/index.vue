@@ -16,10 +16,13 @@ definePageMeta({
       // navigateTo/abortNavigation calls.
       const nuxtApp = useNuxtApp()
       const locale = nuxtApp.$i18n.locale.value
-      const first = await queryCollection('services')
-        .where('locale', '=', locale)
-        .order('order', 'ASC')
-        .first()
+      const first =
+        nuxtApp.$config.public.cmsProvider === 'directus'
+          ? (await $fetch<{ slug: string }[]>('/api/cms/services', { query: { locale } }))[0]
+          : await queryCollection('services')
+              .where('locale', '=', locale)
+              .order('order', 'ASC')
+              .first()
       return nuxtApp.runWithContext(() => {
         if (!first?.slug) {
           return abortNavigation(createError({ statusCode: 404, statusMessage: 'No services found' }))
