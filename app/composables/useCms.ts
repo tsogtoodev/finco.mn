@@ -12,5 +12,17 @@ export function fetchCms<T>(
   collection: 'products' | 'services' | 'branches' | 'jobs' | 'news' | 'legal' | 'pages',
   query: { locale: string; slug?: string; key?: string; limit?: number },
 ): Promise<T> {
-  return $fetch<T>(`/api/cms/${collection}`, { query }) as Promise<T>
+  // On the server, forward the incoming request's cookies so the CMS endpoint
+  // can see the sealed live-preview session (plan §7); useRequestFetch needs
+  // the Nuxt context — if a call site loses it, degrade to plain $fetch
+  // (public content still works, preview falls back to published).
+  let f: typeof $fetch = $fetch
+  if (import.meta.server) {
+    try {
+      f = useRequestFetch()
+    } catch {
+      /* context lost — published-only fetch */
+    }
+  }
+  return f<T>(`/api/cms/${collection}`, { query }) as Promise<T>
 }

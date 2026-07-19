@@ -53,6 +53,11 @@ export default defineNuxtConfig({
     cmsUrl: '', // NUXT_CMS_URL
     cmsToken: '', // NUXT_CMS_TOKEN
     cmsMediaUrl: '', // NUXT_CMS_MEDIA_URL
+    // Live preview (plan §7): PREVIEW_TOKEN reads drafts/versions (server-only);
+    // PREVIEW_SECRET validates Directus's bootstrap request AND seals the
+    // 30-minute preview session cookie. Rotate together via setup-preview.mjs.
+    cmsPreviewToken: '', // NUXT_CMS_PREVIEW_TOKEN
+    cmsPreviewSecret: '', // NUXT_CMS_PREVIEW_SECRET
     public: {
       // '' = @nuxt/content (current), 'directus' = the /api/cms boundary.
       // Flip per-environment via NUXT_PUBLIC_CMS_PROVIDER; rollback = unset.

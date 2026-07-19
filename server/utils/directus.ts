@@ -4,16 +4,20 @@
 export async function directusFetch<T = unknown>(
   path: string,
   query: Record<string, string | number> = {},
+  opts: { preview?: boolean } = {},
 ): Promise<T> {
   const config = useRuntimeConfig()
-  if (!config.cmsUrl || !config.cmsToken) {
+  // preview: use the draft-capable preview-reader token instead of the
+  // published-only api-reader (plan §7). Both are server-only secrets.
+  const token = opts.preview ? config.cmsPreviewToken : config.cmsToken
+  if (!config.cmsUrl || !token) {
     throw createError({ statusCode: 503, statusMessage: 'CMS is not configured' })
   }
   try {
     const res = await $fetch<{ data: T }>(path, {
       baseURL: config.cmsUrl,
       query,
-      headers: { Authorization: `Bearer ${config.cmsToken}` },
+      headers: { Authorization: `Bearer ${token}` },
       // Strict upstream timeout: a slow CMS must not consume the Worker's
       // whole request budget (plan §8 caching rules).
       timeout: 5000,
