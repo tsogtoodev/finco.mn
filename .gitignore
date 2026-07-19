@@ -33,3 +33,4 @@ app/assets/videos/
 
 # Scripts
 Makefile
+.make.env
