@@ -41,5 +41,15 @@
       "database_name": "finco-mn",
       "database_id": "7e1a182c-6b21-4c4e-a3bc-3d9f464f6fca"
     }
+  ],
+
+  // Shared nitro cache storage (hub.cache) — the CMS endpoint's 60s cache and
+  // the revalidate webhook's purge both live here. Per-isolate memory is NOT
+  // acceptable: SWR dies on isolate suspension and purges wouldn't be global.
+  "kv_namespaces": [
+    {
+      "binding": "CACHE",
+      "id": "25f87653b71a441f90abbd49d070f497"
+    }
   ]
 }

@@ -58,6 +58,9 @@ export default defineNuxtConfig({
     // 30-minute preview session cookie. Rotate together via setup-preview.mjs.
     cmsPreviewToken: '', // NUXT_CMS_PREVIEW_TOKEN
     cmsPreviewSecret: '', // NUXT_CMS_PREVIEW_SECRET
+    // Signed by the Directus "Purge site cache" Flow; lets publishes invalidate
+    // the Worker CMS cache instantly instead of waiting out the TTL.
+    cmsWebhookSecret: '', // NUXT_CMS_WEBHOOK_SECRET
     public: {
       // '' = @nuxt/content (current), 'directus' = the /api/cms boundary.
       // Flip per-environment via NUXT_PUBLIC_CMS_PROVIDER; rollback = unset.
@@ -191,6 +194,10 @@ export default defineNuxtConfig({
   // The remote D1 binding/id is declared in wrangler.jsonc for direct deploys.
   hub: {
     database: true,
+    // KV-backed nitro cache storage, shared across Worker isolates. Without it
+    // the CMS cache is per-isolate memory: SWR refreshes die when the isolate
+    // suspends (stale-forever) and the revalidate webhook can't purge globally.
+    cache: true,
   },
 
   // @nuxt/content runs on the Cloudflare D1 binding provided by NuxtHub.

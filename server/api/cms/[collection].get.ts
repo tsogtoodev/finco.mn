@@ -29,8 +29,11 @@ const getPublished = defineCachedFunction(
   {
     name: 'cms',
     maxAge: 60,
-    staleMaxAge: 600,
-    swr: true,
+    // NO swr: on Cloudflare Workers the background revalidation is killed when
+    // the isolate suspends, so an swr entry can serve stale forever. A blocking
+    // refetch after 60s is one Directus roundtrip and keeps the ≤60s publish
+    // guarantee (plan §12). The revalidate webhook purges sooner than that.
+    swr: false,
     getKey: (name, locale, single, limit) => `${name}:${locale}:${single ?? ''}:${limit}`,
   },
 )
