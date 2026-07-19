@@ -129,7 +129,12 @@ export default defineNuxtConfig({
       cloudflareAuto: {
         provider: '~/providers/cloudflare-auto.ts',
         options: {
-          baseURL: process.env.NUXT_PUBLIC_SITE_URL || 'https://finco.design',
+          // HARDCODED on purpose: this is baked into the client bundle at BUILD
+          // time. Reading NUXT_PUBLIC_SITE_URL here once shipped a production
+          // build with http://localhost:3000 image URLs (built on a dev machine
+          // whose .env sets it for local SEO). The provider only runs in
+          // $production, so the dev value is never legitimately needed.
+          baseURL: 'https://finco.design',
         },
       },
     },
