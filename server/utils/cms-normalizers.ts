@@ -3,6 +3,7 @@
 // bodies parsed to an AST that <ContentRenderer> renders). Keeping these
 // shapes identical is what lets the NUXT_CMS_PROVIDER flag flip safely.
 import { parseMarkdown } from '@nuxtjs/mdc/runtime'
+import { directusFetch, cmsAssetUrl } from './directus'
 
 type DirectusFile = { id: string; filename_disk?: string | null }
 type Row = Record<string, any>
@@ -14,9 +15,27 @@ function tr(item: Row, locale: string): Row {
   return item.translations?.find((t: Row) => t.languages_code === locale) ?? {}
 }
 
+// The Directus markdown editor embeds images as <PUBLIC_URL>/assets/<uuid>,
+// which the public site can't load (the assets endpoint 403s unauthenticated
+// by design — media is served from the R2 hostname instead). Rewrite every
+// embedded asset reference to its public media URL before parsing.
+const ASSET_REF_RE = /(?:https?:\/\/[^\s)"'`]*)?\/assets\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/g
+
+async function rewriteAssetRefs(body: string): Promise<string> {
+  const ids = [...new Set([...body.matchAll(ASSET_REF_RE)].map((m) => m[1]))]
+  if (!ids.length) return body
+  const files = await directusFetch<{ id: string; filename_disk?: string }[]>('/files', {
+    'filter[id][_in]': ids.join(','),
+    fields: 'id,filename_disk',
+    limit: ids.length,
+  }).catch(() => [] as { id: string; filename_disk?: string }[])
+  const byId = new Map(files.map((f) => [f.id, cmsAssetUrl(f)]))
+  return body.replace(ASSET_REF_RE, (match, id) => byId.get(id) ?? match)
+}
+
 async function md(body: string | null | undefined) {
   if (!body) return undefined
-  const parsed = await parseMarkdown(body)
+  const parsed = await parseMarkdown(await rewriteAssetRefs(body))
   return parsed.body
 }
 
