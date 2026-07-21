@@ -171,6 +171,59 @@ for (const [name, spec] of Object.entries(SPECS)) {
 }
 
 // ---------------------------------------------------------------------------
+// about page structure (post-restructure: flat about_* fields, see
+// directus/setup-about-restructure.mjs). A missing key here silently blanks a
+// whole section on /about, so guard the shape the components destructure.
+// ---------------------------------------------------------------------------
+{
+  const SCALARS = [
+    'about_hero_headline', 'about_hero_intro', 'about_hero_photo',
+    'about_values_heading_lead', 'about_values_heading_accent', 'about_values_subheading',
+    'about_history_heading_lead', 'about_history_heading_accent', 'about_history_subheading',
+    'about_ceo_heading_lead', 'about_ceo_heading_accent', 'about_ceo_subheading',
+    'about_ceo_greeting_title', 'about_ceo_greeting_body', 'about_ceo_tagline',
+    'about_ceo_signature_label', 'about_ceo_signature_name', 'about_ceo_portrait',
+    'about_board_heading_lead', 'about_board_heading_accent',
+    'about_org_heading_lead', 'about_org_heading_accent', 'about_org_subheading',
+    'about_org_root', 'about_org_ceo',
+  ]
+  const REPEATERS = {
+    about_mission_blocks: ['badge', 'heading', 'body'],
+    about_values_items: ['title', 'body'],
+    about_history_milestones: ['year', 'body'],
+    about_board_members: ['name', 'role', 'bio', 'photo'], // bioHover optional
+    about_org_departments: null, // string[]
+  }
+  try {
+    const rows = await get(
+      `/items/pages?filter[key][_eq]=about&fields=translations.languages_code,${[...SCALARS, ...Object.keys(REPEATERS)].map((x) => `translations.${x}`).join(',')}`,
+    )
+    for (const l of LOCALES) {
+      const t = rows?.[0]?.translations?.find((x) => x.languages_code === l)
+      const label = `pages/about (${l})`
+      if (!t) continue // parity errors already reported above
+      for (const f of SCALARS) if (blank(t[f])) errors.push(`${label}: missing ${f}`)
+      for (const [f, keys] of Object.entries(REPEATERS)) {
+        const v = t[f]
+        if (!Array.isArray(v) || v.length === 0) {
+          errors.push(`${label}: ${f} must be a non-empty array`)
+          continue
+        }
+        if (keys) {
+          v.forEach((item, i) => {
+            for (const k of keys) if (blank(item?.[k])) errors.push(`${label}: ${f}[${i}] missing ${k}`)
+          })
+        } else if (v.some((s) => typeof s !== 'string' || blank(s))) {
+          errors.push(`${label}: ${f} must contain non-empty strings`)
+        }
+      }
+    }
+  } catch {
+    warnings.push('pages/about: about_* fields not found — setup-about-restructure.mjs not applied yet, skipping structure checks')
+  }
+}
+
+// ---------------------------------------------------------------------------
 // relations
 // ---------------------------------------------------------------------------
 for (const [junction, ownColl, ownField, otherField] of [

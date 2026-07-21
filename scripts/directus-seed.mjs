@@ -69,7 +69,12 @@ const TYPES = {
     trans: (d) => ({
       title: d.title, menu_title: d.menuTitle ?? null, menu_desc: d.menuDesc ?? null,
       summary: d.summary ?? null, category: d.category ?? null,
-      loan_terms: d.loanTerms ?? null, tabs: d.tabs ?? null, faq: d.faq ?? null,
+      // flattened (setup-flatten-json.mjs) — legacy loan_terms/tabs never written.
+      // tabs.info is not seeded: body always shadows it on the detail page.
+      loan_amount: d.loanTerms?.amount ?? null, loan_rate: d.loanTerms?.rate ?? null,
+      loan_period: d.loanTerms?.period ?? null,
+      tabs_requirements: wrapText(d.tabs?.requirements), tabs_other: d.tabs?.other ?? null,
+      faq: d.faq ?? null,
       body: d._body || null, // rendered as the "info" tab on product detail
     }),
     related: { junction: 'products_related', own: 'products_id', other: 'related_products_id', target: 'products' },
@@ -80,7 +85,7 @@ const TYPES = {
     files: { heroImage: 'hero_image' },
     trans: (d) => ({
       title: d.title, breadcrumb: d.breadcrumb ?? null, summary: d.summary ?? null,
-      cta: d.cta ?? null, faq: d.faq ?? null,
+      cta_label: d.cta?.label ?? null, cta_to: d.cta?.to ?? null, faq: d.faq ?? null,
     }),
     related: { junction: 'services_related', own: 'services_id', other: 'products_id', target: 'products' },
     bodyDropped: true,
@@ -88,7 +93,8 @@ const TYPES = {
   branches: {
     key: 'slug',
     base: (d) => ({
-      slug: d.slug, order: d.order ?? null, pin: d.pin ?? null,
+      slug: d.slug, order: d.order ?? null,
+      pin_x: d.pin?.x ?? null, pin_y: d.pin?.y ?? null,
       latitude: d.coords?.lat ?? null, longitude: d.coords?.lng ?? null,
     }),
     files: { photo: 'photo', mapImage: 'map_image' },
@@ -105,7 +111,7 @@ const TYPES = {
     trans: (d) => ({
       title: d.title, department: d.department ?? null, location: d.location ?? null,
       employment_type: d.type ?? null, summary: d.summary ?? null,
-      requirements: d.requirements ?? null, responsibilities: d.responsibilities ?? null,
+      requirements: wrapText(d.requirements), responsibilities: wrapText(d.responsibilities),
       application_sections: d.applicationSections ?? null,
     }),
   },
@@ -127,15 +133,88 @@ const TYPES = {
     key: 'key',
     base: (d) => ({ key: d.key }),
     files: {},
-    trans: (d) => ({
-      hero: d.hero ?? null, stats: d.stats ?? null, stats_heading: d.statsHeading ?? null,
-      value_props: d.valueProps ?? null, hero_slides: d.heroSlides ?? null,
-      beep: d.beep ?? null, fincobiz: d.fincobiz ?? null, showcases: d.showcases ?? null,
-      cta: d.cta ?? null, timeline: d.timeline ?? null, perks: d.perks ?? null,
-      leadership: d.leadership ?? null, team: d.team ?? null, sections: d.sections ?? null,
-      faq: d.faq ?? null, about: d.about ?? null,
+    // hero/valueProps/beep/fincobiz/about ship as flattened fields
+    // (setup-flatten-json.mjs / setup-about-restructure.mjs); the legacy JSON
+    // columns may already be dropped, so never write them. showcases/cta/
+    // leadership/team/sections are retired (no consumer) and not seeded.
+    trans: async (d) => ({
+      stats: d.stats ?? null, stats_heading: d.statsHeading ?? null,
+      hero_slides: d.heroSlides ?? null,
+      timeline: d.timeline ?? null, perks: d.perks ?? null,
+      faq: d.faq ?? null,
+      hero_eyebrow: d.hero?.eyebrow ?? null,
+      hero_headline: d.hero?.headline ?? null,
+      hero_accent: d.hero?.accent ?? null,
+      hero_subheadline: d.hero?.subheadline ?? null,
+      // relational upload (setup-image-fields.mjs) — path strings are legacy
+      hero_image_file: await uploadImage(d.hero?.image, 'pages hero'),
+      hero_cta_label: d.hero?.cta?.label ?? null,
+      hero_cta_to: d.hero?.cta?.to ?? null,
+      hero_secondary_cta_label: d.hero?.secondaryCta?.label ?? null,
+      hero_secondary_cta_to: d.hero?.secondaryCta?.to ?? null,
+      value_props_heading: d.valueProps?.heading ?? null,
+      value_props_accent: d.valueProps?.accent ?? null,
+      value_props_subheading: d.valueProps?.subheading ?? null,
+      value_props_items: d.valueProps?.items ?? null,
+      beep_heading: d.beep?.heading ?? null,
+      beep_subtext: d.beep?.subtext ?? null,
+      beep_expand_lead: d.beep?.expandLead ?? null,
+      beep_expand_rest: d.beep?.expandRest ?? null,
+      beep_teaser: d.beep?.teaser ?? null,
+      fincobiz_subtext: d.fincobiz?.subtext ?? null,
+      fincobiz_callout_heading: d.fincobiz?.calloutHeading ?? null,
+      fincobiz_callout_subtext: d.fincobiz?.calloutSubtext ?? null,
+      fincobiz_card_request: d.fincobiz?.cards?.request ?? null,
+      fincobiz_card_receivables: d.fincobiz?.cards?.receivables ?? null,
+      fincobiz_card_eligibility: d.fincobiz?.cards?.eligibility ?? null,
+      ...(await explodeAbout(d.about)),
     }),
   },
+}
+
+// string[] -> repeater rows [{text}]
+const wrapText = (arr) => arr?.map((s) => (typeof s === 'string' ? { text: s } : s)) ?? null
+
+// content-file about blob -> flat about_* fields. Mirrors explode() in
+// directus/setup-about-restructure.mjs and assembleAbout() in
+// server/utils/cms-normalizers.ts — keep the three in sync. `align` on value
+// items is intentionally dropped (dead since the AboutValues redesign).
+async function explodeAbout(a) {
+  if (!a) return {}
+  return {
+    about_hero_headline: a.hero?.headline ?? null,
+    about_hero_intro: a.hero?.intro ?? null,
+    about_hero_photo_file: await uploadImage(a.hero?.photo, 'about hero'),
+    about_mission_blocks: a.mission?.blocks ?? null,
+    about_values_heading_lead: a.values?.headingLead ?? null,
+    about_values_heading_accent: a.values?.headingAccent ?? null,
+    about_values_subheading: a.values?.subheading ?? null,
+    about_values_items: a.values?.items?.map(({ title, body }) => ({ title, body })) ?? null,
+    about_history_heading_lead: a.history?.headingLead ?? null,
+    about_history_heading_accent: a.history?.headingAccent ?? null,
+    about_history_subheading: a.history?.subheading ?? null,
+    about_history_milestones: a.history?.milestones ?? null,
+    about_ceo_heading_lead: a.ceo?.headingLead ?? null,
+    about_ceo_heading_accent: a.ceo?.headingAccent ?? null,
+    about_ceo_subheading: a.ceo?.subheading ?? null,
+    about_ceo_greeting_title: a.ceo?.greetingTitle ?? null,
+    about_ceo_greeting_body: a.ceo?.greetingBody?.join('\n\n') ?? null,
+    about_ceo_tagline: a.ceo?.tagline ?? null,
+    about_ceo_signature_label: a.ceo?.signatureLabel ?? null,
+    about_ceo_signature_name: a.ceo?.signatureName ?? null,
+    about_ceo_portrait_file: await uploadImage(a.ceo?.portrait, 'about ceo'),
+    about_board_heading_lead: a.board?.headingLead ?? null,
+    about_board_heading_accent: a.board?.headingAccent ?? null,
+    about_board_members: a.board?.members
+      ? await Promise.all(a.board.members.map(async (m) => ({ ...m, photo: (await uploadImage(m.photo, 'board member')) ?? m.photo })))
+      : null,
+    about_org_heading_lead: a.org?.headingLead ?? null,
+    about_org_heading_accent: a.org?.headingAccent ?? null,
+    about_org_subheading: a.org?.subheading ?? null,
+    about_org_root: a.org?.root ?? null,
+    about_org_ceo: a.org?.ceo ?? null,
+    about_org_departments: a.org?.departments ?? null,
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -307,7 +386,7 @@ for (const [type, byKey] of Object.entries(loaded)) {
     idsByType[type].set(key, baseId)
 
     for (const locale of LOCALES) {
-      if (pair[locale]) await upsertTranslation(type, baseId, locale, cfg.trans(pair[locale]))
+      if (pair[locale]) await upsertTranslation(type, baseId, locale, await cfg.trans(pair[locale]))
     }
 
     if (cfg.related) {
