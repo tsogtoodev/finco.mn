@@ -177,12 +177,13 @@ for (const [name, spec] of Object.entries(SPECS)) {
 // ---------------------------------------------------------------------------
 {
   const SCALARS = [
-    'about_hero_headline', 'about_hero_intro', 'about_hero_photo',
+    // photo/portrait are the relational upload fields (setup-image-fields.mjs)
+    'about_hero_headline', 'about_hero_intro', 'about_hero_photo_file',
     'about_values_heading_lead', 'about_values_heading_accent', 'about_values_subheading',
     'about_history_heading_lead', 'about_history_heading_accent', 'about_history_subheading',
     'about_ceo_heading_lead', 'about_ceo_heading_accent', 'about_ceo_subheading',
     'about_ceo_greeting_title', 'about_ceo_greeting_body', 'about_ceo_tagline',
-    'about_ceo_signature_label', 'about_ceo_signature_name', 'about_ceo_portrait',
+    'about_ceo_signature_label', 'about_ceo_signature_name', 'about_ceo_portrait_file',
     'about_board_heading_lead', 'about_board_heading_accent',
     'about_org_heading_lead', 'about_org_heading_accent', 'about_org_subheading',
     'about_org_root', 'about_org_ceo',

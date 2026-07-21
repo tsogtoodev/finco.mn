@@ -585,47 +585,6 @@ fields:
       foreign_key_table: null
       foreign_key_column: null
   - collection: branches
-    field: pin
-    type: json
-    meta:
-      collection: branches
-      conditions: null
-      display: null
-      display_options: null
-      field: pin
-      group: null
-      hidden: false
-      interface: input-code
-      note: 'Object: { x, y } — normalised 0–1 pin position on the map image.'
-      options:
-        language: json
-      readonly: false
-      required: false
-      sort: 5
-      special:
-        - cast-json
-      translations: null
-      validation: null
-      validation_message: null
-      width: full
-    schema:
-      name: pin
-      table: branches
-      data_type: json
-      default_value: null
-      max_length: null
-      numeric_precision: null
-      numeric_scale: null
-      is_nullable: true
-      is_unique: false
-      is_indexed: false
-      is_primary_key: false
-      is_generated: false
-      generation_expression: null
-      has_auto_increment: false
-      foreign_key_table: null
-      foreign_key_column: null
-  - collection: branches
     field: latitude
     type: float
     meta:
@@ -970,6 +929,84 @@ fields:
       validation: null
       validation_message: null
       width: full
+  - collection: branches
+    field: pin_x
+    type: float
+    meta:
+      collection: branches
+      conditions: null
+      display: null
+      display_options: null
+      field: pin_x
+      group: null
+      hidden: false
+      interface: input
+      note: Pin position across the map image, 0–1 from the left.
+      options: null
+      readonly: false
+      required: false
+      sort: 15
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: pin_x
+      table: branches
+      data_type: float
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: branches
+    field: pin_y
+    type: float
+    meta:
+      collection: branches
+      conditions: null
+      display: null
+      display_options: null
+      field: pin_y
+      group: null
+      hidden: false
+      interface: input
+      note: Pin position down the map image, 0–1 from the top.
+      options: null
+      readonly: false
+      required: false
+      sort: 16
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: pin_y
+      table: branches
+      data_type: float
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
   - collection: branches_translations
     field: id
     type: integer
@@ -1959,10 +1996,18 @@ fields:
       field: requirements
       group: null
       hidden: false
-      interface: input-code
-      note: Array of strings.
+      interface: list
+      note: One row per requirement.
       options:
-        language: json
+        fields:
+          - field: text
+            meta:
+              field: text
+              interface: input-multiline
+              width: full
+            name: text
+            type: text
+        template: '{{text}}'
       readonly: false
       required: false
       sort: 9
@@ -2000,10 +2045,18 @@ fields:
       field: responsibilities
       group: null
       hidden: false
-      interface: input-code
-      note: Array of strings.
+      interface: list
+      note: One row per responsibility.
       options:
-        language: json
+        fields:
+          - field: text
+            meta:
+              field: text
+              interface: input-multiline
+              width: full
+            name: text
+            type: text
+        template: '{{text}}'
       readonly: false
       required: false
       sort: 10
@@ -2041,10 +2094,89 @@ fields:
       field: application_sections
       group: null
       hidden: false
-      interface: input-code
-      note: Multi-step application form schema (see content.config.ts).
+      interface: list
+      note: Steps of the application form; each step has its own fields.
       options:
-        language: json
+        fields:
+          - field: id
+            meta:
+              field: id
+              interface: input
+              options:
+                placeholder: general | experience | other | attachments
+              width: full
+            name: id
+            type: string
+          - field: title
+            meta:
+              field: title
+              interface: input
+              width: full
+            name: title
+            type: string
+          - field: fields
+            meta:
+              field: fields
+              interface: list
+              options:
+                fields:
+                  - field: name
+                    meta:
+                      field: name
+                      interface: input
+                      width: half
+                    name: name
+                    type: string
+                  - field: label
+                    meta:
+                      field: label
+                      interface: input
+                      width: half
+                    name: label
+                    type: string
+                  - field: type
+                    meta:
+                      field: type
+                      interface: select-dropdown
+                      options:
+                        choices:
+                          - text: text
+                            value: text
+                          - text: email
+                            value: email
+                          - text: tel
+                            value: tel
+                          - text: textarea
+                            value: textarea
+                          - text: select
+                            value: select
+                          - text: file
+                            value: file
+                          - text: date
+                            value: date
+                      width: half
+                    name: type
+                    type: string
+                  - field: required
+                    meta:
+                      field: required
+                      interface: boolean
+                      width: half
+                    name: required
+                    type: boolean
+                  - field: options
+                    meta:
+                      field: options
+                      interface: tags
+                      note: Choices for select fields.
+                      width: full
+                    name: options
+                    type: json
+                template: '{{label}}'
+              width: full
+            name: fields
+            type: json
+        template: '{{title}}'
       readonly: false
       required: false
       sort: 11
@@ -3849,47 +3981,6 @@ fields:
       foreign_key_table: languages
       foreign_key_column: code
   - collection: pages_translations
-    field: hero
-    type: json
-    meta:
-      collection: pages_translations
-      conditions: null
-      display: null
-      display_options: null
-      field: hero
-      group: null
-      hidden: false
-      interface: input-code
-      note: 'Object: eyebrow/headline/accent/subheadline/cta/secondaryCta/image.'
-      options:
-        language: json
-      readonly: false
-      required: false
-      sort: 4
-      special:
-        - cast-json
-      translations: null
-      validation: null
-      validation_message: null
-      width: full
-    schema:
-      name: hero
-      table: pages_translations
-      data_type: json
-      default_value: null
-      max_length: null
-      numeric_precision: null
-      numeric_scale: null
-      is_nullable: true
-      is_unique: false
-      is_indexed: false
-      is_primary_key: false
-      is_generated: false
-      generation_expression: null
-      has_auto_increment: false
-      foreign_key_table: null
-      foreign_key_column: null
-  - collection: pages_translations
     field: stats
     type: json
     meta:
@@ -3898,7 +3989,7 @@ fields:
       display: null
       display_options: null
       field: stats
-      group: null
+      group: home_group
       hidden: false
       interface: list
       note: null
@@ -3935,7 +4026,7 @@ fields:
         template: '{{label}}'
       readonly: false
       required: false
-      sort: 5
+      sort: 32
       special:
         - cast-json
       translations: null
@@ -3968,14 +4059,14 @@ fields:
       display: null
       display_options: null
       field: stats_heading
-      group: null
+      group: home_group
       hidden: false
       interface: input
       note: null
       options: null
       readonly: false
       required: false
-      sort: 6
+      sort: 33
       special: null
       translations: null
       validation: null
@@ -3999,47 +4090,6 @@ fields:
       foreign_key_table: null
       foreign_key_column: null
   - collection: pages_translations
-    field: value_props
-    type: json
-    meta:
-      collection: pages_translations
-      conditions: null
-      display: null
-      display_options: null
-      field: value_props
-      group: null
-      hidden: false
-      interface: input-code
-      note: Bento value-prop block (heading/accent/subheading/items).
-      options:
-        language: json
-      readonly: false
-      required: false
-      sort: 7
-      special:
-        - cast-json
-      translations: null
-      validation: null
-      validation_message: null
-      width: full
-    schema:
-      name: value_props
-      table: pages_translations
-      data_type: json
-      default_value: null
-      max_length: null
-      numeric_precision: null
-      numeric_scale: null
-      is_nullable: true
-      is_unique: false
-      is_indexed: false
-      is_primary_key: false
-      is_generated: false
-      generation_expression: null
-      has_auto_increment: false
-      foreign_key_table: null
-      foreign_key_column: null
-  - collection: pages_translations
     field: hero_slides
     type: json
     meta:
@@ -4048,7 +4098,7 @@ fields:
       display: null
       display_options: null
       field: hero_slides
-      group: null
+      group: home_group
       hidden: false
       interface: list
       note: null
@@ -4085,7 +4135,7 @@ fields:
         template: '{{key}}: {{headline}}'
       readonly: false
       required: false
-      sort: 8
+      sort: 31
       special:
         - cast-json
       translations: null
@@ -4094,88 +4144,6 @@ fields:
       width: full
     schema:
       name: hero_slides
-      table: pages_translations
-      data_type: json
-      default_value: null
-      max_length: null
-      numeric_precision: null
-      numeric_scale: null
-      is_nullable: true
-      is_unique: false
-      is_indexed: false
-      is_primary_key: false
-      is_generated: false
-      generation_expression: null
-      has_auto_increment: false
-      foreign_key_table: null
-      foreign_key_column: null
-  - collection: pages_translations
-    field: beep
-    type: json
-    meta:
-      collection: pages_translations
-      conditions: null
-      display: null
-      display_options: null
-      field: beep
-      group: null
-      hidden: false
-      interface: input-code
-      note: Beep showcase copy.
-      options:
-        language: json
-      readonly: false
-      required: false
-      sort: 9
-      special:
-        - cast-json
-      translations: null
-      validation: null
-      validation_message: null
-      width: full
-    schema:
-      name: beep
-      table: pages_translations
-      data_type: json
-      default_value: null
-      max_length: null
-      numeric_precision: null
-      numeric_scale: null
-      is_nullable: true
-      is_unique: false
-      is_indexed: false
-      is_primary_key: false
-      is_generated: false
-      generation_expression: null
-      has_auto_increment: false
-      foreign_key_table: null
-      foreign_key_column: null
-  - collection: pages_translations
-    field: fincobiz
-    type: json
-    meta:
-      collection: pages_translations
-      conditions: null
-      display: null
-      display_options: null
-      field: fincobiz
-      group: null
-      hidden: false
-      interface: input-code
-      note: FincoBiz showcase copy incl. card-deck tab titles.
-      options:
-        language: json
-      readonly: false
-      required: false
-      sort: 10
-      special:
-        - cast-json
-      translations: null
-      validation: null
-      validation_message: null
-      width: full
-    schema:
-      name: fincobiz
       table: pages_translations
       data_type: json
       default_value: null
@@ -4201,9 +4169,11 @@ fields:
       display_options: null
       field: showcases
       group: null
-      hidden: false
+      hidden: true
       interface: list
-      note: null
+      note: >-
+        RETIRED — no longer rendered by the site. Hidden from the form; data
+        kept for rollback.
       options:
         fields:
           - field: theme
@@ -4244,7 +4214,7 @@ fields:
         template: '{{title}}'
       readonly: false
       required: false
-      sort: 11
+      sort: 90
       special:
         - cast-json
       translations: null
@@ -4278,14 +4248,16 @@ fields:
       display_options: null
       field: cta
       group: null
-      hidden: false
+      hidden: true
       interface: input-code
-      note: 'Closing CTA banner: { heading, body, button }.'
+      note: >-
+        RETIRED — no longer rendered by the site. Hidden from the form; data
+        kept for rollback.
       options:
         language: json
       readonly: false
       required: false
-      sort: 12
+      sort: 91
       special:
         - cast-json
       translations: null
@@ -4318,7 +4290,7 @@ fields:
       display: null
       display_options: null
       field: timeline
-      group: null
+      group: careers_group
       hidden: false
       interface: list
       note: null
@@ -4348,7 +4320,7 @@ fields:
         template: '{{year}} {{title}}'
       readonly: false
       required: false
-      sort: 13
+      sort: 42
       special:
         - cast-json
       translations: null
@@ -4381,7 +4353,7 @@ fields:
       display: null
       display_options: null
       field: perks
-      group: null
+      group: careers_group
       hidden: false
       interface: list
       note: null
@@ -4411,7 +4383,7 @@ fields:
         template: '{{title}}'
       readonly: false
       required: false
-      sort: 14
+      sort: 41
       special:
         - cast-json
       translations: null
@@ -4445,14 +4417,16 @@ fields:
       display_options: null
       field: leadership
       group: null
-      hidden: false
+      hidden: true
       interface: input-code
-      note: 'Object: { name, role, quote, photo }.'
+      note: >-
+        RETIRED — no longer rendered by the site. Hidden from the form; data
+        kept for rollback.
       options:
         language: json
       readonly: false
       required: false
-      sort: 15
+      sort: 92
       special:
         - cast-json
       translations: null
@@ -4486,9 +4460,11 @@ fields:
       display_options: null
       field: team
       group: null
-      hidden: false
+      hidden: true
       interface: list
-      note: null
+      note: >-
+        RETIRED — no longer rendered by the site. Hidden from the form; data
+        kept for rollback.
       options:
         fields:
           - field: name
@@ -4522,7 +4498,7 @@ fields:
         template: '{{name}}'
       readonly: false
       required: false
-      sort: 16
+      sort: 93
       special:
         - cast-json
       translations: null
@@ -4556,9 +4532,11 @@ fields:
       display_options: null
       field: sections
       group: null
-      hidden: false
+      hidden: true
       interface: list
-      note: null
+      note: >-
+        RETIRED — no longer rendered by the site. Hidden from the form; data
+        kept for rollback.
       options:
         fields:
           - field: id
@@ -4585,7 +4563,7 @@ fields:
         template: '{{id}}'
       readonly: false
       required: false
-      sort: 17
+      sort: 94
       special:
         - cast-json
       translations: null
@@ -4614,12 +4592,19 @@ fields:
     type: json
     meta:
       collection: pages_translations
-      conditions: null
+      conditions:
+        - hidden: false
+          name: products + business
+          rule:
+            pages_id:
+              _in:
+                - e2091ec3-983e-4eac-94f1-d645348c4a74
+                - df56012f-3e1e-47ab-a5e9-371802941d00
       display: null
       display_options: null
       field: faq
       group: null
-      hidden: false
+      hidden: true
       interface: list
       note: null
       options:
@@ -4641,7 +4626,7 @@ fields:
         template: '{{question}}'
       readonly: false
       required: false
-      sort: 18
+      sort: 20
       special:
         - cast-json
       translations: null
@@ -4666,25 +4651,340 @@ fields:
       foreign_key_table: null
       foreign_key_column: null
   - collection: pages_translations
-    field: about
+    field: about_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions:
+        - hidden: false
+          name: about only
+          rule:
+            pages_id:
+              _in:
+                - 309baa82-7550-49e5-9025-28749130220f
+      display: null
+      display_options: null
+      field: about_group
+      group: null
+      hidden: true
+      interface: group-detail
+      note: >-
+        Structured content for the ABOUT page record only — ignore on other
+        pages.
+      options:
+        headerIcon: info
+        start: closed
+      readonly: false
+      required: false
+      sort: 50
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: about_hero_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_hero_group
+      group: about_group
+      hidden: false
+      interface: group-detail
+      note: Dark hero at the top.
+      options:
+        start: closed
+      readonly: false
+      required: false
+      sort: 1
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: about_mission_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_mission_group
+      group: about_group
+      hidden: false
+      interface: group-detail
+      note: Mission blocks (badge + heading + body).
+      options:
+        start: closed
+      readonly: false
+      required: false
+      sort: 2
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: about_values_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_values_group
+      group: about_group
+      hidden: false
+      interface: group-detail
+      note: Values section — heading + the five click-to-activate cards.
+      options:
+        start: closed
+      readonly: false
+      required: false
+      sort: 3
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: about_history_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_history_group
+      group: about_group
+      hidden: false
+      interface: group-detail
+      note: History timeline.
+      options:
+        start: closed
+      readonly: false
+      required: false
+      sort: 4
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: about_ceo_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_ceo_group
+      group: about_group
+      hidden: false
+      interface: group-detail
+      note: CEO message.
+      options:
+        start: closed
+      readonly: false
+      required: false
+      sort: 5
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: about_board_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_board_group
+      group: about_group
+      hidden: false
+      interface: group-detail
+      note: Board of directors.
+      options:
+        start: closed
+      readonly: false
+      required: false
+      sort: 6
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: about_org_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_org_group
+      group: about_group
+      hidden: false
+      interface: group-detail
+      note: Organization chart.
+      options:
+        start: closed
+      readonly: false
+      required: false
+      sort: 7
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: about_hero_headline
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_hero_headline
+      group: about_hero_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_hero_headline
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_hero_intro
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_hero_intro
+      group: about_hero_group
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_hero_intro
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_mission_blocks
     type: json
     meta:
       collection: pages_translations
       conditions: null
       display: null
       display_options: null
-      field: about
-      group: null
+      field: about_mission_blocks
+      group: about_mission_group
       hidden: false
-      interface: input-code
-      note: >-
-        About page structure (hero/mission/values/history/ceo/board/org). Only
-        on the about record.
+      interface: list
+      note: null
       options:
-        language: json
+        fields:
+          - field: badge
+            meta:
+              field: badge
+              interface: input
+              width: full
+            name: badge
+            type: string
+          - field: heading
+            meta:
+              field: heading
+              interface: input
+              width: full
+            name: heading
+            type: string
+          - field: body
+            meta:
+              field: body
+              interface: input-multiline
+              width: full
+            name: body
+            type: text
+        template: '{{badge}} — {{heading}}'
       readonly: false
       required: false
-      sort: 19
+      sort: 1
       special:
         - cast-json
       translations: null
@@ -4692,7 +4992,7 @@ fields:
       validation_message: null
       width: full
     schema:
-      name: about
+      name: about_mission_blocks
       table: pages_translations
       data_type: json
       default_value: null
@@ -4708,6 +5008,2276 @@ fields:
       has_auto_increment: false
       foreign_key_table: null
       foreign_key_column: null
+  - collection: pages_translations
+    field: about_values_heading_lead
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_values_heading_lead
+      group: about_values_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_values_heading_lead
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_values_heading_accent
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_values_heading_accent
+      group: about_values_group
+      hidden: false
+      interface: input
+      note: Rendered in the accent color, directly after the lead.
+      options: null
+      readonly: false
+      required: false
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_values_heading_accent
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_values_subheading
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_values_subheading
+      group: about_values_group
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 3
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_values_subheading
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_values_items
+    type: json
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_values_items
+      group: about_values_group
+      hidden: false
+      interface: list
+      note: null
+      options:
+        fields:
+          - field: title
+            meta:
+              field: title
+              interface: input
+              width: full
+            name: title
+            type: string
+          - field: body
+            meta:
+              field: body
+              interface: input-multiline
+              width: full
+            name: body
+            type: text
+        template: '{{title}}'
+      readonly: false
+      required: false
+      sort: 4
+      special:
+        - cast-json
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_values_items
+      table: pages_translations
+      data_type: json
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_history_heading_lead
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_history_heading_lead
+      group: about_history_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_history_heading_lead
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_history_heading_accent
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_history_heading_accent
+      group: about_history_group
+      hidden: false
+      interface: input
+      note: Rendered in the accent color, directly after the lead.
+      options: null
+      readonly: false
+      required: false
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_history_heading_accent
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_history_subheading
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_history_subheading
+      group: about_history_group
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 3
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_history_subheading
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_history_milestones
+    type: json
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_history_milestones
+      group: about_history_group
+      hidden: false
+      interface: list
+      note: null
+      options:
+        fields:
+          - field: year
+            meta:
+              field: year
+              interface: input
+              width: full
+            name: year
+            type: string
+          - field: body
+            meta:
+              field: body
+              interface: input-multiline
+              width: full
+            name: body
+            type: text
+        template: '{{year}}'
+      readonly: false
+      required: false
+      sort: 4
+      special:
+        - cast-json
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_history_milestones
+      table: pages_translations
+      data_type: json
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_ceo_heading_lead
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_ceo_heading_lead
+      group: about_ceo_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_ceo_heading_lead
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_ceo_heading_accent
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_ceo_heading_accent
+      group: about_ceo_group
+      hidden: false
+      interface: input
+      note: Rendered in the accent color, directly after the lead.
+      options: null
+      readonly: false
+      required: false
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_ceo_heading_accent
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_ceo_subheading
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_ceo_subheading
+      group: about_ceo_group
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 3
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_ceo_subheading
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_ceo_greeting_title
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_ceo_greeting_title
+      group: about_ceo_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 4
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_ceo_greeting_title
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_ceo_greeting_body
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_ceo_greeting_body
+      group: about_ceo_group
+      hidden: false
+      interface: input-multiline
+      note: Separate paragraphs with a blank line.
+      options: null
+      readonly: false
+      required: false
+      sort: 5
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_ceo_greeting_body
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_ceo_tagline
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_ceo_tagline
+      group: about_ceo_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 6
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_ceo_tagline
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_ceo_signature_label
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_ceo_signature_label
+      group: about_ceo_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 7
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_ceo_signature_label
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_ceo_signature_name
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_ceo_signature_name
+      group: about_ceo_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 8
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_ceo_signature_name
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_board_heading_lead
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_board_heading_lead
+      group: about_board_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_board_heading_lead
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_board_heading_accent
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_board_heading_accent
+      group: about_board_group
+      hidden: false
+      interface: input
+      note: Rendered in the accent color, directly after the lead.
+      options: null
+      readonly: false
+      required: false
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_board_heading_accent
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_board_members
+    type: json
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_board_members
+      group: about_board_group
+      hidden: false
+      interface: list
+      note: >-
+        bioHover (optional) is the career timeline shown on hover; newlines are
+        preserved. photo is a site asset path.
+      options:
+        fields:
+          - field: name
+            meta:
+              field: name
+              interface: input
+              width: full
+            name: name
+            type: string
+          - field: role
+            meta:
+              field: role
+              interface: input
+              width: full
+            name: role
+            type: string
+          - field: bio
+            meta:
+              field: bio
+              interface: input-multiline
+              width: full
+            name: bio
+            type: text
+          - field: bioHover
+            meta:
+              field: bioHover
+              interface: input-multiline
+              width: full
+            name: bioHover
+            type: text
+          - field: photo
+            meta:
+              field: photo
+              interface: file
+              note: Member photo. Stored in R2.
+              width: full
+            name: photo
+            type: uuid
+        template: '{{name}}'
+      readonly: false
+      required: false
+      sort: 3
+      special:
+        - cast-json
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_board_members
+      table: pages_translations
+      data_type: json
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_org_heading_lead
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_org_heading_lead
+      group: about_org_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_org_heading_lead
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_org_heading_accent
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_org_heading_accent
+      group: about_org_group
+      hidden: false
+      interface: input
+      note: Rendered in the accent color, directly after the lead.
+      options: null
+      readonly: false
+      required: false
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_org_heading_accent
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_org_subheading
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_org_subheading
+      group: about_org_group
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 3
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_org_subheading
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_org_root
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_org_root
+      group: about_org_group
+      hidden: false
+      interface: input
+      note: Top node label (e.g. shareholders meeting).
+      options: null
+      readonly: false
+      required: false
+      sort: 4
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_org_root
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_org_ceo
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_org_ceo
+      group: about_org_group
+      hidden: false
+      interface: input
+      note: CEO node label.
+      options: null
+      readonly: false
+      required: false
+      sort: 5
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: about_org_ceo
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: about_org_departments
+    type: json
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_org_departments
+      group: about_org_group
+      hidden: false
+      interface: tags
+      note: One tag per department pill, in display order.
+      options: null
+      readonly: false
+      required: false
+      sort: 6
+      special:
+        - cast-json
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_org_departments
+      table: pages_translations
+      data_type: json
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: home_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions:
+        - hidden: false
+          name: home only
+          rule:
+            pages_id:
+              _in:
+                - aba448d6-0aa5-4a87-b12c-4364bf394184
+      display: null
+      display_options: null
+      field: home_group
+      group: null
+      hidden: true
+      interface: group-detail
+      note: Home page sections.
+      options:
+        start: open
+      readonly: false
+      required: false
+      sort: 30
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: careers_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions:
+        - hidden: false
+          name: careers only
+          rule:
+            pages_id:
+              _in:
+                - f9a25bdc-4175-416d-96a6-de149800dc91
+      display: null
+      display_options: null
+      field: careers_group
+      group: null
+      hidden: true
+      interface: group-detail
+      note: Careers page sections.
+      options:
+        start: open
+      readonly: false
+      required: false
+      sort: 40
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: hero_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions:
+        - hidden: false
+          name: non-about pages
+          rule:
+            pages_id:
+              _in:
+                - aba448d6-0aa5-4a87-b12c-4364bf394184
+                - e2091ec3-983e-4eac-94f1-d645348c4a74
+                - df56012f-3e1e-47ab-a5e9-371802941d00
+                - 6bd3fcaf-6e39-45f1-a8b4-36e8c77e8f47
+                - f9a25bdc-4175-416d-96a6-de149800dc91
+      display: null
+      display_options: null
+      field: hero_group
+      group: null
+      hidden: true
+      interface: group-detail
+      note: Page hero.
+      options:
+        start: open
+      readonly: false
+      required: false
+      sort: 10
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: home_valueprops_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: home_valueprops_group
+      group: home_group
+      hidden: false
+      interface: group-detail
+      note: Value-prop bento block.
+      options:
+        start: open
+      readonly: false
+      required: false
+      sort: 34
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: home_beep_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: home_beep_group
+      group: home_group
+      hidden: false
+      interface: group-detail
+      note: Beep showcase copy.
+      options:
+        start: open
+      readonly: false
+      required: false
+      sort: 35
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: home_fincobiz_group
+    type: alias
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: home_fincobiz_group
+      group: home_group
+      hidden: false
+      interface: group-detail
+      note: FincoBiz showcase copy.
+      options:
+        start: open
+      readonly: false
+      required: false
+      sort: 36
+      special:
+        - alias
+        - no-data
+        - group
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+  - collection: pages_translations
+    field: hero_eyebrow
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: hero_eyebrow
+      group: hero_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: hero_eyebrow
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: hero_headline
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: hero_headline
+      group: hero_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: hero_headline
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: hero_accent
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: hero_accent
+      group: hero_group
+      hidden: false
+      interface: input
+      note: Substring of the headline rendered in the accent colour.
+      options: null
+      readonly: false
+      required: false
+      sort: 3
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: hero_accent
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: hero_subheadline
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: hero_subheadline
+      group: hero_group
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 4
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: hero_subheadline
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: hero_cta_label
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: hero_cta_label
+      group: hero_group
+      hidden: false
+      interface: input
+      note: Primary button text.
+      options: null
+      readonly: false
+      required: false
+      sort: 6
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: hero_cta_label
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: hero_cta_to
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: hero_cta_to
+      group: hero_group
+      hidden: false
+      interface: input
+      note: Primary button route, e.g. /products.
+      options: null
+      readonly: false
+      required: false
+      sort: 7
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: hero_cta_to
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: hero_secondary_cta_label
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: hero_secondary_cta_label
+      group: hero_group
+      hidden: false
+      interface: input
+      note: Secondary button text.
+      options: null
+      readonly: false
+      required: false
+      sort: 8
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: hero_secondary_cta_label
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: hero_secondary_cta_to
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: hero_secondary_cta_to
+      group: hero_group
+      hidden: false
+      interface: input
+      note: Secondary button route.
+      options: null
+      readonly: false
+      required: false
+      sort: 9
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: hero_secondary_cta_to
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: value_props_heading
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: value_props_heading
+      group: home_valueprops_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: value_props_heading
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: value_props_accent
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: value_props_accent
+      group: home_valueprops_group
+      hidden: false
+      interface: input
+      note: Substring of the heading rendered in the accent colour.
+      options: null
+      readonly: false
+      required: false
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: value_props_accent
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: value_props_subheading
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: value_props_subheading
+      group: home_valueprops_group
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 3
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: value_props_subheading
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: value_props_items
+    type: json
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: value_props_items
+      group: home_valueprops_group
+      hidden: false
+      interface: list
+      note: null
+      options:
+        fields:
+          - field: title
+            meta:
+              field: title
+              interface: input
+              width: full
+            name: title
+            type: string
+          - field: body
+            meta:
+              field: body
+              interface: input-multiline
+              width: full
+            name: body
+            type: text
+          - field: icon
+            meta:
+              field: icon
+              interface: input
+              width: full
+            name: icon
+            type: string
+        template: '{{title}}'
+      readonly: false
+      required: false
+      sort: 4
+      special:
+        - cast-json
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: value_props_items
+      table: pages_translations
+      data_type: json
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: beep_heading
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: beep_heading
+      group: home_beep_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: beep_heading
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: beep_subtext
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: beep_subtext
+      group: home_beep_group
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: beep_subtext
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: beep_expand_lead
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: beep_expand_lead
+      group: home_beep_group
+      hidden: false
+      interface: input
+      note: Lead of the expanding headline.
+      options: null
+      readonly: false
+      required: false
+      sort: 3
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: beep_expand_lead
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: beep_expand_rest
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: beep_expand_rest
+      group: home_beep_group
+      hidden: false
+      interface: input
+      note: Rest of the expanding headline.
+      options: null
+      readonly: false
+      required: false
+      sort: 4
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: beep_expand_rest
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: fincobiz_subtext
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: fincobiz_subtext
+      group: home_fincobiz_group
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: fincobiz_subtext
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: fincobiz_callout_heading
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: fincobiz_callout_heading
+      group: home_fincobiz_group
+      hidden: false
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: fincobiz_callout_heading
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: fincobiz_callout_subtext
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: fincobiz_callout_subtext
+      group: home_fincobiz_group
+      hidden: false
+      interface: input-multiline
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 3
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: fincobiz_callout_subtext
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: fincobiz_card_request
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: fincobiz_card_request
+      group: home_fincobiz_group
+      hidden: false
+      interface: input
+      note: Card-deck tab title.
+      options: null
+      readonly: false
+      required: false
+      sort: 4
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: fincobiz_card_request
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: fincobiz_card_receivables
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: fincobiz_card_receivables
+      group: home_fincobiz_group
+      hidden: false
+      interface: input
+      note: Card-deck tab title.
+      options: null
+      readonly: false
+      required: false
+      sort: 5
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: fincobiz_card_receivables
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: fincobiz_card_eligibility
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: fincobiz_card_eligibility
+      group: home_fincobiz_group
+      hidden: false
+      interface: input
+      note: Card-deck tab title.
+      options: null
+      readonly: false
+      required: false
+      sort: 6
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: fincobiz_card_eligibility
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: beep_teaser
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: beep_teaser
+      group: home_beep_group
+      hidden: false
+      interface: input
+      note: Loyalty teaser under the info bar (may start with an emoji).
+      options: null
+      readonly: false
+      required: false
+      sort: 5
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: beep_teaser
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: hero_image_file
+    type: uuid
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: hero_image_file
+      group: hero_group
+      hidden: false
+      interface: file-image
+      note: Hero image. Stored in R2.
+      options: null
+      readonly: false
+      required: false
+      sort: 5
+      special:
+        - file
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: hero_image_file
+      table: pages_translations
+      data_type: char
+      default_value: null
+      max_length: 36
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_files
+      foreign_key_column: id
+  - collection: pages_translations
+    field: about_hero_photo_file
+    type: uuid
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_hero_photo_file
+      group: about_hero_group
+      hidden: false
+      interface: file-image
+      note: Hero photo. Stored in R2.
+      options: null
+      readonly: false
+      required: false
+      sort: 3
+      special:
+        - file
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_hero_photo_file
+      table: pages_translations
+      data_type: char
+      default_value: null
+      max_length: 36
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_files
+      foreign_key_column: id
+  - collection: pages_translations
+    field: about_ceo_portrait_file
+    type: uuid
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: about_ceo_portrait_file
+      group: about_ceo_group
+      hidden: false
+      interface: file-image
+      note: CEO portrait. Stored in R2.
+      options: null
+      readonly: false
+      required: false
+      sort: 9
+      special:
+        - file
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: about_ceo_portrait_file
+      table: pages_translations
+      data_type: char
+      default_value: null
+      max_length: 36
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_files
+      foreign_key_column: id
   - collection: products
     field: id
     type: uuid
@@ -5677,88 +8247,6 @@ fields:
       foreign_key_table: null
       foreign_key_column: null
   - collection: products_translations
-    field: loan_terms
-    type: json
-    meta:
-      collection: products_translations
-      conditions: null
-      display: null
-      display_options: null
-      field: loan_terms
-      group: null
-      hidden: false
-      interface: input-code
-      note: 'Object: { amount, rate, period } — localized display strings.'
-      options:
-        language: json
-      readonly: false
-      required: false
-      sort: 9
-      special:
-        - cast-json
-      translations: null
-      validation: null
-      validation_message: null
-      width: full
-    schema:
-      name: loan_terms
-      table: products_translations
-      data_type: json
-      default_value: null
-      max_length: null
-      numeric_precision: null
-      numeric_scale: null
-      is_nullable: true
-      is_unique: false
-      is_indexed: false
-      is_primary_key: false
-      is_generated: false
-      generation_expression: null
-      has_auto_increment: false
-      foreign_key_table: null
-      foreign_key_column: null
-  - collection: products_translations
-    field: tabs
-    type: json
-    meta:
-      collection: products_translations
-      conditions: null
-      display: null
-      display_options: null
-      field: tabs
-      group: null
-      hidden: false
-      interface: input-code
-      note: 'Object: { info, requirements: string[], other }.'
-      options:
-        language: json
-      readonly: false
-      required: false
-      sort: 10
-      special:
-        - cast-json
-      translations: null
-      validation: null
-      validation_message: null
-      width: full
-    schema:
-      name: tabs
-      table: products_translations
-      data_type: json
-      default_value: null
-      max_length: null
-      numeric_precision: null
-      numeric_scale: null
-      is_nullable: true
-      is_unique: false
-      is_indexed: false
-      is_primary_key: false
-      is_generated: false
-      generation_expression: null
-      has_auto_increment: false
-      foreign_key_table: null
-      foreign_key_column: null
-  - collection: products_translations
     field: faq
     type: json
     meta:
@@ -5838,6 +8326,211 @@ fields:
       width: full
     schema:
       name: body
+      table: products_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: products_translations
+    field: loan_amount
+    type: string
+    meta:
+      collection: products_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: loan_amount
+      group: null
+      hidden: false
+      interface: input
+      note: Display string, e.g. "300 сая₮ хүртэл".
+      options: null
+      readonly: false
+      required: false
+      sort: 60
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: loan_amount
+      table: products_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: products_translations
+    field: loan_rate
+    type: string
+    meta:
+      collection: products_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: loan_rate
+      group: null
+      hidden: false
+      interface: input
+      note: Display string, e.g. "3.3%/сар".
+      options: null
+      readonly: false
+      required: false
+      sort: 61
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: loan_rate
+      table: products_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: products_translations
+    field: loan_period
+    type: string
+    meta:
+      collection: products_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: loan_period
+      group: null
+      hidden: false
+      interface: input
+      note: Display string, e.g. "60 сар хүртэл".
+      options: null
+      readonly: false
+      required: false
+      sort: 62
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: loan_period
+      table: products_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: products_translations
+    field: tabs_requirements
+    type: json
+    meta:
+      collection: products_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: tabs_requirements
+      group: null
+      hidden: false
+      interface: list
+      note: Rows of the "Requirements" tab.
+      options:
+        fields:
+          - field: text
+            meta:
+              field: text
+              interface: input-multiline
+              width: full
+            name: text
+            type: text
+        template: '{{text}}'
+      readonly: false
+      required: false
+      sort: 80
+      special:
+        - cast-json
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: tabs_requirements
+      table: products_translations
+      data_type: json
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: products_translations
+    field: tabs_other
+    type: text
+    meta:
+      collection: products_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: tabs_other
+      group: null
+      hidden: false
+      interface: input-multiline
+      note: Content of the "Other" tab.
+      options: null
+      readonly: false
+      required: false
+      sort: 81
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: tabs_other
       table: products_translations
       data_type: text
       default_value: null
@@ -6621,47 +9314,6 @@ fields:
       foreign_key_table: null
       foreign_key_column: null
   - collection: services_translations
-    field: cta
-    type: json
-    meta:
-      collection: services_translations
-      conditions: null
-      display: null
-      display_options: null
-      field: cta
-      group: null
-      hidden: false
-      interface: input-code
-      note: 'Object: { label, to } — hero CTA pill.'
-      options:
-        language: json
-      readonly: false
-      required: false
-      sort: 7
-      special:
-        - cast-json
-      translations: null
-      validation: null
-      validation_message: null
-      width: full
-    schema:
-      name: cta
-      table: services_translations
-      data_type: json
-      default_value: null
-      max_length: null
-      numeric_precision: null
-      numeric_scale: null
-      is_nullable: true
-      is_unique: false
-      is_indexed: false
-      is_primary_key: false
-      is_generated: false
-      generation_expression: null
-      has_auto_increment: false
-      foreign_key_table: null
-      foreign_key_column: null
-  - collection: services_translations
     field: faq
     type: json
     meta:
@@ -6706,6 +9358,84 @@ fields:
       data_type: json
       default_value: null
       max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: services_translations
+    field: cta_label
+    type: string
+    meta:
+      collection: services_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: cta_label
+      group: null
+      hidden: false
+      interface: input
+      note: Hero CTA pill text.
+      options: null
+      readonly: false
+      required: false
+      sort: 40
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: cta_label
+      table: services_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: services_translations
+    field: cta_to
+    type: string
+    meta:
+      collection: services_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: cta_to
+      group: null
+      hidden: false
+      interface: input
+      note: Hero CTA route, e.g. /branches.
+      options: null
+      readonly: false
+      required: false
+      sort: 41
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: cta_to
+      table: services_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
       numeric_precision: null
       numeric_scale: null
       is_nullable: true
@@ -7201,6 +9931,69 @@ relations:
       constraint_name: null
       on_update: NO ACTION
       on_delete: CASCADE
+  - collection: pages_translations
+    field: hero_image_file
+    related_collection: directus_files
+    meta:
+      junction_field: null
+      many_collection: pages_translations
+      many_field: hero_image_file
+      one_allowed_collections: null
+      one_collection: directus_files
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: pages_translations
+      column: hero_image_file
+      foreign_key_table: directus_files
+      foreign_key_column: id
+      constraint_name: null
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: pages_translations
+    field: about_hero_photo_file
+    related_collection: directus_files
+    meta:
+      junction_field: null
+      many_collection: pages_translations
+      many_field: about_hero_photo_file
+      one_allowed_collections: null
+      one_collection: directus_files
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: pages_translations
+      column: about_hero_photo_file
+      foreign_key_table: directus_files
+      foreign_key_column: id
+      constraint_name: null
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: pages_translations
+    field: about_ceo_portrait_file
+    related_collection: directus_files
+    meta:
+      junction_field: null
+      many_collection: pages_translations
+      many_field: about_ceo_portrait_file
+      one_allowed_collections: null
+      one_collection: directus_files
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: pages_translations
+      column: about_ceo_portrait_file
+      foreign_key_table: directus_files
+      foreign_key_column: id
+      constraint_name: null
+      on_update: NO ACTION
+      on_delete: SET NULL
   - collection: products
     field: user_created
     related_collection: directus_users

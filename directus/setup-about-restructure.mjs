@@ -125,9 +125,12 @@ const GROUPS = [
 ]
 
 const FIELDS = [
+  // NB: about_hero_photo / about_ceo_portrait are NOT declared here — they
+  // were superseded by the relational upload fields of setup-image-fields.mjs
+  // (about_hero_photo_file / about_ceo_portrait_file); declaring them would
+  // resurrect deleted columns on re-runs.
   input('about_hero_headline', 'about_hero_group', { width: 'full' }),
   text('about_hero_intro', 'about_hero_group'),
-  input('about_hero_photo', 'about_hero_group', { note: 'Site asset path, e.g. /images/about/hero.png.' }),
 
   repeater('about_mission_blocks', 'about_mission_group',
     [['badge'], ['heading'], ['body', 'input-multiline', 'text']],
@@ -155,7 +158,6 @@ const FIELDS = [
   input('about_ceo_tagline', 'about_ceo_group', { width: 'full' }),
   input('about_ceo_signature_label', 'about_ceo_group'),
   input('about_ceo_signature_name', 'about_ceo_group'),
-  input('about_ceo_portrait', 'about_ceo_group', { note: 'Site asset path.' }),
 
   input('about_board_heading_lead', 'about_board_group'),
   input('about_board_heading_accent', 'about_board_group', { note: 'Rendered in the accent color, directly after the lead.' }),
@@ -177,7 +179,6 @@ function explode(about) {
   return {
     about_hero_headline: a.hero?.headline ?? null,
     about_hero_intro: a.hero?.intro ?? null,
-    about_hero_photo: a.hero?.photo ?? null,
     about_mission_blocks: a.mission?.blocks ?? null,
     about_values_heading_lead: a.values?.headingLead ?? null,
     about_values_heading_accent: a.values?.headingAccent ?? null,
@@ -195,7 +196,6 @@ function explode(about) {
     about_ceo_tagline: a.ceo?.tagline ?? null,
     about_ceo_signature_label: a.ceo?.signatureLabel ?? null,
     about_ceo_signature_name: a.ceo?.signatureName ?? null,
-    about_ceo_portrait: a.ceo?.portrait ?? null,
     about_board_heading_lead: a.board?.headingLead ?? null,
     about_board_heading_accent: a.board?.headingAccent ?? null,
     about_board_members: a.board?.members ?? null,
@@ -212,7 +212,7 @@ function explode(about) {
 function assemble(r) {
   if (!r.about_hero_headline) return null
   return {
-    hero: { headline: r.about_hero_headline, intro: r.about_hero_intro, photo: r.about_hero_photo },
+    hero: { headline: r.about_hero_headline, intro: r.about_hero_intro },
     mission: { blocks: r.about_mission_blocks ?? [] },
     values: {
       headingLead: r.about_values_heading_lead,
@@ -235,7 +235,6 @@ function assemble(r) {
       tagline: r.about_ceo_tagline,
       signatureLabel: r.about_ceo_signature_label,
       signatureName: r.about_ceo_signature_name,
-      portrait: r.about_ceo_portrait,
     },
     board: {
       headingLead: r.about_board_heading_lead,
@@ -259,6 +258,9 @@ function normalizeForDiff(about) {
   const clone = JSON.parse(JSON.stringify(about))
   clone.values.items = clone.values.items?.map(({ title, body }) => ({ title, body }))
   clone.ceo.greetingBody = clone.ceo.greetingBody?.map((s) => s.trim()).filter(Boolean)
+  // photos live in setup-image-fields.mjs' relational fields, not here
+  if (clone.hero) delete clone.hero.photo
+  if (clone.ceo) delete clone.ceo.portrait
   return clone
 }
 
@@ -307,12 +309,15 @@ if (!blobExists) {
     }
     const migrated = FIELDS.some((x) => row[x.field] != null)
     if (migrated && !FORCE) {
+      // Already-migrated fields legitimately evolve past the frozen blob
+      // (editor changes, setup-image-fields.mjs replacing photo paths with
+      // file uuids) — a stale-blob diff would be a false alarm here.
       log('skip', `${label}: already migrated (--force to overwrite from blob)`)
-    } else {
-      await api('PATCH', `/items/${T}/${row.id}`, explode(row.about))
-      log('add', `${label}: exploded about blob into ${FIELDS.length} fields`)
+      continue
     }
-    // verify round-trip against the blob regardless of who wrote the fields
+    await api('PATCH', `/items/${T}/${row.id}`, explode(row.about))
+    log('add', `${label}: exploded about blob into ${FIELDS.length} fields`)
+    // verify the write round-trips against the blob it came from
     const fresh = await api('GET', `/items/${T}/${row.id}?fields=about,${FIELDS.map((x) => x.field).join(',')}`)
     const want = JSON.stringify(normalizeForDiff(fresh.about))
     const got = JSON.stringify(normalizeForDiff(assemble(fresh)))

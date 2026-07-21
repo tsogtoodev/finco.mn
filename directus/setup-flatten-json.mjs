@@ -144,7 +144,8 @@ const SPECS = [
       input('hero_headline', { group: 'hero_group', sort: 2, width: 'full' }),
       input('hero_accent', { group: 'hero_group', sort: 3, note: 'Substring of the headline rendered in the accent colour.' }),
       text('hero_subheadline', { group: 'hero_group', sort: 4 }),
-      input('hero_image', { group: 'hero_group', sort: 5, note: 'Site asset path, e.g. /images/….' }),
+      // NB: hero_image is NOT declared here — superseded by hero_image_file
+      // (setup-image-fields.mjs); declaring it would resurrect the column.
       input('hero_cta_label', { group: 'hero_group', sort: 6, note: 'Primary button text.' }),
       input('hero_cta_to', { group: 'hero_group', sort: 7, note: 'Primary button route, e.g. /products.' }),
       input('hero_secondary_cta_label', { group: 'hero_group', sort: 8, note: 'Secondary button text.' }),
@@ -174,7 +175,6 @@ const SPECS = [
       hero_headline: r.hero?.headline ?? null,
       hero_accent: r.hero?.accent ?? null,
       hero_subheadline: r.hero?.subheadline ?? null,
-      hero_image: r.hero?.image ?? null,
       hero_cta_label: r.hero?.cta?.label ?? null,
       hero_cta_to: r.hero?.cta?.to ?? null,
       hero_secondary_cta_label: r.hero?.secondaryCta?.label ?? null,
@@ -201,7 +201,6 @@ const SPECS = [
         headline: r.hero_headline,
         accent: r.hero_accent,
         subheadline: r.hero_subheadline,
-        image: r.hero_image,
         cta: linkObj(r.hero_cta_label, r.hero_cta_to),
         secondaryCta: linkObj(r.hero_secondary_cta_label, r.hero_secondary_cta_to),
       }),
@@ -219,6 +218,16 @@ const SPECS = [
         cards: strip({ request: r.fincobiz_card_request, receivables: r.fincobiz_card_receivables, eligibility: r.fincobiz_card_eligibility }),
       }),
     }),
+    // hero.image is handled by setup-image-fields.mjs' relational field
+    normalizeLegacy: (legacy) => {
+      const view = {
+        hero: legacy.hero ? strip({ ...legacy.hero, image: undefined }) : undefined,
+        value_props: legacy.value_props ?? undefined,
+        beep: legacy.beep ?? undefined,
+        fincobiz: legacy.fincobiz ?? undefined,
+      }
+      return view
+    },
   },
   {
     collection: 'products_translations',
@@ -329,6 +338,13 @@ for (const spec of SPECS) {
   }
 
   const newFieldNames = spec.fields.map((x) => x.field)
+  const liveLegacy = []
+  for (const f of spec.legacy) if (await exists(`/fields/${C}/${f}`)) liveLegacy.push(f)
+  spec.legacy = liveLegacy
+  if (!liveLegacy.length) {
+    log('skip', 'legacy columns already dropped — nothing to migrate')
+    continue
+  }
   const allFields = ['id', ...spec.legacy, ...newFieldNames]
   const rows = await api('GET', `/items/${C}?limit=-1&fields=${allFields.join(',')}`)
   for (const row of rows) {
@@ -339,11 +355,14 @@ for (const spec of SPECS) {
       continue
     }
     const migrated = newFieldNames.some((f) => row[f] != null)
-    if (migrated && !FORCE) log('skip', `${label}: already migrated`)
-    else {
-      await api('PATCH', `/items/${C}/${row.id}`, spec.explode(row))
-      log('add', `${label}: exploded ${spec.legacy.join('/')}`)
+    if (migrated && !FORCE) {
+      // already-migrated fields legitimately evolve past the frozen legacy
+      // JSON (editor changes, later migrations) — don't diff against it
+      log('skip', `${label}: already migrated`)
+      continue
     }
+    await api('PATCH', `/items/${C}/${row.id}`, spec.explode(row))
+    log('add', `${label}: exploded ${spec.legacy.join('/')}`)
     const fresh = await api('GET', `/items/${C}/${row.id}?fields=${allFields.join(',')}`)
     const legacyView = spec.normalizeLegacy
       ? spec.normalizeLegacy(fresh)
