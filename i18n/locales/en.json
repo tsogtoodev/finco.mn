@@ -179,31 +179,33 @@
     "other": "Other",
     "intro": "Company overview",
     "reports": "Reports",
-    "contact": "Get in touch",
+    "contact": "Contact",
     "rights": "© 2026 Finco Capital. All rights reserved.",
-    "terms": "Terms of service",
-    "privacy": "Privacy policy",
-    "iso": "ISO certifications",
+    "viewLocations": "View locations",
     "links": {
       "branches": "Branch locations",
       "businessLoan": "Business loan",
       "trust": "Trust services",
       "careers": "Open positions",
-      "news": "News & updates"
+      "news": "News & updates",
+      "fincobiz": "FincoBiz",
+      "beep": "Beep wallet"
     },
     "disclaimer": [
-      "“Finco Capital NBFI LLC” is a financial institution operating within the framework of the relevant laws of Mongolia and the rules, regulations and policies of the Bank of Mongolia. We focus on delivering financial services transparently, reliably and accessibly.",
-      "The information published on this website is intended as a general overview of products and services. Service terms, criteria, fees, interest, periods and other details are determined by the contract and actual conditions of each product. Some services may require additional verification, information checks and supporting documents.",
-      "Finco Capital develops and delivers Beep, FincoBiz and other digital financial products and services, and the terms, options and requirements of each service may differ depending on the customer type and the nature of the service.",
-      "We value the privacy and security of customer information and protect it within the framework of the relevant laws, regulations and internal policies. Please review the terms of service and related policy documents before using our services."
-    ]
+      "“Finco Capital NBFI LLC” (hereinafter the \"NBFI\") operates in compliance with the laws of Mongolia and the relevant rules, regulations, policies and regulatory requirements approved by the Bank of Mongolia and the Financial Regulatory Commission. The NBFI is committed to providing financial services in a transparent, reliable and broadly accessible manner.",
+      "The information published on this website is intended to provide a general overview of the products and services offered by the NBFI and shall not be considered an official offer, advice or contractual terms. The detailed terms, criteria, fees, interest, repayment periods and other related information of each product or service are determined in accordance with the agreement concluded between the parties.",
+      "Certain services may require assessing the customer's identity and financial capacity, collecting the necessary documents and information, and carrying out additional verification."
+    ],
+    "privacyPre": "We value the confidentiality and security of customer information and protect it within the framework of the relevant laws, regulations and internal policies. Before using our services, please review our ",
+    "privacyLink": "privacy policy",
+    "privacyPost": "."
   },
   "legal": {
     "updated": "Last updated"
   },
   "contact": {
-    "phone": "+976 7017 3311",
-    "email": "info{'@'}finco.mn",
+    "phone": "+976 7070 1212",
+    "email": "contact{'@'}finco.mn",
     "address": "Olympiin Street 7/2, Suite 706/707, Soyol Amralt 14240, 1st khoroo, Sukhbaatar District, Ulaanbaatar"
   },
   "feedback": {

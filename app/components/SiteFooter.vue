@@ -1,47 +1,48 @@
 <script setup lang="ts">
-// Site footer (Figma 1:14377 + legal block 1:14111): white link columns +
-// contact row, then a dark legal strip with disclaimer, ISO badges, copyright.
-// The two product columns render the top catalog entries from the `products`
-// collection so footer links always point at real, CMS-managed product pages.
+// Site footer (Figma 568:5816 redesign): single light surface — link columns
+// (About + Other stacked in the first column, then the two product catalogs),
+// contact pill row, hairline divider, legal block with an inline privacy-policy
+// link, and the Finco wordmark bleeding off the bottom edge. The product
+// columns render the full catalog from the `products` collection so footer
+// links always point at real, CMS-managed product pages.
 const { t, tm, rt } = useI18n()
 const localePath = useLocalePath()
 
 const catalog = await useProductList()
-const productLinks = (audience: 'individual' | 'business', count: number) =>
+const productLinks = (audience: 'individual' | 'business') =>
   (catalog.value ?? [])
     .filter((p) => p.audience === audience)
-    .slice(0, count)
     .map((p) => ({ label: p.title, to: `/products/${p.slug}` }))
 
-const columns = computed(() => [
-  {
-    heading: t('footer.about'),
-    links: [
-      { label: t('footer.intro'), to: '/about' },
-      { label: t('footer.links.branches'), to: '/branches' },
-      { label: t('footer.reports'), to: '/about' },
-    ],
-  },
-  {
-    heading: t('footer.individuals'),
-    links: productLinks('individual', 4),
-  },
-  {
-    heading: t('footer.business'),
-    links: [
-      { label: t('footer.links.businessLoan'), to: '/business' },
-      ...productLinks('business', 4),
-    ],
-  },
-  {
-    heading: t('footer.other'),
-    links: [
-      { label: t('footer.links.trust'), to: '/services/trust' },
-      { label: t('footer.links.careers'), to: '/careers' },
-      { label: t('footer.links.news'), to: '/news' },
-    ],
-  },
-])
+const aboutGroup = computed(() => ({
+  heading: t('footer.about'),
+  links: [
+    { label: t('footer.intro'), to: '/about' },
+    { label: t('footer.links.branches'), to: '/branches' },
+    { label: t('footer.reports'), to: '/about' },
+  ],
+}))
+
+const otherGroup = computed(() => ({
+  heading: t('footer.other'),
+  links: [
+    { label: t('footer.links.trust'), to: '/services/trust' },
+    { label: t('footer.links.careers'), to: '/careers' },
+    { label: t('footer.links.news'), to: '/news' },
+    { label: t('footer.links.fincobiz'), to: '/business' },
+    { label: t('footer.links.beep'), to: '/products' },
+  ],
+}))
+
+const individualsGroup = computed(() => ({
+  heading: t('footer.individuals'),
+  links: productLinks('individual'),
+}))
+
+const businessGroup = computed(() => ({
+  heading: t('footer.business'),
+  links: productLinks('business'),
+}))
 
 const socials = [
   { icon: 'f:facebook', href: 'https://facebook.com', label: 'Facebook' },
@@ -55,20 +56,18 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
 </script>
 
 <template>
-  <footer>
-    <!-- Link columns + contact — the opaque "curtain" that scrolls in FRONT and
-         lifts away to reveal the dark legal strip pinned behind it. Higher z than
-         the strip; solid white bg so it fully occludes the strip until it lifts. -->
-    <div class="relative z-10 bg-white">
-      <div class="mx-auto w-full max-w-[1200px] px-6 py-20 lg:py-28">
-        <div class="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4">
-          <div v-for="col in columns" :key="col.heading">
-            <h3 class="font-display text-base font-medium text-accent">{{ col.heading }}</h3>
-            <ul class="mt-6 space-y-3">
+  <footer class="bg-[#fbfbfb]">
+    <div class="mx-auto w-full max-w-[1200px] px-6 pt-20 lg:pt-[120px]">
+      <!-- Link columns: About + Other stacked left, then the two catalogs -->
+      <div class="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-3">
+        <div class="flex flex-col gap-8">
+          <div v-for="col in [aboutGroup, otherGroup]" :key="col.heading">
+            <h3 class="text-sm text-black">{{ col.heading }}</h3>
+            <ul class="mt-4 space-y-4">
               <li v-for="l in col.links" :key="l.label">
                 <NuxtLink
                   :to="localePath(l.to)"
-                  class="text-sm font-light text-black/[0.64] transition-colors hover:text-foreground"
+                  class="text-sm font-light text-black/60 transition-colors hover:text-foreground"
                 >
                   {{ l.label }}
                 </NuxtLink>
@@ -76,77 +75,78 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
             </ul>
           </div>
         </div>
-
-        <!-- Contact -->
-        <div class="mt-16">
-          <h3 class="font-display text-base font-medium text-accent">{{ t('footer.contact') }}</h3>
-          <div class="mt-6 flex flex-wrap items-center gap-4">
-            <a
-              v-for="s in socials"
-              :key="s.label"
-              :href="s.href"
-              target="_blank"
-              rel="noopener"
-              :aria-label="s.label"
-              class="flex size-9 items-center justify-center rounded-full bg-white text-dark transition-colors hover:bg-muted"
-            >
-              <Icon :name="s.icon" class="text-[22px]" />
-            </a>
-            <a
-              :href="`tel:${phone.replace(/\s/g, '')}`"
-              class="inline-flex items-center gap-2 rounded-full bg-black/5 px-4 py-2 text-sm text-black/[0.64] transition-colors hover:bg-black/10"
-            >
-              {{ phone }}
-              <Icon name="lucide:arrow-up-right" class="size-4" />
-            </a>
-            <a
-              :href="`mailto:${email}`"
-              class="inline-flex items-center gap-2 rounded-full bg-black/5 px-4 py-2 text-sm text-black/[0.64] transition-colors hover:bg-black/10"
-            >
-              {{ email }}
-              <Icon name="lucide:arrow-up-right" class="size-4" />
-            </a>
-          </div>
-          <a
-            :href="`https://maps.google.com/?q=${encodeURIComponent(t('contact.address'))}`"
-            target="_blank"
-            rel="noopener"
-            class="mt-4 inline-flex max-w-full items-center gap-2 rounded-full bg-black/5 px-4 py-2 text-sm text-black/[0.64] transition-colors hover:bg-black/10"
-          >
-            <span class="truncate">{{ t('contact.address') }}</span>
-            <Icon name="lucide:arrow-up-right" class="size-4 shrink-0" />
-          </a>
+        <div v-for="col in [individualsGroup, businessGroup]" :key="col.heading">
+          <h3 class="text-sm text-black">{{ col.heading }}</h3>
+          <ul class="mt-4 space-y-4">
+            <li v-for="l in col.links" :key="l.label">
+              <NuxtLink
+                :to="localePath(l.to)"
+                class="text-sm font-light text-black/60 transition-colors hover:text-foreground"
+              >
+                {{ l.label }}
+              </NuxtLink>
+            </li>
+          </ul>
         </div>
       </div>
-    </div>
 
-    <!-- Legal strip — pinned to the viewport bottom BEHIND the contact curtain
-         (lower z), so as the page scrolls the contact lifts off to reveal it.
-         motion-safe only → reduced-motion users get a plain stacked footer. -->
-    <div class="relative z-0 overflow-hidden bg-[#0a0a1a] motion-safe:sticky motion-safe:bottom-0">
-      <img
-        src="/images/home/finco-footer.png"
-        alt=""
-        aria-hidden="true"
-        class="pointer-events-none absolute bottom-0 right-0 h-auto w-[80%] min-w-[720px] max-w-none translate-x-[8%] translate-y-[6%]"
-      >
-      <div class="relative mx-auto w-full max-w-[1200px] px-6 py-10 lg:py-12">
-        <div class="flex flex-col gap-4 text-center text-sm font-thin leading-5 tracking-wide text-white/60">
-          <p v-for="(para, i) in disclaimer" :key="i">{{ para }}</p>
-        </div>
-
-        <div class="mt-12 flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
-          <span class="text-sm font-light text-white">{{ t('footer.rights') }}</span>
-          <img
-            src="/images/home/iso-badges.png"
-            :alt="t('footer.iso')"
-            class="h-12 w-auto opacity-80"
+      <!-- Contact -->
+      <div class="mt-12">
+        <h3 class="text-sm text-black">{{ t('footer.contact') }}</h3>
+        <div class="mt-4 flex flex-wrap items-center gap-4">
+          <a
+            v-for="s in socials"
+            :key="s.label"
+            :href="s.href"
+            target="_blank"
+            rel="noopener"
+            :aria-label="s.label"
+            class="flex size-9 items-center justify-center rounded-full bg-black/[0.03] text-dark transition-colors hover:bg-black/10"
           >
-          <div class="flex items-center gap-8 text-sm font-light text-white/95">
-            <NuxtLink :to="localePath('/legal/terms')" class="hover:text-white">{{ t('footer.terms') }}</NuxtLink>
-            <NuxtLink :to="localePath('/legal/privacy')" class="hover:text-white">{{ t('footer.privacy') }}</NuxtLink>
-          </div>
+            <Icon :name="s.icon" class="text-[20px]" />
+          </a>
+          <a
+            :href="`tel:${phone.replace(/\s/g, '')}`"
+            class="rounded-full bg-black/[0.03] px-4 py-2 text-[13px] text-black/[0.64] underline transition-colors hover:bg-black/10"
+          >
+            {{ phone }}
+          </a>
+          <a
+            :href="`mailto:${email}`"
+            class="rounded-full bg-black/[0.03] px-4 py-2 text-[13px] text-black/[0.64] underline transition-colors hover:bg-black/10"
+          >
+            {{ email }}
+          </a>
+          <NuxtLink
+            :to="localePath('/branches')"
+            class="rounded-full bg-black/[0.03] px-4 py-2 text-[13px] text-black/[0.64] underline transition-colors hover:bg-black/10"
+          >
+            {{ t('footer.viewLocations') }}
+          </NuxtLink>
         </div>
+      </div>
+
+      <div class="mt-8 h-px w-full bg-black/10" />
+
+      <!-- Legal -->
+      <div class="mt-8">
+        <p class="text-xs font-light leading-5 text-black/60">{{ t('footer.rights') }}</p>
+        <div class="mt-4 space-y-[18px] text-xs font-thin leading-[18px] text-black/50">
+          <p v-for="(para, i) in disclaimer" :key="i">{{ para }}</p>
+          <p>
+            {{ t('footer.privacyPre') }}<NuxtLink
+              :to="localePath('/legal/privacy')"
+              class="font-light text-accent underline"
+            >{{ t('footer.privacyLink') }}</NuxtLink>{{ t('footer.privacyPost') }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Giant wordmark, bottom half clipped by the footer edge (Figma 568:5878).
+           The negative bottom margin (half the logo's height as % of width,
+           aspect 139.355:28) shrinks the wrapper so overflow-hidden crops it. -->
+      <div class="mt-10 overflow-hidden" aria-hidden="true">
+        <FincoLogo class="block w-full" style="margin-bottom: -10.05%" />
       </div>
     </div>
   </footer>
