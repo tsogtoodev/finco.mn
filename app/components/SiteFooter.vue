@@ -142,30 +142,12 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
         </div>
       </div>
 
-      <!-- Giant wordmark reveal (Figma 568:5878). The track is 1.5× the logo's
-           height; the sticky logo pins half-cropped at the viewport bottom edge
-           (the designed "sneak peek" state) while the last stretch of page
-           scroll unrolls it to fully visible — a reverse of the Apple-style
-           overscroll reveal, but scroll-driven so it works without rubber-band. -->
-      <div class="wordmark-track mt-10" aria-hidden="true">
-        <FincoLogo class="wordmark block w-full" />
+      <!-- Giant wordmark, bottom half clipped by the footer edge (Figma 568:5878).
+           The negative bottom margin (half the logo's height as % of width,
+           aspect 139.355:28) shrinks the wrapper so overflow-hidden crops it. -->
+      <div class="mt-10 overflow-hidden" aria-hidden="true">
+        <FincoLogo class="block w-full" style="margin-bottom: -10.05%" />
       </div>
     </div>
   </footer>
 </template>
-
-<style scoped>
-/* Logo aspect is 139.355:28 → height h = width/4.977. The track reserves 1.5h:
-   0.5h of it is the extra scroll travel that performs the reveal. The sticky
-   top puts the pin line at (viewport bottom − h/2), i.e. exactly half the logo
-   peeking above the fold; logo width = min(100vw, 1200px) − 48px (px-6). */
-.wordmark-track {
-  aspect-ratio: 139.355 / 42;
-  position: relative;
-}
-.wordmark {
-  position: sticky;
-  top: calc(100vh - (min(100vw, 1200px) - 48px) / 9.954);
-  top: calc(100dvh - (min(100vw, 1200px) - 48px) / 9.954);
-}
-</style>
