@@ -60,7 +60,7 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
     <div class="mx-auto w-full max-w-[1200px] px-6 lg:px-0 pt-20 lg:pt-[120px]">
       <!-- Link columns: About + Other stacked left, then the two catalogs -->
       <div class="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-3">
-        <div class="flex flex-col gap-8">
+        <div class="flex flex-col gap-[48px]">
           <div v-for="col in [aboutGroup, otherGroup]" :key="col.heading">
             <h3 class="text-sm text-black">{{ col.heading }}</h3>
             <ul class="mt-[16px] space-y-[16px] text-sm font-light leading-normal">
@@ -77,7 +77,7 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
         </div>
         <div v-for="col in [individualsGroup, businessGroup]" :key="col.heading">
           <h3 class="text-sm text-black">{{ col.heading }}</h3>
-          <ul class="mt-4 space-y-4 text-sm font-light leading-normal">
+          <ul class="mt-[16px] space-y-[16px] text-sm font-light leading-normal">
             <li v-for="l in col.links" :key="l.label">
               <NuxtLink
                 :to="localePath(l.to)"
@@ -131,7 +131,7 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
       <!-- Legal -->
       <div class="mt-8">
         <p class="text-xs font-light leading-5 text-black/60">{{ t('footer.rights') }}</p>
-        <div class="mt-4 space-y-[18px] text-xs font-thin leading-[18px] text-black/50">
+        <div class="mt-[16px] space-y-[16px] text-xs font-thin leading-[18px] text-black/50">
           <p v-for="(para, i) in disclaimer" :key="i">{{ para }}</p>
           <p>
             {{ t('footer.privacyPre') }}<NuxtLink

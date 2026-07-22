@@ -57,7 +57,7 @@ const articleEl = ref<HTMLElement | null>(null)
 const progress = ref(0)
 const activeTick = computed(() => Math.round(progress.value * (TICKS - 1)))
 
-function measureProgress() {
+function onScroll() {
   const el = articleEl.value
   if (!el) return
   const r = el.getBoundingClientRect()
@@ -65,22 +65,12 @@ function measureProgress() {
   progress.value = total > 0 ? Math.min(1, Math.max(0, -r.top / total)) : 1
 }
 
-// 50ms trailing debounce: the tick fill and the sliding long marker update in
-// one step after scrolling settles, so the fill edge can't run ahead of the
-// marker mid-transition.
-let scrollTimer: ReturnType<typeof setTimeout> | null = null
-function onScroll() {
-  if (scrollTimer) clearTimeout(scrollTimer)
-  scrollTimer = setTimeout(measureProgress, 5)
-}
-
 onMounted(() => {
-  measureProgress()
+  onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('resize', onScroll, { passive: true })
 })
 onBeforeUnmount(() => {
-  if (scrollTimer) clearTimeout(scrollTimer)
   window.removeEventListener('scroll', onScroll)
   window.removeEventListener('resize', onScroll)
 })

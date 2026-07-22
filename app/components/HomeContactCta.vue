@@ -43,7 +43,7 @@ const feedbackOpen = ref(false)
           <h2 class="font-display text-3xl font-medium leading-tight text-white sm:text-[40px] sm:leading-[48px]">
             {{ t('home.contact.heading') }}
           </h2>
-          <p class="max-w-[605px] text-xl font-extralight leading-8 tracking-[0.01em] text-white/80 sm:text-2xl">
+          <p class="max-w-[605px] text-xl font-extralight leading-[20px] tracking-[0.01em] text-white/80 sm:text-[16px]">
             {{ t('home.contact.subtext') }}
           </p>
         </div>

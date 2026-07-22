@@ -243,7 +243,10 @@
     "recent": "Шинээр нэмэгдсэн",
     "viewAll": "Бусад мэдээ мэдээлэл харах",
     "prevPage": "Өмнөх хуудас",
-    "nextPage": "Дараах хуудас"
+    "nextPage": "Дараах хуудас",
+    "autoNextHint": "Дараагийн мэдээрүү шилжих гэж байна...",
+    "autoNextClose": "Хаах",
+    "autoNextRead": "Унших"
   },
   "contactPage": {
     "hero": {

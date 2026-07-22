@@ -243,7 +243,10 @@
     "recent": "Recently added",
     "viewAll": "View more news",
     "prevPage": "Previous page",
-    "nextPage": "Next page"
+    "nextPage": "Next page",
+    "autoNextHint": "Taking you to the next article…",
+    "autoNextClose": "Close",
+    "autoNextRead": "Read"
   },
   "contactPage": {
     "hero": {
