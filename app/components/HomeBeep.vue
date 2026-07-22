@@ -161,7 +161,7 @@ onBeforeUnmount(() => {
 
           <!-- Loyalty teaser — sits under the info bar, so it only reads in the
                unhovered state (Figma Variant2); the revealed bar covers it. -->
-          <p class="beep-teaser">{{ copy.teaser }}</p>
+          <!-- <p class="beep-teaser">{{ copy.teaser }}</p> -->
 
           <!-- Plus affordance, top-right (Figma Huge-icon/solid/plus: 22.5px
                white cross in a 40px box) — hints that the card expands. -->

@@ -65,7 +65,13 @@ onBeforeUnmount(stopAuto)
 
 <template>
   <section class="relative overflow-hidden bg-white py-24 lg:py-28">
-    <div class="pointer-events-none absolute inset-0 [background:radial-gradient(55%_45%_at_72%_58%,rgba(76,65,216,0.07),transparent_70%)]" />
+    <!-- Background wash (Figma 568:5696) — a soft lavender → violet → magenta
+         S-curve. See the .biz-blob rules below for why it's CSS, not the raster. -->
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+      <span class="biz-blob biz-blob--violet" />
+      <span class="biz-blob biz-blob--periwinkle" />
+      <span class="biz-blob biz-blob--magenta" />
+    </div>
 
     <div class="relative mx-auto w-full max-w-[1200px] px-6">
       <MotionReveal class="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -92,7 +98,7 @@ onBeforeUnmount(stopAuto)
               <article
                 v-for="card in cards"
                 :key="card.id"
-                class="biz-card flex h-[450px] flex-col overflow-hidden rounded-xl bg-white shadow-[0_28px_70px_-34px_rgba(23,16,84,0.3)] ring-1 ring-black/[0.06] [will-change:transform]"
+                class="biz-card flex h-[450px] flex-col overflow-hidden rounded-xl bg-white ring-1 ring-black/[0.06] [will-change:transform]"
                 :class="[
                   depth(card.id) === 0 ? 'is-front' : '',
                   card.id === 'request' ? 'relative' : 'absolute inset-0',
@@ -194,19 +200,29 @@ onBeforeUnmount(stopAuto)
 </template>
 
 <style scoped>
-/* Deck geometry: depth d sits d peeks higher and 4% smaller, shrinking toward
-   the top-right so deeper cards stair-step in from the left like the Figma
-   artwork. Promotion just changes --depth per card — the transform transition
-   carries the reorder (z-index snaps, but the moving card covers the swap). */
+/* Deck geometry: depth d sits d peeks higher and 4% smaller. The origin is
+   top-centre so each deeper card insets by the same amount on the left and the
+   right (scaling about the centre splits the width loss evenly), while `top`
+   keeps the vertical peek stagger anchored. Promotion just changes --depth per
+   card — the transform transition carries the reorder (z-index snaps, but the
+   moving card covers the swap). */
 .biz-stack {
   --peek: max(4cqw, 44px);
 }
 
 .biz-card {
   transform: translateY(calc(var(--depth) * var(--peek) * -1)) scale(calc(1 - var(--depth) * 0.04));
-  transform-origin: top right;
+  transform-origin: top center;
+  /* Layered elevation: a tight contact shadow, a mid drop, and a broad soft
+     pool. The mid layer keeps only a small negative spread so the shadow still
+     reads on the narrow left/right peeks, not just below the front card. */
+  box-shadow:
+    0 1px 2px rgba(23, 16, 84, 0.05),
+    0 10px 22px -8px rgba(23, 16, 84, 0.16),
+    0 34px 64px -26px rgba(23, 16, 84, 0.28);
   transition:
     transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.6s ease,
     filter 0.6s ease;
 }
 
@@ -224,6 +240,61 @@ onBeforeUnmount(stopAuto)
   cursor: default;
 }
 
+/* Background wash (Figma 568:5696). The Figma layer is a 4096px / 7.8MB raster
+   of a blurred S-curve, of which the frame only ever shows the middle ~36%.
+   Rebuilt here as three radial lobes — same sampled colours, zero bytes, scales
+   to any width, and can actually move. Each lobe drifts on its own slow,
+   deliberately non-matching cycle (26/32/38s) so the wash breathes rather than
+   pulsing in visible lockstep. Positions place the violet crest centre-high with
+   the periwinkle and magenta lobes low-left and low-right, tracing the S. */
+.biz-blob {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.biz-blob--violet {
+  left: 22.5%;
+  top: 14%;
+  width: 55%;
+  height: 46%;
+  background: radial-gradient(closest-side, rgba(172, 88, 245, 0.22), rgba(172, 88, 245, 0) 72%);
+  animation: biz-drift-a 26s ease-in-out infinite alternate;
+}
+
+.biz-blob--periwinkle {
+  left: -13%;
+  top: 58%;
+  width: 52%;
+  height: 44%;
+  background: radial-gradient(closest-side, rgba(152, 142, 240, 0.2), rgba(152, 142, 240, 0) 72%);
+  animation: biz-drift-b 32s ease-in-out infinite alternate;
+}
+
+.biz-blob--magenta {
+  left: 68%;
+  top: 62%;
+  width: 52%;
+  height: 44%;
+  background: radial-gradient(closest-side, rgba(170, 100, 235, 0.18), rgba(170, 100, 235, 0) 72%);
+  animation: biz-drift-c 38s ease-in-out infinite alternate;
+}
+
+@keyframes biz-drift-a {
+  from { transform: translate3d(-2%, 2%, 0) scale(1); }
+  to { transform: translate3d(3%, -3%, 0) scale(1.07); }
+}
+
+@keyframes biz-drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.04); }
+  to { transform: translate3d(5%, -4%, 0) scale(0.96); }
+}
+
+@keyframes biz-drift-c {
+  from { transform: translate3d(2%, 0, 0) scale(1); }
+  to { transform: translate3d(-4%, -3%, 0) scale(1.08); }
+}
+
 /* organic pebble, like the baked tab dots */
 .biz-dot {
   width: 15px;
@@ -235,6 +306,11 @@ onBeforeUnmount(stopAuto)
 @media (prefers-reduced-motion: reduce) {
   .biz-card {
     transition-duration: 0.01ms;
+  }
+
+  /* Keep the wash, drop the drift. */
+  .biz-blob {
+    animation: none;
   }
 }
 </style>

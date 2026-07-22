@@ -235,6 +235,16 @@
     "error": "Something went wrong. Please try again.",
     "close": "Close"
   },
+  "newsPage": {
+    "heroTitle": "News &",
+    "heroAccent": "updates",
+    "subtitle": "Get the financial advice and updates you need — all in one place.",
+    "featured": "Featured news",
+    "recent": "Recently added",
+    "viewAll": "View more news",
+    "prevPage": "Previous page",
+    "nextPage": "Next page"
+  },
   "contactPage": {
     "hero": {
       "breadcrumb": "Get in touch",

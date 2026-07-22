@@ -54,6 +54,8 @@
 
 body {
   @apply bg-background text-foreground font-sans antialiased;
+
+  overscroll-behavior: none !important;
 }
 
 /* Smooth in-page scrolling (anchor jumps, route-to-top). scroll-padding-top

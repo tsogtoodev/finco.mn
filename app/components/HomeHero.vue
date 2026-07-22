@@ -165,11 +165,11 @@ let scrollAttached = false
 function computeP() {
   rafId = 0
   if (typeof window === 'undefined') return
-  // Settled width matches the non-scrub `lg` card: capped at 1440 with a 4.5rem
-  // (lg:px-9) gutter. Computed in JS and fed to CSS as `--hero-settled-w` because
-  // a `min()`-with-percentage inside the width calc's multiplied term mis-evaluates
-  // to 0 in some engines — a fixed px reference there is reliable.
-  settledW.value = Math.min(1440, window.innerWidth - 72)
+  // Settled width: the card shrinks to 90% of the viewport width, no px cap.
+  // Computed in JS and fed to CSS as `--hero-settled-w` because a `min()`-with-
+  // percentage inside the width calc's multiplied term mis-evaluates to 0 in
+  // some engines — a fixed px reference there is reliable.
+  settledW.value = Math.round(window.innerWidth * 0.9)
   const runway = window.innerHeight * RUNWAY_VH
   p.value = runway > 0 ? Math.min(1, Math.max(0, window.scrollY / runway)) : 1
 }
@@ -216,13 +216,24 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <!-- ── Hero card / carousel ─────────────────────────────────────────────
-       Two-section layout: this first section reserves the scroll runway and
-       pins the card while it scrubs (desktop scrub only — see `scrub`); the
-       partner marquee lives in its own normal-flow section below. -->
-  <section class="bg-[#fcfcff] motion-safe:lg:h-[180vh]">
+  <!-- ── Hero card / carousel + partner marquee ───────────────────────────
+       One section: the pinned wrapper holds the card AND the marquee, so the
+       marquee stays glued right below the card — riding with it through the
+       whole scrub and rising into view as the card shrinks.
+       Section height = the 80vh scrub runway (keep in sync with RUNWAY_VH)
+       plus the settled content (28px top gap + 737px card + 91px marquee
+       strip incl. its pt-8 = 856px), so the pin releases exactly at p=1 and
+       the settled hero leaves no leftover band on tall monitors. -->
+  <section class="bg-[#fcfcff] motion-safe:lg:h-[calc(80vh+856px)]">
+    <!-- The pinned wrapper is content-sized: the card's interpolated height
+         drives it (see .hero-card.is-scrub), the marquee stacks below, and a
+         scrub-interpolated top gap (0 fullscreen → 28px settled, .hero-pin
+         rule) keeps breathing room above the shrunk card. NB: no `!pt-0` here —
+         the scoped padding-top rule replaces the static lg:pt-7 in scrub mode.
+         `--hero-p` lives here so all scrub CSS reads it. -->
     <div
-      class="px-0 pt-0 lg:px-9 lg:pt-7 motion-safe:lg:sticky motion-safe:lg:top-0 motion-safe:lg:flex motion-safe:lg:h-[calc(100vh-var(--announcement-h,0px))] motion-safe:lg:items-center motion-safe:lg:justify-center motion-safe:lg:!px-0 motion-safe:lg:!pt-0"
+      class="hero-pin px-0 pt-0 lg:px-9 lg:pt-7 motion-safe:lg:sticky motion-safe:lg:top-0 motion-safe:lg:!px-0"
+      :style="{ '--hero-p': p, '--hero-settled-w': `${settledW}px` }"
     >
       <!-- Mobile + tablet (<lg) render the hero full-bleed at viewport height
            (h-[100svh], no inset/rounding/frame) so it mirrors the desktop scrub's
@@ -230,7 +241,6 @@ onBeforeUnmount(() => {
            the inset rounded card + scroll scrub (see .hero-card.is-scrub below). -->
       <div
         class="hero-card is-scrub relative isolate mx-auto h-[calc(100svh-var(--announcement-h,0px))] w-full max-w-none overflow-clip rounded-none bg-white text-white lg:h-[737px] lg:max-w-[1440px] lg:rounded-[40px]"
-        :style="{ '--hero-p': p, '--hero-settled-w': `${settledW}px` }"
         @pointerdown="onPointerDown"
         @pointerup="onPointerUp"
         @pointercancel="swiping = false"
@@ -309,7 +319,7 @@ onBeforeUnmount(() => {
                     animate-by="words"
                     :delay="20"
                     :start-delay="0.15"
-                    class="max-w-[620px] text-base font-light leading-7 text-white/90 sm:text-lg lg:text-xl lg:leading-8"
+                    class="max-w-[620px] text-base font-light leading-7 text-white/90 sm:text-lg lg:text-[18px] lg:leading-[24px]"
                     @animation-complete="onTextReveal"
                   />
                 </div>
@@ -389,28 +399,31 @@ onBeforeUnmount(() => {
           </ul>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ── Partner-logo marquee (own normal-flow section, below the pin) ───── -->
-  <section class="bg-[#fcfcff] pt-0 pb-5 sm:pb-6 lg:pb-7">
-    <div class="mx-auto max-w-[1512px] px-4 sm:px-6 lg:px-9">
-      <div
-        class="marquee relative flex h-[31px] items-center overflow-hidden"
-        role="group"
-        :aria-label="t('hero.marqueeLabel')"
-      >
-        <div class="marquee-track flex w-max shrink-0 items-center gap-12 pr-12 sm:gap-14 sm:pr-14">
-          <img
-            v-for="(partner, i) in [...partners, ...partners]"
-            :key="`${partner.name}-${i}`"
-            :src="partnerSrc(partner.name)"
-            :alt="i < partners.length ? partner.name : ''"
-            :aria-hidden="i >= partners.length ? 'true' : undefined"
-            :style="{ height: `${partner.h}px` }"
-            class="w-auto shrink-0 object-contain opacity-50 [filter:brightness(0)]"
-            loading="lazy"
+      <!-- ── Partner-logo marquee (inside the pin, glued below the card) ────
+           Rides the sticky pin so it's always right below the hero: below the
+           fold while the card is fullscreen (p=0), rising into view attached
+           to the card's bottom edge as the card shrinks. -->
+      <div class="pt-0 pb-5 sm:pb-6 lg:pb-7">
+        <div class="mx-auto max-w-[1512px] px-4 sm:px-6 lg:px-9 pt-8">
+          <div
+            class="marquee relative flex h-[56px] items-center overflow-hidden"
+            role="group"
+            :aria-label="t('hero.marqueeLabel')"
           >
+            <div class="marquee-track flex w-max shrink-0 items-center gap-12 pr-12 sm:gap-14 sm:pr-14">
+              <img
+                v-for="(partner, i) in [...partners, ...partners]"
+                :key="`${partner.name}-${i}`"
+                :src="partnerSrc(partner.name)"
+                :alt="i < partners.length ? partner.name : ''"
+                :aria-hidden="i >= partners.length ? 'true' : undefined"
+                :style="{ height: `${partner.h}px` }"
+                class="w-auto shrink-0 object-contain opacity-50 [filter:brightness(0)]"
+                loading="lazy"
+              >
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -422,14 +435,30 @@ onBeforeUnmount(() => {
    the settled card (--hero-p:1). Gated by CSS — desktop + motion-ok — NOT by a JS
    class, so the very first SSR paint already renders fullscreen and there's no
    settled→fullscreen flash on refresh. `--hero-p` defaults to 0 (fullscreen) until
-   JS drives it on scroll; mobile / reduced-motion keep the Tailwind sizing. 100%
-   resolves against the pinned wrapper (full-bleed, h-screen) — avoids the 100vw
-   horizontal-scrollbar gotcha. */
+   JS drives it on scroll; mobile / reduced-motion keep the Tailwind sizing. The
+   width's 100% resolves against the pinned wrapper (full-bleed) — avoids the
+   100vw horizontal-scrollbar gotcha. */
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  /* The pinned wrapper is content-sized (card + marquee stack), so the whole
+     pin shrinks with the card and the settled hero hugs its content — no
+     (100vh−content)/2 gap bands on tall monitors. The card interpolates from
+     full viewport (--hero-p:0) to the settled 737px (--hero-p:1); the marquee
+     below rides along, rising into view as the card shrinks. The pin releases
+     exactly at p=1 for any viewport height: the section is 80vh + 796px
+     (settled card 737px + marquee strip 59px), so the wrapper's bottom meets
+     the section's bottom right when the runway ends. */
+  /* Top gap eases in with the scrub: flush while fullscreen (p=0), 28px of
+     breathing room above the settled card (p=1, matches the static lg:pt-7).
+     Overrides the static lg:pt-7 the wrapper carries for the non-scrub layout;
+     the section's +856px budget (28 gap + 737 card + 91 marquee incl. pt-8)
+     accounts for it so the pin still releases exactly at p=1. */
+  .hero-pin {
+    padding-top: calc(28px * var(--hero-p, 0));
+  }
   .hero-card.is-scrub {
     max-width: none;
     width: calc(100% - (100% - var(--hero-settled-w, 1368px)) * var(--hero-p, 0));
-    height: calc(100% - (100% - 737px) * var(--hero-p, 0));
+    height: calc((100vh - var(--announcement-h, 0px)) - ((100vh - var(--announcement-h, 0px)) - 737px) * var(--hero-p, 0));
     border-radius: calc(40px * var(--hero-p, 0));
     will-change: width, height;
   }

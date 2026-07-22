@@ -8,7 +8,7 @@ const feedbackOpen = ref(false)
 </script>
 
 <template>
-  <section class="relative isolate overflow-hidden bg-[#080a12]">
+  <section class="relative isolate flex h-[350px] items-center overflow-hidden bg-[#080a12]">
     <!-- Far-left blue glow -->
     <div class="pointer-events-none absolute inset-y-0 left-0 w-1/3 [background:radial-gradient(60%_80%_at_0%_50%,rgba(33,71,132,0.35),transparent_70%)]" />
     <div
@@ -37,8 +37,8 @@ const feedbackOpen = ref(false)
 
     <!-- pointer-events-none lets mouse drag/click pass through to the Spline
          canvas on the right; the text column re-enables events for the CTA. -->
-    <div class="pointer-events-none relative mx-auto w-full max-w-[1200px] px-6 py-24 lg:py-42">
-      <MotionReveal class="pointer-events-auto flex max-w-[620px] flex-col items-start gap-16">
+    <div class="pointer-events-none relative mx-auto w-full max-w-[1200px] px-6 lg:px-0">
+      <MotionReveal class="pointer-events-auto flex max-w-[620px] flex-col items-start gap-8">
         <div class="flex flex-col gap-4">
           <h2 class="font-display text-3xl font-medium leading-tight text-white sm:text-[40px] sm:leading-[48px]">
             {{ t('home.contact.heading') }}
@@ -47,7 +47,7 @@ const feedbackOpen = ref(false)
             {{ t('home.contact.subtext') }}
           </p>
         </div>
-        <AppButton to="/branches" variant="light" pill arrow>
+        <AppButton variant="light" pill arrow @click="feedbackOpen = true">
           {{ t('home.contact.cta') }}
         </AppButton>
       </MotionReveal>

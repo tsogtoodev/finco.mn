@@ -13,7 +13,7 @@ const props = withDefaults(
 )
 const { t } = useI18n()
 
-const GAP = 51
+const GAP = 32
 // Symmetric size fall-off from the active card (distance 0 = biggest).
 const cardW = (d: number) => Math.max(293, 353 - d * 15)
 const cardH = (d: number) => Math.max(390, 470 - d * 20)
@@ -28,6 +28,49 @@ const atEnd = computed(() => active.value >= count.value - 1)
 const clamp = (n: number) => Math.min(Math.max(n, 0), count.value - 1)
 function go(dir: 1 | -1) {
   active.value = clamp(active.value + dir)
+  startAuto() // restart the countdown so it never steps right after a manual one
+}
+
+// Auto-advance: step forward every 5s, wrapping back to the first card at the
+// end (`go` clamps, so the wrap is done here rather than through it). It only
+// runs while the carousel is actually on screen (`onScreen`, driven by
+// autoObserver below) so it never burns cycles — or silently skips past cards —
+// while parked elsewhere on the page. Hover pauses so a card can be read, a
+// backgrounded tab suspends it, and any manual step restarts the countdown.
+// Skipped for prefers-reduced-motion — an unprompted 600ms slide is exactly the
+// motion that setting opts out of.
+const AUTO_MS = 5000
+let autoTimer: ReturnType<typeof setInterval> | null = null
+let autoObserver: IntersectionObserver | null = null
+let hovering = false
+let onScreen = false
+
+function advance() {
+  active.value = active.value >= count.value - 1 ? 0 : active.value + 1
+}
+function stopAuto() {
+  if (autoTimer) {
+    clearInterval(autoTimer)
+    autoTimer = null
+  }
+}
+function startAuto() {
+  stopAuto()
+  if (!onScreen || hovering || count.value <= 1) return
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  autoTimer = setInterval(advance, AUTO_MS)
+}
+function onEnter() {
+  hovering = true
+  stopAuto()
+}
+function onLeave() {
+  hovering = false
+  startAuto()
+}
+function onVisibility() {
+  if (document.hidden) stopAuto()
+  else startAuto()
 }
 
 // Pointer drag with deferred capture: a press alone does nothing — we only
@@ -46,6 +89,7 @@ let pointerId: number | null = null
 
 function onPointerDown(e: PointerEvent) {
   if (e.pointerType === 'mouse' && e.button !== 0) return
+  stopAuto()
   pressing = true
   dragging.value = false
   dragX.value = 0
@@ -75,11 +119,15 @@ function onPointerUp(e: PointerEvent) {
     try { (e.currentTarget as HTMLElement).releasePointerCapture(pointerId) } catch { /* not captured */ }
     pointerId = null
   }
-  if (!wasDragging) return // a tap — let the click navigate the card
+  if (!wasDragging) {
+    startAuto() // a tap — let the click navigate the card
+    return
+  }
   suppressClick = true // a drag — cancel the click that follows
   const steps = Math.round(-dx / STEP)
   if (steps !== 0) active.value = clamp(active.value + steps)
   else if (Math.abs(dx) > 60) active.value = clamp(active.value + (dx < 0 ? 1 : -1))
+  startAuto()
 }
 function onClickCapture(e: MouseEvent) {
   if (suppressClick) {
@@ -126,11 +174,24 @@ onMounted(() => {
   resizeObserver = new ResizeObserver(measure)
   if (rootEl.value) resizeObserver.observe(rootEl.value)
 
+  document.addEventListener('visibilitychange', onVisibility)
+
   if (!('IntersectionObserver' in window)) {
     revealed.value = true
+    onScreen = true // no IO to gate on — fall back to always-on, never never-on
+    startAuto()
     return
   }
   hydrated.value = true
+
+  // Viewport gate for the auto-advance. Separate from revealObserver below,
+  // which disconnects after the first reveal and so can't track leaving again.
+  autoObserver = new IntersectionObserver((entries) => {
+    onScreen = entries[entries.length - 1]?.isIntersecting ?? false
+    if (onScreen) startAuto()
+    else stopAuto()
+  }, { threshold: 0.2 })
+  if (rootEl.value) autoObserver.observe(rootEl.value)
   revealObserver = new IntersectionObserver((entries) => {
     if (entries.some((e) => e.isIntersecting)) {
       revealed.value = true
@@ -143,6 +204,9 @@ onMounted(() => {
 onBeforeUnmount(() => {
   resizeObserver?.disconnect()
   revealObserver?.disconnect()
+  autoObserver?.disconnect()
+  stopAuto()
+  document.removeEventListener('visibilitychange', onVisibility)
 })
 
 // Cards before the active one hang left of the main slot; overflow when they
@@ -178,6 +242,8 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
       tabindex="0"
       @keydown.left.prevent="go(-1)"
       @keydown.right.prevent="go(1)"
+      @pointerenter="onEnter"
+      @pointerleave="onLeave"
       @pointerdown="onPointerDown"
       @pointermove="onPointerMove"
       @pointerup="onPointerUp"

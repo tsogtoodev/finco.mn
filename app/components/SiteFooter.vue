@@ -57,17 +57,17 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
 
 <template>
   <footer class="bg-[#fbfbfb]">
-    <div class="mx-auto w-full max-w-[1200px] px-6 pt-20 lg:pt-[120px]">
+    <div class="mx-auto w-full max-w-[1200px] px-6 lg:px-0 pt-20 lg:pt-[120px]">
       <!-- Link columns: About + Other stacked left, then the two catalogs -->
       <div class="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-3">
         <div class="flex flex-col gap-8">
           <div v-for="col in [aboutGroup, otherGroup]" :key="col.heading">
             <h3 class="text-sm text-black">{{ col.heading }}</h3>
-            <ul class="mt-4 space-y-4">
+            <ul class="mt-[16px] space-y-[16px] text-sm font-light leading-normal">
               <li v-for="l in col.links" :key="l.label">
                 <NuxtLink
                   :to="localePath(l.to)"
-                  class="text-sm font-light text-black/60 transition-colors hover:text-foreground"
+                  class="text-black/60 transition-colors hover:text-foreground"
                 >
                   {{ l.label }}
                 </NuxtLink>
@@ -77,11 +77,11 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
         </div>
         <div v-for="col in [individualsGroup, businessGroup]" :key="col.heading">
           <h3 class="text-sm text-black">{{ col.heading }}</h3>
-          <ul class="mt-4 space-y-4">
+          <ul class="mt-4 space-y-4 text-sm font-light leading-normal">
             <li v-for="l in col.links" :key="l.label">
               <NuxtLink
                 :to="localePath(l.to)"
-                class="text-sm font-light text-black/60 transition-colors hover:text-foreground"
+                class="text-black/60 transition-colors hover:text-foreground"
               >
                 {{ l.label }}
               </NuxtLink>

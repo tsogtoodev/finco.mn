@@ -33,7 +33,7 @@ const items = computed(() =>
 </script>
 
 <template>
-  <section class="bg-[#fafafe] py-24 lg:py-28">
+  <section class="bg-white py-24 lg:py-28">
     <div class="mx-auto w-full max-w-[1200px] px-6">
       <MotionReveal class="flex items-center justify-between gap-4">
         <h2 class="font-display text-2xl font-normal leading-tight text-[#141414] sm:text-[32px]">
