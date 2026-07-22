@@ -39,12 +39,12 @@ const routeD = computed(() => {
 
 <template>
   <section class="relative overflow-hidden bg-[#fafafe]">
-    <div class="mx-auto max-w-7xl px-4 pb-20 pt-20 sm:pt-24 md:pb-40 md:pt-[120px] lg:pb-20 lg:pt-28">
+    <div class="mx-auto max-w-7xl px-4 pb-20 pt-20 sm:pt-24 md:pb-40 md:pt-[120px] lg:pb-20 lg:pt-28 lg:px-0">
       <div class="hero-rise flex flex-col items-center gap-3 text-center">
         <h2 class="max-w-[750px] font-display text-3xl font-medium leading-tight text-[#141414] sm:text-4xl md:text-[36px] md:leading-9 lg:text-[36px] lg:leading-9">
           {{ headingLead }}<span class="text-[#2de0c6]">{{ headingAccent }}</span>
         </h2>
-        <p class="max-w-[1012px] text-lg font-extralight leading-7 text-[rgba(0,0,0,0.6)] sm:text-xl md:text-[20px] md:leading-7 lg:text-[20px] lg:leading-7">
+        <p class="max-w-[1012px] text-lg font-extralight leading-[26px] text-[rgba(0,0,0,0.6)] sm:text-xl md:text-[18px] md:leading-7 lg:text-[18px] lg:leading-7">
           {{ subheading }}
         </p>
       </div>

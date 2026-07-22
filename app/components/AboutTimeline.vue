@@ -34,7 +34,7 @@ const rows = computed(() => {
         <h2 class="font-display text-3xl font-medium text-[#141414] sm:text-4xl">
           {{ headingLead }}<span class="text-[#4c41d8]">{{ headingAccent }}</span>
         </h2>
-        <p class="mt-6 max-w-5xl text-lg font-extralight leading-7 text-[rgba(0,0,0,0.6)] sm:text-xl">
+        <p class="mt-6 max-w-5xl text-lg font-extralight leading-[26px] text-[rgba(0,0,0,0.6)] sm:text-[18px]">
           {{ subheading }}
         </p>
       </MotionReveal>

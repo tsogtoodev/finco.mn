@@ -68,7 +68,7 @@ const tuzGlow = 'background: linear-gradient(125deg, #ffa6e9 0%, #b89bf1 55%, #8
           {{ org.headingLead }}<span class="text-[#5457dc]">{{ org.headingAccent }}</span>
         </h2>
         <p
-          class="text-lg font-extralight leading-7 text-[rgba(0,0,0,0.6)] sm:text-xl lg:text-[20px] lg:leading-7"
+          class="text-lg font-extralight leading-[26px] text-[rgba(0,0,0,0.6)] sm:text-xl lg:text-[18px]"
         >
           {{ org.subheading }}
         </p>
