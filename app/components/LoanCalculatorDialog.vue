@@ -36,8 +36,8 @@ const fmt: Intl.NumberFormatOptions = { maximumFractionDigits: 0 }
   >
     <div class="calc-body flex flex-col gap-8">
       <div class="flex flex-col gap-6 sm:flex-row sm:gap-[34px]">
-        <AppInput v-model="amount" :label="t('fab.calculator.amount')" type="number" inputmode="numeric" unit="₮" />
-        <AppInput v-model="rate" :label="t('fab.calculator.rate')" type="number" inputmode="decimal" unit="%" unit-position="trailing" />
+        <AppInput v-model="amount" :label="t('fab.calculator.amount')" type="number" inputmode="numeric" unit="₮" :max="1_000_000_000" />
+        <AppInput v-model="rate" :label="t('fab.calculator.rate')" type="number" inputmode="decimal" unit="%" unit-position="trailing" :max="100" />
         <NumberStepper v-model="term" :label="t('fab.calculator.term')" :min="1" :max="360" />
       </div>
 
