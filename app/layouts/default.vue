@@ -18,5 +18,6 @@ const showFloatingActions = computed(() => route.meta.floatingActions !== false)
     </main>
     <SiteFooter />
     <FloatingActions v-if="showFloatingActions" />
+    <AutoNextNews />
   </div>
 </template>
