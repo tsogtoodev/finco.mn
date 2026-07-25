@@ -23,7 +23,7 @@ useSchemaOrg([
 
 <template>
   <NuxtRouteAnnouncer />
-  <PreloStairs text="Finco Capital" background="#000000" color="#ffffff" :z-index="100" />
+  <PreloStairs text="Бүтээ, ирээдүйг эзэгнэ... Санхүүжүүлье!" background="#000000" :transparency="40" :blur="80" color="#ffffff" :z-index="100" />
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
