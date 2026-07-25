@@ -13,14 +13,38 @@ const GAP = 40
 const CARD_W = 408
 const CARD_H = 420
 
+// Viewport metrics behind the travel bounds and the peeks (set by `measure()`).
+const rootW = ref(0)
+const edgePad = ref(0)
+
 const active = ref(0)
 // Snap back to the first card whenever the list changes (locale switch).
 watch(() => props.items.map((n) => n.slug).join('|'), () => { active.value = 0 })
 
 const count = computed(() => props.items.length)
 const atStart = computed(() => active.value <= 0)
-const atEnd = computed(() => active.value >= count.value - 1)
-const clamp = (n: number) => Math.min(Math.max(n, 0), count.value - 1)
+
+// Right edge of the last card when `a` is active, measured from the track's
+// left edge. Strictly decreasing in `a` (each step drops one card).
+const rightExtent = (a: number) => {
+  const visible = count.value - a
+  return edgePad.value + visible * CARD_W + (visible - 1) * GAP
+}
+// Travel stops at the first index where every remaining card fits on screen —
+// stepping past it would only pull dead space in on the right.
+const maxActive = computed(() => {
+  const last = Math.max(0, count.value - 1)
+  if (!rootW.value) return last // pre-measure: keep the plain index behaviour
+  for (let a = 0; a <= last; a++) {
+    if (rightExtent(a) <= rootW.value) return a
+  }
+  return last
+})
+// A widening viewport can pull the bound below the current index.
+watch(maxActive, (m) => { if (active.value > m) active.value = m })
+
+const atEnd = computed(() => active.value >= maxActive.value)
+const clamp = (n: number) => Math.min(Math.max(n, 0), maxActive.value)
 function go(dir: 1 | -1) {
   active.value = clamp(active.value + dir)
   startAuto() // restart the countdown so it never steps right after a manual one
@@ -41,7 +65,7 @@ let hovering = false
 let onScreen = false
 
 function advance() {
-  active.value = active.value >= count.value - 1 ? 0 : active.value + 1
+  active.value = active.value >= maxActive.value ? 0 : active.value + 1
 }
 function stopAuto() {
   if (autoTimer) {
@@ -51,7 +75,8 @@ function stopAuto() {
 }
 function startAuto() {
   stopAuto()
-  if (!onScreen || hovering || count.value <= 1) return
+  // maxActive 0 = every card already fits; there is nothing to advance to.
+  if (!onScreen || hovering || maxActive.value <= 0) return
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   autoTimer = setInterval(advance, AUTO_MS)
 }
@@ -136,7 +161,7 @@ function onClickCapture(e: MouseEvent) {
   }
 }
 
-const progress = computed(() => (count.value <= 1 ? 1 : active.value / (count.value - 1)))
+const progress = computed(() => (maxActive.value <= 0 ? 1 : active.value / maxActive.value))
 
 // Peeks/floating nav only make sense while cards are actually cut off at that
 // edge — near the end the remaining cards may fit entirely on screen, and a
@@ -144,8 +169,6 @@ const progress = computed(() => (count.value <= 1 ? 1 : active.value / (count.va
 // the fixed card size (not the DOM) so mid-transition animation can't skew them.
 const rootEl = ref<HTMLElement | null>(null)
 const trackEl = ref<HTMLElement | null>(null)
-const rootW = ref(0)
-const edgePad = ref(0)
 let resizeObserver: ResizeObserver | null = null
 function measure() {
   if (!rootEl.value || !trackEl.value) return
@@ -207,12 +230,9 @@ const overflowsLeft = computed(() => {
   if (!rootW.value) return true
   return active.value * (CARD_W + GAP) > edgePad.value
 })
-const overflowsRight = computed(() => {
-  if (atEnd.value) return false
-  if (!rootW.value) return true
-  const visible = count.value - active.value
-  return edgePad.value + visible * CARD_W + (visible - 1) * GAP > rootW.value
-})
+// Cards overflow right exactly while the track can still travel — `maxActive`
+// is defined as the first index where they stop overflowing.
+const overflowsRight = computed(() => active.value < maxActive.value)
 
 const MASK_R = 'linear-gradient(to right, transparent, #000 60%)'
 const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'

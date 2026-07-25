@@ -18,14 +18,41 @@ const GAP = 32
 const cardW = (d: number) => Math.max(293, 353 - d * 15)
 const cardH = (d: number) => Math.max(390, 470 - d * 20)
 
+// Viewport metrics behind the travel bounds and the peeks (set by `measure()`).
+const rootW = ref(0)
+const edgePad = ref(0)
+
 const active = ref(0)
 // Snap back to the first card whenever the list changes (audience toggle).
 watch(() => props.products.map((p) => p.slug).join('|'), () => { active.value = 0 })
 
 const count = computed(() => props.products.length)
 const atStart = computed(() => active.value <= 0)
-const atEnd = computed(() => active.value >= count.value - 1)
-const clamp = (n: number) => Math.min(Math.max(n, 0), count.value - 1)
+
+// Right edge of the last card when `a` is active, measured from the track's
+// left edge. Widths are re-derived per candidate because the ramp is relative
+// to the active card. Strictly decreasing in `a` (each step drops the smallest,
+// furthest card), so the first fitting index is also the smallest.
+const rightExtent = (a: number) => {
+  let x = edgePad.value
+  for (let i = a; i < count.value; i++) x += cardW(i - a) + (i < count.value - 1 ? GAP : 0)
+  return x
+}
+// Travel stops at the first index where every remaining card fits on screen —
+// stepping past it would only pull dead space in on the right.
+const maxActive = computed(() => {
+  const last = Math.max(0, count.value - 1)
+  if (!rootW.value) return last // pre-measure: keep the plain index behaviour
+  for (let a = 0; a <= last; a++) {
+    if (rightExtent(a) <= rootW.value) return a
+  }
+  return last
+})
+// A widening viewport can pull the bound below the current index.
+watch(maxActive, (m) => { if (active.value > m) active.value = m })
+
+const atEnd = computed(() => active.value >= maxActive.value)
+const clamp = (n: number) => Math.min(Math.max(n, 0), maxActive.value)
 function go(dir: 1 | -1) {
   active.value = clamp(active.value + dir)
   startAuto() // restart the countdown so it never steps right after a manual one
@@ -46,7 +73,7 @@ let hovering = false
 let onScreen = false
 
 function advance() {
-  active.value = active.value >= count.value - 1 ? 0 : active.value + 1
+  active.value = active.value >= maxActive.value ? 0 : active.value + 1
 }
 function stopAuto() {
   if (autoTimer) {
@@ -56,7 +83,8 @@ function stopAuto() {
 }
 function startAuto() {
   stopAuto()
-  if (!onScreen || hovering || count.value <= 1) return
+  // maxActive 0 = every card already fits; there is nothing to advance to.
+  if (!onScreen || hovering || maxActive.value <= 0) return
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   autoTimer = setInterval(advance, AUTO_MS)
 }
@@ -145,7 +173,7 @@ const trackOffset = computed(() => {
   return -x
 })
 
-const progress = computed(() => (count.value <= 1 ? 1 : active.value / (count.value - 1)))
+const progress = computed(() => (maxActive.value <= 0 ? 1 : active.value / maxActive.value))
 
 // Peeks/floating nav only make sense while cards are actually cut off at that
 // edge — e.g. near the end the remaining cards may fit entirely on screen, and
@@ -153,8 +181,6 @@ const progress = computed(() => (count.value <= 1 ? 1 : active.value / (count.va
 // the size model (not the DOM) so mid-transition animation can't skew them.
 const rootEl = ref<HTMLElement | null>(null)
 const trackEl = ref<HTMLElement | null>(null)
-const rootW = ref(0)
-const edgePad = ref(0)
 let resizeObserver: ResizeObserver | null = null
 function measure() {
   if (!rootEl.value || !trackEl.value) return
@@ -219,13 +245,9 @@ const overflowsLeft = computed(() => {
   for (let d = 1; d <= active.value; d++) w += cardW(d) + GAP
   return w > edgePad.value
 })
-const overflowsRight = computed(() => {
-  if (atEnd.value) return false
-  if (!rootW.value) return true
-  let x = edgePad.value
-  for (let i = active.value; i < count.value; i++) x += cardW(i - active.value) + (i < count.value - 1 ? GAP : 0)
-  return x > rootW.value
-})
+// Cards overflow right exactly while the track can still travel — `maxActive`
+// is defined as the first index where they stop overflowing.
+const overflowsRight = computed(() => active.value < maxActive.value)
 
 const MASK_R = 'linear-gradient(to right, transparent, #000 60%)'
 const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
