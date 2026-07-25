@@ -1,5 +1,6 @@
 {
   "name": "finco-mn",
+  "packageManager": "pnpm@11.5.2",
   "private": true,
   "type": "module",
   "scripts": {
