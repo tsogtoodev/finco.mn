@@ -12,5 +12,4 @@ allowBuilds:
   workerd: true
 
 minimumReleaseAgeExclude:
-  - '@tsogtoodev/prelo@0.1.0'
-  - '@tsogtoodev/prelo@0.1.2'
+  - '@tsogtoodev/prelo'
