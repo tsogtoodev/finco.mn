@@ -37,6 +37,7 @@
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
-    "wrangler": "^4.101.0"
+    "wrangler": "^4.101.0",
+    "yaml": "^2.9.0"
   }
 }
