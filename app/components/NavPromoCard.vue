@@ -83,6 +83,7 @@ const localePath = useLocalePath()
           :class="variant === 'beep' ? 'max-h-7' : 'max-h-6'"
         />
         <p
+          v-if="false"
           class="text-sm font-extralight leading-5"
           :class="variant === 'beep' ? 'max-w-[130px] text-white/80' : 'max-w-[207px] font-light text-black/60'"
         >

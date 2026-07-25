@@ -1,11 +1,13 @@
 <script setup lang="ts">
-// Segmented Иргэнд / Бизнест switch pinned in the products hero. Each side is a
-// localized link to /products vs /business, so the audience swap is a real route
-// change (correct under the i18n locale prefix). Active pill matches the audience
-// brand: teal for individuals, blurple (accent) for business — per Figma 1:13616.
+// Segmented Иргэнд / Бизнест switch pinned in the products hero — the same
+// sliding-pill TabPills used by the HomeProducts toggle, themed per audience
+// (teal pill for individuals, blurple accent for business, matching Figma
+// 1:13616 / the HomeProducts accent rules). Unlike HomeProducts (which
+// filters in place), selecting here NAVIGATES: /products vs /business is a
+// real route change (correct under the i18n locale prefix).
 import type { Audience } from '~/composables/useProducts'
 
-defineProps<{ audience: Audience }>()
+const props = defineProps<{ audience: Audience }>()
 const { t } = useI18n()
 const localePath = useLocalePath()
 
@@ -13,30 +15,45 @@ const options = [
   { key: 'individual', labelKey: 'nav.products', to: '/products' },
   { key: 'business', labelKey: 'nav.business', to: '/business' },
 ] as const
+
+const tabs = computed(() =>
+  options.map((o) => ({ value: o.key as string, label: t(o.labelKey) })),
+)
+
+// Bar tint + pill colour follow the active audience (10% brand tint bar, solid
+// brand pill — same scheme as the HomeProducts toggle).
+const tabTheme = computed(() =>
+  props.audience === 'business'
+    ? { bar: 'rgba(76, 65, 216, 0.1)', pill: 'var(--color-accent)' }
+    : { bar: 'rgba(19, 207, 185, 0.1)', pill: 'var(--color-teal)' },
+)
+
+function onSelect(value: string) {
+  const target = options.find((o) => o.key === value)
+  if (target && target.key !== props.audience) navigateTo(localePath(target.to))
+}
 </script>
 
 <template>
-  <div
-    role="tablist"
-    class="inline-flex items-center gap-1 rounded-[var(--radius)] p-1.5 backdrop-blur-sm"
-    :class="audience === 'individual' ? 'bg-teal/10' : 'bg-accent/10'"
-  >
-    <NuxtLink
-      v-for="o in options"
-      :key="o.key"
-      :to="localePath(o.to)"
-      role="tab"
-      :aria-selected="o.key === audience"
-      class="rounded-[var(--radius)] px-6 py-1.5 text-base font-medium transition-colors sm:text-lg"
-      :class="
-        o.key === audience
-          ? audience === 'individual'
-            ? 'bg-teal text-white'
-            : 'bg-accent text-white'
-          : 'font-light text-white/80 hover:text-white'
-      "
-    >
-      {{ t(o.labelKey) }}
-    </NuxtLink>
-  </div>
+  <TabPills
+    :model-value="audience"
+    :tabs="tabs"
+    :aria-label="t('productsPage.headline')"
+    class="backdrop-blur-sm"
+    :style="{
+      '--tabs-bar-bg': tabTheme.bar,
+      '--tabs-pill-bg': tabTheme.pill,
+      '--tabs-text-muted': 'rgba(255, 255, 255, 0.8)',
+      '--tabs-text-active': '#ffffff',
+      '--tabs-text-hover': '#ffffff',
+      '--tabs-radius': '9999px',
+      '--tabs-pad': '6px',
+      '--tabs-tab-h': '44px',
+      '--tabs-tab-px': '32px',
+      '--tabs-font': '18px',
+      '--tabs-weight': '300',
+      '--tabs-weight-active': '500',
+    }"
+    @update:model-value="onSelect"
+  />
 </template>

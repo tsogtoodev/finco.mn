@@ -34,9 +34,9 @@ const stats = computed(
          (≥~1440px) don't stretch the camera and leave the wave short of the
          edges — the extra height clips (centered). Below ~1437px, 51vw < the
          section height, so this is a no-op and the framing is unchanged. -->
-    <div class="pointer-events-none absolute left-1/2 top-1/2 hidden h-full min-h-[51vw] w-full -translate-x-1/2 -translate-y-[calc(50%+100px)] scale-120 sm:block">
+    <div class="pointer-events-none absolute left-1/2 top-2/3 hidden h-full min-h-[51vw] w-full -translate-x-1/2 -translate-y-[calc(50%+100px)] scale-120 sm:block">
       <ClientOnly>
-        <SplineScene scene="/_tmp-stats-scene.splinecode" no-drag />
+        <SplineScene scene="https://prod.spline.design/2MYVnmuRqu28b88y/scene.splinecode" no-drag />
         <template #fallback>
           <NuxtImg
             src="/images/home/stats-wave.png"

@@ -128,6 +128,10 @@ function handleComplete() {
 
 <template>
   <component :is="as" ref="rootEl" style="display: flex; flex-wrap: wrap">
+    <!-- No static `will-change` on the spans: it used to be set on EVERY word and
+         was never removed, permanently promoting one compositing layer per word
+         (68 of them on /about alone) and janking scroll site-wide. motion-v adds
+         and drops will-change around the animation itself. -->
     <Motion
       v-for="(segment, index) in segments"
       :key="index"
@@ -135,7 +139,7 @@ function handleComplete() {
       :initial="fromSnapshot"
       :animate="inView ? animateKeyframes : fromSnapshot"
       :transition="spanTransition(index)"
-      :style="{ display: 'inline-block', willChange: 'transform, filter, opacity' }"
+      :style="{ display: 'inline-block' }"
       :on-animation-complete="index === segments.length - 1 ? handleComplete : undefined"
     >{{ displaySegment(segment, index) }}</Motion>
   </component>
