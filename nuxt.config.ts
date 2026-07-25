@@ -27,6 +27,7 @@ export default defineNuxtConfig({
     'nuxt-auth-utils',
     'nuxt-studio',
     'motion-v/nuxt',
+    '@tsogtoodev/prelo/nuxt',
   ],
 
   // Nuxt Studio v2 (self-hosted CMS). Editors visit /_studio on the deployed
