@@ -8,7 +8,14 @@ definePageMeta({ transparentHeader: true })
 const { t } = useI18n()
 
 // Finco Capital head office — Soyol Amralt, Sukhbaatar District, Ulaanbaatar.
-const office = { lat: 47.918017, lng: 106.917565 }
+// Mirrors the `hq` branch entry (content/branches/*/hq.yml); MapEmbed needs the
+// base raster and pin as well as the coords, or it renders an empty gradient.
+const office = {
+  lat: 47.918017,
+  lng: 106.917565,
+  mapImage: '/images/branches/map-base.jpg',
+  pin: { x: 0.5, y: 0.54 },
+}
 
 useSeoMeta({
   title: () => t('contactPage.hero.title'),
@@ -41,7 +48,14 @@ useSeoMeta({
       </div>
 
       <MotionReveal :delay="0.15" class="mt-8">
-        <MapEmbed :lat="office.lat" :lng="office.lng" :label="t('contactPage.mapLabel')" />
+        <MapEmbed
+          class="h-64 sm:h-80 lg:h-[420px]"
+          :map-image="office.mapImage"
+          :pin="office.pin"
+          :lat="office.lat"
+          :lng="office.lng"
+          :aria-label="t('contactPage.mapLabel')"
+        />
       </MotionReveal>
     </section>
   </div>

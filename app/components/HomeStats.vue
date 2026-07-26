@@ -47,13 +47,15 @@ const stats = computed(
         </template>
       </ClientOnly>
     </div>
-    <!-- Static poster (mobile only) — avoids the WebGL payload on phones -->
-    <!-- <NuxtImg
+    <!-- Static poster (mobile only) — avoids the WebGL payload on phones.
+         The Spline wrapper above is `hidden sm:block`, so without this the
+         whole panel was flat #0a0a1a on every phone. -->
+    <NuxtImg
       src="/images/home/stats-wave.png"
       alt=""
       aria-hidden="true"
       class="pointer-events-none absolute inset-0 size-full object-cover sm:hidden"
-    /> -->
+    />
     <!-- Edge fade masks: blend the scene into the panel at the left/right edges.
          Above the background, below the content (no z so DOM order keeps text on
          top). Two layers per side: a TRANSPARENT backdrop-blur (masked to fade
@@ -71,7 +73,11 @@ const stats = computed(
         {{ heading }}
       </MotionReveal>
 
-      <div class="mt-80 grid w-full grid-cols-1 gap-12 sm:grid-cols-3 sm:gap-6">
+      <!-- The 320px spacer clears the Spline wave, which only renders from `sm`
+           up — on phones it was 320px of dead panel between the heading and the
+           numbers, and it pushed the section past the viewport height (see the
+           sticky gate in pages/index.vue). -->
+      <div class="mt-24 grid w-full grid-cols-1 gap-12 sm:mt-80 sm:grid-cols-3 sm:gap-6">
         <div
           v-for="(s, i) in stats"
           :key="i"

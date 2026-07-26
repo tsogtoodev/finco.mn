@@ -5,6 +5,11 @@
 // static SVG teardrop so a marker is always present. The pin is anchored by its
 // tip at pin (x, y) and is purely decorative — pointer-events are disabled so
 // clicks fall through to the map link beneath it.
+//
+// The root carries `min-h-64`: the only in-flow child is the `size-full` base,
+// so without an explicit height from the call site the whole thing would
+// collapse to 0px and disappear (the pin is absolute and contributes nothing).
+// Call sites that want a different height just pass one — `h-*` beats `min-h`.
 const props = withDefaults(
   defineProps<{
     mapImage?: string
@@ -42,7 +47,7 @@ const pinStyle = computed(() => ({
     :target="mapsUrl ? '_blank' : undefined"
     :rel="mapsUrl ? 'noopener' : undefined"
     :aria-label="ariaLabel"
-    class="group relative block overflow-hidden rounded-[24px] ring-1 ring-black/5"
+    class="group relative block min-h-64 overflow-hidden rounded-[24px] ring-1 ring-black/5"
   >
     <!-- static tilted map base -->
     <NuxtImg
@@ -68,8 +73,14 @@ const pinStyle = computed(() => ({
 <style scoped>
 .map-pin {
   position: absolute;
-  width: 132px;
-  height: 168px;
+  /* Scale with the map instead of staying at the desktop 132px: the pin is
+     anchored by its tip, so at a mobile map height a fixed 168px pin reaches
+     above the top edge and gets cut off by the root's overflow-hidden. 28%
+     reaches the 132px cap by ~470px, so every desktop map is pixel-identical
+     to before; the lower bound stops it shrinking to a dot. */
+  width: clamp(72px, 28%, 132px);
+  aspect-ratio: 132 / 168;
+  height: auto;
   /* anchor the pin tip at (x, y) */
   transform: translate(-50%, -100%);
   z-index: 10;

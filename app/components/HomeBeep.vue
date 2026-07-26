@@ -555,4 +555,161 @@ onBeforeUnmount(() => {
     transform: none;
   }
 }
+
+/* ── Mobile / tablet (<1024px) ─────────────────────────────────────────────
+   Everything above is a 1440×704 coordinate stage: every type size, gap and
+   padding is a fraction of the card's own width (cqw). That only holds while
+   the card is wide. At a 327px card `1cqw` is 3.27px, so the title rendered at
+   4.5px, the subtext at 3.6px and the info-bar buttons at 38×11px — and the
+   aspect-ratio lock capped the whole card at 160px tall, so no amount of type
+   tuning alone could fit legible copy inside it.
+
+   Below `lg` the card therefore stops being a fixed-aspect stage and becomes an
+   ordinary stacked flow: px/rem type, 44px touch targets, and the layers whose
+   geometry only means something on the stage are dropped. Desktop (≥1024) is
+   untouched. */
+@media (max-width: 1023.98px) {
+  .beep-card {
+    aspect-ratio: auto;
+  }
+  .beep-clip {
+    position: relative;
+    inset: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+  }
+
+  /* Stage-bound layers: the head-bleed copy needs the card's top edge to bleed
+     past, the halftone's rotate/hypot math needs the fixed-size container, and
+     the bottom fade existed to blend the docked bar — which is in flow now. */
+  .beep-person--bleed,
+  .beep-dots-wrap,
+  .beep-fade {
+    display: none;
+  }
+
+  /* Pills stay as a corner texture. Absolutely-positioned boxes paint above
+     in-flow siblings, so it needs an explicit z-index below the copy. */
+  .beep-pills {
+    left: auto;
+    right: -20%;
+    top: 0;
+    width: 76%;
+    height: auto;
+    /* Faint: at desktop the cluster sits in open space, but here it lands
+       behind the heading and subtext, where its own pill labels are legible
+       enough to compete with the copy. */
+    opacity: 0.22;
+    z-index: 0;
+  }
+
+  .beep-heading,
+  .beep-wordmark,
+  .beep-person,
+  .beep-bar {
+    position: relative;
+    z-index: 1;
+  }
+
+  .beep-heading {
+    order: 1;
+    left: auto;
+    top: auto;
+  }
+  .beep-title {
+    font-size: 1.375rem; /* 22px */
+    line-height: 1.3;
+    white-space: normal; /* the desktop nowrap would overflow a 279px column */
+  }
+  .beep-subtext {
+    margin-top: 0.5rem;
+    width: 100%; /* was 38.09cqw — a fraction of the stage */
+    font-size: 0.9375rem; /* 15px */
+    line-height: 1.6;
+  }
+
+  .beep-wordmark {
+    order: 2;
+    left: auto;
+    top: auto;
+    /* Explicit height, not `auto`: as a flex item the img's auto main size
+       falls back to the source's intrinsic 150px instead of the aspect-derived
+       height. 120 × 93.477/259.379 keeps the desktop slot's proportions. */
+    width: 7.5rem; /* 120px */
+    height: 2.7rem; /* 43px */
+  }
+
+  /* Photo becomes a banner instead of a right-edge bleed. */
+  .beep-person {
+    order: 3;
+    left: auto;
+    top: auto;
+    width: 100%;
+    height: 13.75rem; /* 220px */
+    border-radius: 1rem;
+  }
+  .beep-person-img {
+    position: static;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    object-fit: cover;
+    object-position: 50% 12%; /* keep the face in frame under the crop */
+  }
+
+  /* Info bar: in flow and always visible — the hover reveal above would leave
+     it translated 93.81% and transparent on a narrow hover-capable window. */
+  .beep-bar {
+    order: 4;
+    height: auto;
+    padding: 1rem;
+    border-radius: 1rem;
+    transform: none !important;
+    opacity: 1 !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .beep-bar-inner {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem; /* was a 240px cqw gap */
+  }
+  .beep-bar-text {
+    font-size: 0.9375rem; /* 15px */
+    line-height: 1.5;
+  }
+  .beep-bar-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .beep-btn {
+    min-height: 2.75rem; /* 44px touch target */
+    gap: 0.5rem;
+    padding: 0.625rem 1.125rem;
+  }
+  .beep-btn--download {
+    gap: 0.5rem;
+  }
+  .beep-btn-label {
+    font-size: 0.9375rem; /* 15px */
+  }
+  .beep-store-icon {
+    height: 1rem;
+  }
+  .beep-store-icon--play {
+    width: 0.875rem;
+  }
+  .beep-store-icon--apple {
+    width: 0.8125rem;
+  }
+  .beep-arrow {
+    width: 1rem;
+    height: 1rem;
+  }
+}
 </style>

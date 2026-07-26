@@ -24,6 +24,14 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
 
+// The error page gets a hairline bottom border. It's rendered by app/error.vue,
+// which sits outside the router's page tree — a 404 URL matches no page, so
+// `route.meta` is empty and the layout's meta-driven props (transparentHeader,
+// floatingActions) can't reach it. useError() is the signal that works there.
+// It's set during SSR too, so the border renders server-side — no hydration flip.
+const nuxtError = useError()
+const onErrorPage = computed(() => Boolean(nuxtError.value))
+
 // ── nav model ─────────────────────────────────────────────────────────────
 type NavItem =
   | { kind: 'link'; to: string; label: string }
@@ -266,6 +274,9 @@ const barHidden = computed(
       // bar reads as one clean surface with the floating panel
       showShadow && !menuVisible ? 'shadow-2xs' : 'shadow-none',
       transparent ? '-mb-[60px]' : '',
+      // Error page only: the page below is a short, mostly-empty column, so the
+      // scroll-driven shadow never fires and the bar would float unanchored.
+      onErrorPage ? 'border-b border-black/10' : '',
     ]"
     @keydown.esc="escClose"
   >

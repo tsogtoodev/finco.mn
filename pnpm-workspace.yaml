@@ -11,6 +11,10 @@ allowBuilds:
   sharp: true
   workerd: true
 
+# First-party packages: exempt from the release-age hold so a freshly published
+# version can be installed the same day. Unversioned (like prelo) so each bump
+# doesn't need an edit here — pin a version back if you'd rather admit them
+# one at a time.
 minimumReleaseAgeExclude:
   - '@tsogtoodev/prelo'
-  - '@tsogtoodev/particle-glock@0.1.0'
+  - '@tsogtoodev/particle-glock'
