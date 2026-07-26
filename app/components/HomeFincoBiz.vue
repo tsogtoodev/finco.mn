@@ -94,11 +94,17 @@ onBeforeUnmount(stopAuto)
             @pointerenter="stopAuto"
             @pointerleave="startAuto"
           >
+            <!-- Card height is `h-auto` below lg. The 450px is a desktop crop
+                 height: there the mockup renders taller than the card and is
+                 deliberately clipped, but at a 327px container it is only ~150px
+                 tall, so the fixed height left ~256px of blank white inside the
+                 card. The two skeleton cards are `absolute inset-0` and their
+                 bodies are `flex-1`, so they follow the front card's height. -->
             <div class="relative">
               <article
                 v-for="card in cards"
                 :key="card.id"
-                class="biz-card flex h-[450px] flex-col overflow-hidden rounded-xl bg-white ring-1 ring-black/[0.06] [will-change:transform]"
+                class="biz-card flex h-auto flex-col overflow-hidden rounded-xl bg-white ring-1 ring-black/[0.06] [will-change:transform] lg:h-[450px]"
                 :class="[
                   depth(card.id) === 0 ? 'is-front' : '',
                   card.id === 'request' ? 'relative' : 'absolute inset-0',
@@ -125,7 +131,7 @@ onBeforeUnmount(stopAuto)
                     :alt="copy.calloutHeading"
                     width="2872"
                     height="1322"
-                    sizes="1200px"
+                    sizes="100vw lg:1200px"
                     class="block w-full"
                   />
                   <!-- Live callout (desktop): white masks cover the mockup's baked text -->
@@ -142,6 +148,20 @@ onBeforeUnmount(stopAuto)
                       class="absolute font-light tracking-[0.01em] text-black/60"
                       style="left:3.088%;top:18.081%;width:36.033%;font-size:1.2cqw;line-height:2.06cqw"
                     >
+                      {{ copy.calloutSubtext }}
+                    </p>
+                  </div>
+                  <!-- Same copy, in flow, below lg. The overlay above is anchored
+                       to the mockup's baked text in %, which only works while the
+                       raster is large enough to read — at a 327px card it renders
+                       at ~11% scale. Below lg the baked text was therefore the only
+                       copy shown: illegible, and untranslated (the live strings come
+                       from the `pages` home doc, the raster does not). -->
+                  <div class="px-5 pb-6 pt-4 lg:hidden">
+                    <h3 class="font-display text-lg font-semibold tracking-[0.01em] text-black">
+                      {{ copy.calloutHeading }}
+                    </h3>
+                    <p class="mt-2 text-sm font-light leading-6 tracking-[0.01em] text-black/60">
                       {{ copy.calloutSubtext }}
                     </p>
                   </div>

@@ -31,7 +31,7 @@ The dev server would not boot at the start of this audit: stale npm-era `@unhead
 | Severity | Count | Open |
 |---|---|---|
 | Critical | 6 | **0 — all fixed** |
-| Major | 24 | **7** — M2–M7, M10, M11, M14, M16–M18, M21, M22, M25, M26, M28 fixed |
+| Major | 24 | **6** — M2–M7, M10–M12, M14, M16–M18, M21, M22, M25, M26, M28 fixed |
 | Minor | 40 | **37** — MapEmbed pin + both hover-only product card reveals fixed |
 
 All six Critical items are resolved (C1–C6), plus a z-index defect on the error page found after the audit, one Minor, and the six Tier-1 Majors above. Two follow-ups were deliberately left and are flagged in place: the **1024–1280 band** in HomeBeep (still 13.6px type) and the **short-laptop edge case** in the stats sticky gate.
@@ -42,7 +42,7 @@ All six Critical items are resolved (C1–C6), plus a z-index defect on the erro
 
 The failures cluster into four recurring patterns rather than scattered one-offs:
 
-1. **Container-query (`cqw`) stages with no floor** — sections built as a scaled 1440px canvas. Below `lg` the type shrinks with the container and becomes microscopic. (HomeBeep — *fixed*; HomeFincoBiz — still open, see M12. The HomeBeep fix in that file is a working reference for the same treatment.)
+1. **Container-query (`cqw`) stages with no floor** — sections built as a scaled 1440px canvas. Below `lg` the type shrinks with the container and becomes microscopic. (HomeBeep and HomeFincoBiz — both *fixed*.)
 2. ~~**Hover-only content with no touch path**~~ — *resolved*. All four sites (ProductGrid, ProductCard, BoardMemberRow, mega-menu) now have a touch path; the shared `touch:` variant in `main.css` is the pattern to reuse for any new hover reveal.
 3. **Fixed pixel geometry surviving into mobile** — hardcoded card widths, fixed section heights, desktop-sized overlays. (HomeNewsCarousel, HomeFincoBiz, AboutCeoMessage, ParticleStatus)
 4. **Sub-40px touch targets**, systemic rather than local — the default `AppButton` size is 36px tall.
@@ -190,11 +190,16 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Problem:** mobile-first inverted. The `<section>` adds no padding either, so the heading and all three bento cards sit flush against the viewport edges from 320px to 1023px. Every other home section uses `px-6` unconditionally (`HomeProducts.vue:67`, `HomeNews.vue:37`, `HomeBeep.vue:120`, `HomeFincoBiz.vue:76`), which makes this look accidental rather than a deliberate full-bleed.
 - **Fix applied:** `px-6` unconditionally. **Verified:** computed padding 24px both sides at 375, content spanning 24→351; desktop unchanged (it already had `px-6` from `lg`).
 
-### M12 — HomeFincoBiz: fixed 450px card with an illegible baked-raster caption
+### M12 — HomeFincoBiz: fixed 450px card with an illegible baked-raster caption — ✅ **FIXED**
 - **File:** [app/components/HomeFincoBiz.vue:101](app/components/HomeFincoBiz.vue:101) (`h-[450px]`), `:123`, `:132` (`hidden lg:block`)
 - **Viewport:** mobile 375 / 390, tablet 768 / 820
 - **Problem:** two coupled issues. (1) `h-[450px]` never scales — at 375 the container is 327px so the mockup renders 327×150px, leaving ~260px of blank white inside the card (~119px at 768). (2) The crisp, translatable callout is `hidden lg:block`, so below 1024 the only visible copy is the text **baked into the 2872px-wide raster** at ~11% scale on mobile — illegible, and untranslated.
-- **Fix:** `h-auto` (or `min-h`) below `lg`, and render the live callout at all widths or a plain text block under the image for `<lg`.
+- **Fix applied**, both halves:
+  - **`h-auto lg:h-[450px]`.** The 450px is a desktop *crop* height — up there the mockup renders 530px tall and is deliberately clipped by the card. At a 327px container the same image is only ~150px tall, so the fixed height left ~256px of blank white. The two skeleton cards are `absolute inset-0` with `flex-1` bodies, so they follow whatever height the front card takes.
+  - **Live callout in flow below `lg`.** The desktop callout is absolutely positioned in % against the mockup's baked text and masked with white rectangles — that only works while the raster is large enough to read. Below `lg` the same `calloutHeading` / `calloutSubtext` now render as a normal padded text block under the image, so the copy is legible *and* translated (the live strings come from the `pages` home doc; the raster is baked Mongolian artwork). `sizes="1200px"` also became `100vw lg:1200px`.
+- **Verified at 375:** card 327×343 — header 45 + image 150 + callout 148, **0px unaccounted** (was ~256px of blank white). Mobile callout `display: block` with the live copy; desktop overlay `display: none`.
+- **Verified at 1440:** unchanged — card exactly 450px, image 530px clipped by the card as designed, overlay `display: block` with its 28px heading, mobile block `display: none`.
+- **Not visually confirmed:** the preview pane's stacking and stranded MotionReveal defeated every attempt to screenshot the deck, so this rests on measurements. Worth one look on a real phone.
 
 ### M13 — HomeContactCta 3D scene overlaps the text column by ~490px at tablet
 - **File:** [app/components/HomeContactCta.vue:15](app/components/HomeContactCta.vue:15)
