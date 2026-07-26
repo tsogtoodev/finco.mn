@@ -32,7 +32,7 @@ The dev server would not boot at the start of this audit: stale npm-era `@unhead
 |---|---|---|
 | Critical | 6 | **0 — all fixed** |
 | Major | 24 | **0 — all fixed** |
-| Minor | 40 | **37** — MapEmbed pin + both hover-only product card reveals fixed |
+| Minor | 40 | **36** — MapEmbed pin, both hover-only product card reveals, ApplicationForm file field |
 
 **Every Critical and Major finding is now fixed** (C1–C6, M1–M28), plus a z-index defect on the error page found after the audit and three Minors. What remains is 37 Minor items — cosmetic cramping, sub-40px targets on secondary controls, and `sizes` hints — none of which lose content or break a flow. Two follow-ups were deliberately left and are flagged in place: the **1024–1280 band** in HomeBeep (still 13.6px type) and the **short-laptop edge case** in the stats sticky gate.
 
@@ -385,7 +385,7 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Careers timeline connector only aligns with row 1 at tablet** (`Timeline.vue:26`) — the bar is `md:block` but the grid is `md:grid-cols-3` with 6 steps, so row 2's dots float unconnected. Gate the bar to `lg:block`.
 - **PageHero breadcrumb doesn't wrap** (`:44`) and the chevrons lack `shrink-0` — three crumbs plus two chevrons in 343px on `careers/[slug]`.
 - **careers/exam has double horizontal padding** (`:34`) — the page wrapper's `px-4` plus PageHero's own `px-4` inset the breadcrumb 32px against the page's 16px. The credential fields also lack `inputmode` and `autocomplete` on the one screen that is purely credential entry.
-- **ApplicationForm's native file input** is styled as a text field (`:75`), so a long filename overflows the padded box and the row height mismatches its siblings. No `accept` attribute either.
+- ~~**ApplicationForm's native file input** is styled as a text field~~ ✅ **FIXED** — the file field now has its own branch: `file:` styles the native button, `min-w-0 truncate` keep a long filename inside the box, `py-1` matches the sibling text fields' height, and `accept` filters the mobile picker to documents. **Verified at 375:** file field 42×301, identical height to the text/email fields, contained within its panel, no horizontal scroll, no page overflow. (A long filename can't be reproduced programmatically — a file input's value is not settable for security reasons — so the overflow guard is structural rather than measured.)
 
 ---
 
