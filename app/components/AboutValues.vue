@@ -181,13 +181,30 @@ const routeD = computed(() => {
           </div>
         </div>
 
-        <!-- Mobile + tablet: interactive cards, one column then two.
-             This replaces a separate static `grid-cols-6` tablet variant whose
-             row-2 cards were `col-span-2` — ~229px at 768, and `p-8` left only
-             ~165px of text column for a 20px title. It was also the only one of
-             the three viewport variants with no selection state, so the section's
-             whole "pick a value" affordance vanished between 768 and 1023. -->
-        <div class="relative z-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:hidden">
+        <!-- Mobile (<md): static, non-selectable value cards. Below md there's no
+             spine or cluster to anchor a selection to, so the values read as a
+             plain informational list rather than a picker — no active state and
+             no click. -->
+        <div class="relative z-10 flex flex-col gap-6 md:hidden">
+          <div
+            v-for="(it, i) in items"
+            :key="`vs-${i}`"
+            class="hero-rise flex w-full flex-col gap-2 rounded-[12px] bg-white p-4 shadow-[0px_0px_20px_0px_rgba(0,0,0,0.05)]"
+            :style="{ animationDelay: `${0.1 + i * 0.08}s` }"
+          >
+            <h3 class="text-[18px] font-medium leading-7 text-[rgba(0,0,0,0.6)]">
+              {{ it.title }}
+            </h3>
+            <p class="text-base font-light leading-6 text-[rgba(0,0,0,0.4)]">
+              {{ it.body }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Tablet (md–lg): interactive card grid. Selection is kept here — a
+             separate static grid-cols-6 variant previously left tablet with no
+             selection affordance at all between 768 and 1023. -->
+        <div class="relative z-10 hidden grid-cols-2 gap-6 md:grid lg:hidden">
           <button
             v-for="(it, i) in items"
             :key="`m-${i}`"

@@ -26,7 +26,7 @@ const TINT: Record<Audience, string> = {
   <!-- min-h 159 = the design's band height; it lands exactly there for a single
        line and grows instead of clipping when the copy wraps. -->
   <section
-    class="relative isolate flex min-h-[159px] items-center justify-center overflow-hidden px-6 py-10"
+    class="relative isolate flex items-center justify-center overflow-hidden px-6 py-[24px]"
     :class="TINT[props.audience]"
   >
     <NuxtImg
@@ -42,7 +42,7 @@ const TINT: Record<Audience, string> = {
 
     <MotionReveal class="w-full">
       <p
-        class="mx-auto max-w-[1200px] text-center text-xl font-extralight leading-8 tracking-[0.01em] text-black/60 sm:text-2xl sm:leading-[44px]"
+        class="mx-auto max-w-[1200px] text-center text-xl font-extralight leading-8 tracking-[0.01em] text-black/60 sm:text-[24px] sm:leading-[44px]"
       >
         {{ t(`productsPage.intro.${props.audience}`) }}
       </p>

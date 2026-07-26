@@ -63,7 +63,6 @@ useSeoMeta({
   <div v-if="product">
     <ProductDetailHero
       :image="product.heroImage"
-      :eyebrow="audienceCrumb.label"
       :title="product.title"
       :subtitle="product.summary"
       :terms="product.loanTerms"
