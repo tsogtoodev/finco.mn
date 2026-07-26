@@ -44,7 +44,7 @@ const to = computed(
         :src="image"
         :alt="title"
         loading="lazy"
-        sizes="408px"
+        sizes="90vw sm:408px"
         class="size-full object-cover transition-transform duration-500 group-hover:scale-105 border-top-right-radius-[90px]"
       />
       <div v-else class="size-full bg-gradient-to-br from-primary/15 via-accent/10 to-teal/15" />

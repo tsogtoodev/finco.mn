@@ -10,12 +10,26 @@ const props = defineProps<{
 const { t } = useI18n()
 
 const GAP = 40
-const CARD_W = 408
+const CARD_W_MAX = 408 // design width; the card never grows past it
 const CARD_H = 420
+// Smallest sliver of the next card left visible at the right edge, so the track
+// still reads as scrollable once the active card has been shrunk to fit.
+const PEEK_MIN = 24
 
 // Viewport metrics behind the travel bounds and the peeks (set by `measure()`).
 const rootW = ref(0)
 const edgePad = ref(0)
+
+// The design's 408px card is wider than a phone: at 375 the edge pad is 24, so a
+// fixed card ran x = 24 -> 432 inside a 375px `overflow-hidden` root and ~57px of
+// EVERY card was clipped — cropped image, excerpt cut mid-word — permanently, at
+// every index. Unlike the products carousel there is no size ramp to recover it.
+// Card HEIGHT stays fixed: the title is `truncate` and the excerpt `line-clamp-3`,
+// so the text block is the same height at any width and nothing reflows.
+const cardW = computed(() => {
+  if (!rootW.value) return CARD_W_MAX // SSR / pre-measure: keep the design width
+  return Math.min(CARD_W_MAX, Math.max(240, rootW.value - edgePad.value - PEEK_MIN))
+})
 
 const active = ref(0)
 // Snap back to the first card whenever the list changes (locale switch).
@@ -28,7 +42,7 @@ const atStart = computed(() => active.value <= 0)
 // left edge. Strictly decreasing in `a` (each step drops one card).
 const rightExtent = (a: number) => {
   const visible = count.value - a
-  return edgePad.value + visible * CARD_W + (visible - 1) * GAP
+  return edgePad.value + visible * cardW.value + (visible - 1) * GAP
 }
 // Travel stops at the first index where every remaining card fits on screen —
 // stepping past it would only pull dead space in on the right.
@@ -95,7 +109,7 @@ function onVisibility() {
 
 // Shift the track left so the active card's leading edge lands on the main slot
 // (the track's padding-left = --carousel-edge places that slot).
-const trackOffset = computed(() => -active.value * (CARD_W + GAP))
+const trackOffset = computed(() => -active.value * (cardW.value + GAP))
 
 // Pointer drag with deferred capture: a press alone does nothing — we only
 // engage drag (and capture the pointer, disabling the snap transition) once the
@@ -103,7 +117,7 @@ const trackOffset = computed(() => -active.value * (CARD_W + GAP))
 // as a normal click that navigates the card link; only a real drag suppresses
 // that trailing click and steps by however many card-widths were dragged.
 const DRAG_THRESHOLD = 8
-const STEP = CARD_W + GAP // one card width
+const step = () => cardW.value + GAP // one card width
 const dragging = ref(false) // past threshold: track follows the finger
 const dragX = ref(0)
 let pressing = false // pointer down, not yet (maybe never) a drag
@@ -148,7 +162,7 @@ function onPointerUp(e: PointerEvent) {
     return
   }
   suppressClick = true // a drag — cancel the click that follows
-  const steps = Math.round(-dx / STEP)
+  const steps = Math.round(-dx / step())
   if (steps !== 0) active.value = clamp(active.value + steps)
   else if (Math.abs(dx) > 60) active.value = clamp(active.value + (dx < 0 ? 1 : -1))
   startAuto()
@@ -228,7 +242,7 @@ onBeforeUnmount(() => {
 const overflowsLeft = computed(() => {
   if (atStart.value) return false
   if (!rootW.value) return true
-  return active.value * (CARD_W + GAP) > edgePad.value
+  return active.value * (cardW.value + GAP) > edgePad.value
 })
 // Cards overflow right exactly while the track can still travel — `maxActive`
 // is defined as the first index where they stop overflowing.
@@ -273,7 +287,7 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
           :excerpt="n.excerpt"
           :image="n.image"
           :to="n.to"
-          :style="{ width: `${CARD_W}px`, height: `${CARD_H}px`, animationDelay: revealed ? revealDelay(i) : undefined }"
+          :style="{ width: `${cardW}px`, height: `${CARD_H}px`, animationDelay: revealed ? revealDelay(i) : undefined }"
           class="shrink-0 overflow-hidden"
           :class="revealed ? 'carousel-reveal' : hydrated ? 'carousel-pre' : ''"
         />

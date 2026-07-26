@@ -192,15 +192,19 @@ function fmtDate(d?: string) {
         </ul>
 
         <!-- Pagination -->
-        <nav v-if="totalPages > 1" class="mt-12 flex items-center justify-center sm:mt-20" aria-label="Pagination">
+        <!-- flex-wrap + shrink-0: the widest window is 8 page controls plus 2 arrows =
+             400px against 327px of usable width at 375. Without these the row does
+             not overflow — it squeezes every control to ~32px with zero gap between
+             neighbours, which is under the touch minimum and touching. -->
+        <nav v-if="totalPages > 1" class="mt-12 flex flex-wrap items-center justify-center gap-1 sm:mt-20" aria-label="Pagination">
           <template v-for="(p, i) in pageNumbers" :key="`${p}-${i}`">
-            <span v-if="p === '…'" class="grid size-10 place-items-center text-black/60">
+            <span v-if="p === '…'" class="grid size-10 shrink-0 place-items-center text-black/60">
               <Icon name="lucide:ellipsis" class="size-4" />
             </span>
             <button
               v-else
               type="button"
-              class="grid size-10 place-items-center rounded-full text-sm transition-colors"
+              class="grid size-10 shrink-0 place-items-center rounded-full text-sm transition-colors"
               :class="p === page ? 'bg-[#e6e8ea] text-black' : 'text-black/60 hover:bg-black/5'"
               :aria-current="p === page ? 'page' : undefined"
               @click="goTo(p)"
@@ -210,7 +214,7 @@ function fmtDate(d?: string) {
           </template>
           <button
             type="button"
-            class="grid size-10 place-items-center rounded-full text-black/60 transition-colors hover:bg-black/5 disabled:opacity-40 disabled:hover:bg-transparent"
+            class="grid size-10 shrink-0 place-items-center rounded-full text-black/60 transition-colors hover:bg-black/5 disabled:opacity-40 disabled:hover:bg-transparent"
             :disabled="page === 1"
             :aria-label="t('newsPage.prevPage')"
             @click="goTo(page - 1)"
@@ -219,7 +223,7 @@ function fmtDate(d?: string) {
           </button>
           <button
             type="button"
-            class="grid size-10 place-items-center rounded-full text-black/60 transition-colors hover:bg-black/5 disabled:opacity-40 disabled:hover:bg-transparent"
+            class="grid size-10 shrink-0 place-items-center rounded-full text-black/60 transition-colors hover:bg-black/5 disabled:opacity-40 disabled:hover:bg-transparent"
             :disabled="page === totalPages"
             :aria-label="t('newsPage.nextPage')"
             @click="goTo(page + 1)"

@@ -117,16 +117,16 @@ function goBack() {
 
         <dl
           v-if="statItems.length"
-          class="hero-rise grid w-full max-w-[1264px] grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-8"
+          class="hero-rise grid w-full max-w-[1264px] grid-cols-1 gap-4 md:grid-cols-3 md:gap-8"
           style="animation-delay: 0.24s"
         >
           <div
             v-for="s in statItems"
             :key="s.key"
-            class="flex flex-col items-center justify-center gap-3 whitespace-nowrap rounded-[12px] bg-white/10 p-3 shadow-[0_0_20px_rgba(0,0,0,0.15)]"
+            class="flex min-w-0 flex-col items-center justify-center gap-3 text-balance rounded-[12px] bg-white/10 p-3 text-center shadow-[0_0_20px_rgba(0,0,0,0.15)]"
           >
-            <dt class="text-xl font-extralight leading-6 text-white/80">{{ t(`loanTerms.${s.key}`) }}:</dt>
-            <dd class="text-2xl font-bold leading-6 text-white">{{ s.value }}</dd>
+            <dt class="text-lg font-extralight leading-6 text-white/80 lg:text-xl">{{ t(`loanTerms.${s.key}`) }}:</dt>
+            <dd class="text-xl font-bold leading-7 text-white lg:text-2xl">{{ s.value }}</dd>
           </div>
         </dl>
 

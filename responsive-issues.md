@@ -31,7 +31,7 @@ The dev server would not boot at the start of this audit: stale npm-era `@unhead
 | Severity | Count | Open |
 |---|---|---|
 | Critical | 6 | **0 — all fixed** |
-| Major | 24 | **10** — M2–M7, M11, M14, M16–M18, M21, M25, M28 fixed |
+| Major | 24 | **7** — M2–M7, M10, M11, M14, M16–M18, M21, M22, M25, M26, M28 fixed |
 | Minor | 40 | **37** — MapEmbed pin + both hover-only product card reveals fixed |
 
 All six Critical items are resolved (C1–C6), plus a z-index defect on the error page found after the audit, one Minor, and the six Tier-1 Majors above. Two follow-ups were deliberately left and are flagged in place: the **1024–1280 band** in HomeBeep (still 13.6px type) and the **short-laptop edge case** in the stats sticky gate.
@@ -176,12 +176,13 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 
 ## Home page
 
-### M10 — News carousel cards are a hardcoded 408px; ~57px of every card is clipped **[measured]**
+### M10 — News carousel cards are a hardcoded 408px; ~57px of every card is clipped — ✅ **FIXED**
 - **File:** [app/components/HomeNewsCarousel.vue:13](app/components/HomeNewsCarousel.vue:13) (`CARD_W = 408`), applied at `:276`
 - **Viewport:** mobile 375 / 390
 - **Measured at 375:** card wrapper, image, body and `h3` all measure exactly 408px inside a 375px `overflow-hidden` root.
 - **Problem:** `--carousel-edge` collapses to 24px on mobile, so the active card runs x = 24 → 432. Every card loses ~57px off its right edge permanently — the image is cropped and the `line-clamp-3` excerpt is cut mid-word. Unlike the products carousel there is no size ramp, so it never self-corrects.
-- **Fix:** derive `CARD_W` from the already-tracked `rootW` (`:174`): `Math.min(408, rootW - edgePad - 24)`. The travel math all derives from `CARD_W`, so a reactive value flows through.
+- **Fix applied:** `CARD_W` became a `cardW` computed derived from the already-tracked `rootW` — `min(408, rootW - edgePad - 24)`, with the 24px floor keeping a sliver of the next card visible so the track still reads as scrollable. The travel math (`rightExtent`, `trackOffset`, the drag `step()`, `overflowsLeft`) all derives from it, so one reactive value flows through. Card **height** stays fixed at 420: the title is `truncate` and the excerpt `line-clamp-3`, so the text block is the same height at any width and nothing reflows. `NewsCard`'s `sizes="408px"` hint became `90vw sm:408px`, since the change made the old hint actively wrong on mobile.
+- **Verified at 375:** card is 327×420 running x = 24 → 351 inside a 375 viewport — **0px clipped** (was ~57px) with a 24px peek. Document overflow 0.
 
 ### M11 — HomeFeatures has zero horizontal gutter below 1024px — ✅ **FIXED**
 - **File:** [app/components/HomeFeatures.vue:32](app/components/HomeFeatures.vue:32) — `px-0 lg:px-6`
@@ -260,12 +261,13 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 
 ## Products & services
 
-### M22 — Product detail stat boxes overflow and overlap in the 3-column grid
+### M22 — Product detail stat boxes overflow and overlap in the 3-column grid — ✅ **FIXED**
 - **File:** [app/components/ProductDetailHero.vue:120](app/components/ProductDetailHero.vue:120), `:126`
 - **Viewport:** tablet 768 (worst 640–760)
 - **Affects:** all 14 product slugs — **[measured]** every one of them renders the identical 343px `whitespace-nowrap` stat row.
 - **Problem:** the grid flips to `sm:grid-cols-3` at 640px, but each box carries `whitespace-nowrap` with a 20px `dt` and a 24px bold `dd`. At 640px each track is ~181px with ~157px of interior, while the nowrap value needs ~185–210px. The text cannot wrap, so it spills: the middle box overlaps its neighbours and the outer boxes are clipped by the section's `overflow-hidden`. Still tight at 768 (~200px vs ~185px) with no headroom for longer CMS values. **[measured]** at 375 and 820 the row fits — this is specifically a 640–768 band failure, not a phone one.
-- **Fix:** drop `whitespace-nowrap`, move the 3-column switch to `md:`, add `min-w-0 text-balance`, and scale the type down below `lg`.
+- **Fix applied:** dropped `whitespace-nowrap`, moved the 3-column switch from `sm:` to `md:`, added `min-w-0 text-balance text-center`, and stepped the type down below `lg` (`dt` 18px, `dd` 20px).
+- **Verified at 700** (inside the old 640–760 failure band): single column, `white-space: normal`, no text escaping its box. **At 768:** three 224px columns, no overlap, widest value 166px inside a 200px interior, no overflow. Applies to all 14 product slugs, which share this template.
 
 ### M23 — DetailTabs sliding underline is mis-positioned because tabs are not equal width
 - **File:** [app/components/DetailTabs.vue:51](app/components/DetailTabs.vue:51) vs `:41`
@@ -287,11 +289,12 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Problem:** the `prose prose-neutral prose-headings:… prose-p:…` classes require `@tailwindcss/typography`, which is **not** in `package.json`, and there is no hand-rolled `.prose` rule in `main.css`. Tailwind v4 Preflight then actively strips the browser defaults: headings get `font-size: inherit; font-weight: inherit` and lists get `list-style: none; margin: 0; padding: 0`. So `## 1. Оршил` headings and `- …` bullets render as plain 16px body text with no hierarchy, no bullets and no paragraph spacing.
 - **Fix applied:** installed `@tailwindcss/typography@0.5.20` and added `@plugin "@tailwindcss/typography";` to `main.css`. The existing `prose-headings:` / `prose-p:` / `prose-li:` modifiers on the page are that plugin's own API, so this is what the author intended — no markup changed. **Verified** on `/en/legal/privacy` and `/mn/legal/terms`: `h2` 24px/500 against 16px/28px body, `ul` back to `list-style: disc` with a 26px indent, no overflow at 375.
 
-### M26 — News pagination squeezes to ~32px controls with zero gap
+### M26 — News pagination squeezes to ~32px controls with zero gap — ✅ **FIXED**
 - **File:** [app/pages/news/index.vue:195](app/pages/news/index.vue:195)
 - **Viewport:** mobile 375 / 390
 - **Problem:** the nav has **no `flex-wrap`**. The worst case from `pageNumbers` (`:87`) is 8 items plus 2 arrows = 10 × `size-10` = 400px against 327px of usable width. Flex shrink prevents literal overflow but collapses each control to ~32px with no separation between neighbours — under the touch minimum and adjacent, so mis-taps are near-certain.
-- **Fix:** `flex-wrap gap-1` on the nav and `shrink-0` on the buttons so they wrap to a second row; optionally show `[1,'…',c,'…',n]` below `sm`.
+- **Fix applied:** `flex-wrap gap-1` on the nav and `shrink-0` on every control.
+- **Verified** against the worst case the window can produce — 8 page controls plus 2 arrows in 327px: every control keeps its full **40×40** (was squeezing to ~32 with zero gap), 4px gaps, wrapping to 2 rows, no overflow. Simulated with the production class strings, since the current content is only one page long.
 
 ### M27 — AutoNextNews card is covered by the floating action button at tablet
 - **File:** [app/components/AutoNextNews.vue:184](app/components/AutoNextNews.vue:184) vs [app/components/FloatingActions.vue:14](app/components/FloatingActions.vue:14)
