@@ -31,7 +31,7 @@ The dev server would not boot at the start of this audit: stale npm-era `@unhead
 | Severity | Count | Open |
 |---|---|---|
 | Critical | 6 | **0 — all fixed** |
-| Major | 24 | **4** — M2–M12, M14, M16–M18, M21, M22, M25, M26, M28 fixed |
+| Major | 24 | **5 open** — M1, M19, M20, M23, M24. Fixed: M2–M18, M21, M22, M25–M28 |
 | Minor | 40 | **37** — MapEmbed pin + both hover-only product card reveals fixed |
 
 All six Critical items are resolved (C1–C6), plus a z-index defect on the error page found after the audit, one Minor, and the six Tier-1 Majors above. Two follow-ups were deliberately left and are flagged in place: the **1024–1280 band** in HomeBeep (still 13.6px type) and the **short-laptop edge case** in the stats sticky gate.
@@ -204,11 +204,12 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Verified at 1440:** unchanged — card exactly 450px, image 530px clipped by the card as designed, overlay `display: block` with its 28px heading, mobile block `display: none`.
 - **Not visually confirmed:** the preview pane's stacking and stranded MotionReveal defeated every attempt to screenshot the deck, so this rests on measurements. Worth one look on a real phone.
 
-### M13 — HomeContactCta 3D scene overlaps the text column by ~490px at tablet
+### M13 — HomeContactCta 3D scene overlaps the text column by ~490px at tablet — ✅ **FIXED**
 - **File:** [app/components/HomeContactCta.vue:15](app/components/HomeContactCta.vue:15)
 - **Viewport:** tablet 768 / 820
 - **Problem:** the scene wrapper turns on at `md` at `w-[80%]`. At 768 that is 614px anchored right (x = 154 → 768), while the text column occupies x = 24 → 644. The blend scrim is only fully opaque to 38% and fully transparent by 72%, so the artwork renders directly behind the heading and CTA across the 292–644px band. There is no `lg:` reduction.
-- **Fix:** gate to `lg:block`, or `md:w-[55%] lg:w-[80%]` with the scrim's opaque stop pushed right at `md`.
+- **Fix applied:** the scene is gated to `lg:block` instead of `md:block`. Narrowing it at `md` would not have been enough: the blend scrim is a gradient across the *section* width (opaque to 38%, clear by 72%), so how much artwork shows through the copy depends on the scene-to-section ratio — at 768 the scrim starts fading at 292px while the text column runs to 644px. Tablet is not a designed breakpoint here (Figma is 1440), so it gets the clean dark panel.
+- **Verified at 768:** scene `display: none`, heading spans x 24→530, **0px overlap** (was ~490). At 1440 unchanged: scene `display: block`, laid out 1040×350 at x 400→1440.
 
 ### M14 — HomeContactCta subtext is larger on mobile than desktop, with leading equal to font-size — ✅ **FIXED**
 - **File:** [app/components/HomeContactCta.vue:46](app/components/HomeContactCta.vue:46)
@@ -216,11 +217,13 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Problem:** `text-xl … leading-[20px] … sm:text-[16px]` — base is 20px with a 20px line-height, and `sm:` makes it *smaller* on larger screens while the leading stays. The Mongolian string wraps to ~4 lines at 327px, so Cyrillic ascenders and descenders collide between lines.
 - **Fix applied:** `text-base leading-6 sm:text-[16px] sm:leading-[20px]`. **Verified:** 16px/24px at 375 (was 20px type on a 20px leading).
 
-### M15 — Spline runtime (~1MB) is prefetched on mobile for scenes that are `hidden`
+### M15 — Spline runtime (~1MB) is prefetched on mobile for scenes that are `hidden` — ✅ **FIXED**
 - **File:** [app/components/SplineScene.vue:275](app/components/SplineScene.vue:275), triggered from `HomeContactCta.vue:18` and `HomeStats.vue:37`
 - **Viewport:** mobile 375 / 390
 - **Problem:** `<ClientOnly>` mounts `SplineScene` regardless of the CSS `hidden` on the wrapper. `inView()` correctly returns false so nothing renders — but `schedulePrefetch()` still runs on idle and pulls both `@splinetool/runtime` and the `.splinecode` into cache. On phones that is two scenes' worth of bytes that can never be displayed, on the most bandwidth-constrained devices. The `scroll`/`resize` listeners for these hidden instances are also never torn down.
-- **Fix:** bail out of `schedulePrefetch` when the canvas has no layout box (`if (!canvas.value?.offsetParent) return`), or `v-if` the `<ClientOnly>` off a `useMediaQuery` instead of a CSS `hidden`.
+- **Fix applied:** guarded inside `SplineScene`'s own `warm()` rather than at each call site, so every hidden instance is covered at once — present and future. The check is `canvas.getBoundingClientRect().width === 0`, evaluated at the idle callback so it reflects settled layout: zero width means "not laid out" (a CSS-hidden wrapper), while a scene merely below the fold still has width, so genuine ahead-of-scroll prefetch is untouched.
+- **Verified at 375:** **0 network requests matching `spline`** on the home page (was the runtime plus two scenes). Both `SplineScene` canvases still mount but measure 0×0, so the guard bails. At 1440 the guard passes (`guardWouldPass: [true, true]` with canvases at 1728 and 1040 wide).
+- **Caveat:** the fetch itself could not be observed at 1440 — Spline never initialises in the preview pane at any width (canvas backing stores stay at the default 300×150, `visibilityState` is `hidden` and rAF is paused). What is verified is the guard's *decision*, which is correct in both directions; it is provably not what suppresses the desktop request.
 
 ## About page
 
@@ -304,11 +307,12 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Fix applied:** `flex-wrap gap-1` on the nav and `shrink-0` on every control.
 - **Verified** against the worst case the window can produce — 8 page controls plus 2 arrows in 327px: every control keeps its full **40×40** (was squeezing to ~32 with zero gap), 4px gaps, wrapping to 2 rows, no overflow. Simulated with the production class strings, since the current content is only one page long.
 
-### M27 — AutoNextNews card is covered by the floating action button at tablet
+### M27 — AutoNextNews card is covered by the floating action button at tablet — ✅ **FIXED**
 - **File:** [app/components/AutoNextNews.vue:184](app/components/AutoNextNews.vue:184) vs [app/components/FloatingActions.vue:14](app/components/FloatingActions.vue:14)
 - **Viewport:** tablet 768 / 820
 - **Problem:** both overlays are fixed and both are mounted from `layouts/default.vue:20`. The FAB is `bottom-6 right-6 z-50` over a 64×124 GlassSurface (x = vw−88 … vw−24, y = 24…148 from the bottom). AutoNextNews is `z-40` spanning nearly the full width at these viewports (y ≈ 32…141). They intersect, and the FAB wins on z-index — landing exactly on the "Close" and "Read next" buttons. At 1440 the `max-w-[1200px]` cap keeps them apart, which is why it only appears on tablet.
-- **Fix:** hide the FAB while the overlay is open, extend AutoNextNews' suppression to `(max-width: 1023px)`, or reserve room with `pr-24 lg:pr-4`.
+- **Fix applied:** the FAB yields the corner while the overlay is up, via `body:has(.anx-overlay) .fab-dock` in `main.css` — the same `:has()` idiom the announcement bar already uses. Reserving a gutter (`pr-24`) was the alternative but it shifts the overlay off-centre at *every* width: the two only clear each other above ~1376px viewport (the overlay's container caps at 1200px), so the padding could not be scoped to the colliding range without also moving it on desktop. The overlay is transient — 10s auto-advance — and the FAB returns when it leaves.
+- **Verified at 768:** the collision is real (FAB occupies x 680–744, y 876–1000, inside the overlay's bottom band). With the hook element present the FAB's `pointer-events` flips `auto → none → auto`, so the selector matches. The paired opacity/transform fade could not be observed — it is a 250ms transition and the pane's rAF is paused — but `pointer-events` is untransitioned, which is why it reads immediately.
 
 ### M28 — `/test` is a stray dev page that overflows by 635px and is crawlable — ✅ **FIXED**
 - **File:** [app/pages/test.vue:1](app/pages/test.vue:1), [nuxt.config.ts:114](nuxt.config.ts:114)

@@ -14,6 +14,30 @@
    the content instead. */
 @custom-variant touch (@media (hover: none));
 
+/* The AutoNextNews overlay and the floating action button both occupy the
+   bottom-right. The overlay's container is capped at 1200px, so they only clear
+   each other above ~1376px viewport width — below that the FAB (z-50) lands on
+   top of the overlay's Close and "read next" buttons (z-40), which is exactly
+   where a tablet lands. Reserving a gutter would shift the overlay off-centre at
+   every width, so the FAB yields the corner instead: the overlay is transient
+   (10s auto-advance) and the FAB returns when it leaves. Same `:has()` idiom the
+   announcement bar uses above. */
+body:has(.anx-overlay) .fab-dock {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(0.5rem);
+}
+.fab-dock {
+  transition:
+    opacity 250ms ease,
+    transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fab-dock {
+    transition: none;
+  }
+}
+
 /* ── finco.mn design tokens (Tailwind v4 @theme) ──────────────────────────────
    Values from the Figma `final` page variables (structure.md §4).
    Tailwind generates utilities from these, e.g. --color-primary → bg-primary,

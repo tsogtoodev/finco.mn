@@ -105,6 +105,14 @@ function schedulePrefetch() {
 
   const warm = () => {
     if (app.value) return
+    // A CSS-hidden wrapper (`hidden sm:block`, `hidden lg:block`) still MOUNTS
+    // this component. The render path already copes — `inView()` guards on
+    // `r.width > 0` — but the prefetch had no such guard, so a phone downloaded
+    // the ~1MB runtime plus the .splinecode of every scene it can never show.
+    // Zero width means "not laid out"; a scene merely below the fold still has
+    // width, so genuine ahead-of-scroll prefetch is unaffected. Checked here
+    // rather than at schedule time so it reflects layout at the idle callback.
+    if (!canvas.value || canvas.value.getBoundingClientRect().width === 0) return
     import('@splinetool/runtime').catch(() => {})
     fetch(props.scene).catch(() => {})
   }

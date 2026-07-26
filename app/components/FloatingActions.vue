@@ -11,7 +11,9 @@ const showCalculator = ref(false)
 </script>
 
 <template>
-  <div class="fixed bottom-6 right-6 z-50">
+  <!-- `fab-dock` is the hook for the yield rule in main.css — see the
+       body:has(.anx-overlay) block there. -->
+  <div class="fab-dock fixed bottom-6 right-6 z-50">
     <!-- Liquid-glass pill (client-only: the effect relies on backdrop-filter +
          SVG feature detection, so SSR would hydration-mismatch). -->
     <ClientOnly>

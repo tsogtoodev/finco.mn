@@ -11,8 +11,16 @@ const feedbackOpen = ref(false)
   <section class="relative isolate flex h-[350px] items-center overflow-hidden bg-[#080a12]">
     <!-- Far-left blue glow -->
     <div class="pointer-events-none absolute inset-y-0 left-0 w-1/3 [background:radial-gradient(60%_80%_at_0%_50%,rgba(33,71,132,0.35),transparent_70%)]" />
+    <!-- lg, not md. The blend scrim below is a gradient over the SECTION width
+         (opaque to 38%, clear by 72%), so how much scene shows through the text
+         depends on the ratio of scene width to section width. At 1440 that lands
+         the artwork behind only the tail of a short heading; at 768 the scene is
+         614px anchored right (x 154→768) against a text column running x 24→644,
+         with the scrim already fading from 292px — so ~350px of the heading and
+         CTA sat over visible card artwork. Tablet is not a designed breakpoint
+         here (Figma is 1440), so it gets the clean dark panel instead. -->
     <div
-      class="absolute right-0 top-1/2 hidden h-[100%] w-[80%] max-w-[1040px] -translate-y-1/2 cursor-pointer md:block"
+      class="absolute right-0 top-1/2 hidden h-[100%] w-[80%] max-w-[1040px] -translate-y-1/2 cursor-pointer lg:block"
       @click="feedbackOpen = true"
     >
       <ClientOnly>

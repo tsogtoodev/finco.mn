@@ -167,7 +167,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     v-if="show && next"
-    class="pointer-events-none fixed inset-x-0 bottom-0 z-40"
+    class="anx-overlay pointer-events-none fixed inset-x-0 bottom-0 z-40"
     :class="open ? 'anx-open' : ''"
   >
     <!-- Blurred white fade band behind the pill + card (Figma 663:14450) -->
