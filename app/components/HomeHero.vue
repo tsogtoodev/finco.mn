@@ -16,6 +16,7 @@
 // Header note: the full-bleed dark slides sit under the transparent overlay nav
 // (white logo/links + scrim), so index.vue sets `transparentHeader: true`.
 import beepWordmark from '~/assets/icons/beep-wordmark-white.svg?url'
+import fincoBizLogo from '~/assets/icons/fincobiz-logo-white.svg?url'
 
 const { t } = useI18n()
 const localePath = useLocalePath()
@@ -57,7 +58,7 @@ const partners = [
 // Carousel slides — order matches the tab bar (left→right). `logo` only for the
 // designed BeepWallet slide; the others show an eyebrow text label instead.
 const slides = [
-  { key: 'fincoBiz', to: '/business', bg: '/images/products/hero-business.jpg' },
+  { key: 'fincoBiz', to: '/business', bg: '/images/products/hero-business.jpg', logo: fincoBizLogo },
   { key: 'beepWallet', to: '/products', bg: '/images/home/hero-beep-bg.jpg', logo: beepWordmark },
   { key: 'loans', to: '/products', bg: '/images/products/hero-individual.jpg' },
   { key: 'trust', to: '/services', bg: '/images/services/itgeltsel-hero.jpg' },
