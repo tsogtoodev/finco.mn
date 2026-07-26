@@ -31,5 +31,6 @@ const faqItems = computed(() => {
     <ProductsIntro :audience="props.audience" />
     <ProductGrid :audience="props.audience" />
     <FaqAccordion :items="faqItems" />
+    <ProductContactCta />
   </div>
 </template>

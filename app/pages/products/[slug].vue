@@ -78,5 +78,6 @@ useSeoMeta({
 
     <RelatedProductsCarousel :items="related ?? []" />
     <FaqAccordion :items="product.faq" />
+    <ProductContactCta />
   </div>
 </template>
