@@ -35,7 +35,12 @@ const fmt: Intl.NumberFormatOptions = { maximumFractionDigits: 0 }
     @update:open="emit('update:open', $event)"
   >
     <div class="calc-body flex flex-col gap-8">
-      <div class="flex flex-col gap-6 sm:flex-row sm:gap-[34px]">
+      <!-- Three-across only from lg. The stepper's chips are 44px touch targets
+           now, which raises its min-content width — and at 640–1023 all three
+           fields were already sitting on their min-content floors, so the row
+           overflowed its container by ~35px. At lg the dialog is at its 840px cap
+           and each field gets ~236px, which clears every floor. -->
+      <div class="flex flex-col gap-6 lg:flex-row lg:gap-[34px]">
         <AppInput v-model="amount" :label="t('fab.calculator.amount')" type="number" inputmode="numeric" unit="₮" :max="1_000_000_000" />
         <AppInput v-model="rate" :label="t('fab.calculator.rate')" type="number" inputmode="decimal" unit="%" unit-position="trailing" :max="100" />
         <NumberStepper v-model="term" :label="t('fab.calculator.term')" :min="1" :max="360" />
@@ -45,16 +50,23 @@ const fmt: Intl.NumberFormatOptions = { maximumFractionDigits: 0 }
         {{ t('fab.calculator.calculate') }}
       </AppButton> -->
 
-      <div class="flex flex-col gap-6 rounded-[24px] bg-[#f7f7f7] p-6 sm:flex-row">
-        <div class="flex flex-1 items-center justify-between gap-4 rounded-[24px] bg-white p-6">
-          <span class="text-base text-foreground/60">{{ t('fab.calculator.monthly') }}</span>
-          <span class="text-xl font-medium text-[#252525]">
+      <!-- Label ABOVE value until lg, not `sm:`. The tray itself goes side-by-side
+           at `sm`, halving each card's width — so a row layout inside the card
+           overflowed twice: once at 375 (nested p-6s left ~199px of interior for a
+           ~100px label plus a value that can reach 13 digits) and again at 640–800
+           once the tray split. AppNumberFlow renders a fixed-width tabular digit
+           strip that can neither wrap nor shrink, so the space has to come from
+           the layout. -->
+      <div class="flex flex-col gap-6 rounded-[24px] bg-[#f7f7f7] p-4 sm:flex-row sm:p-6">
+        <div class="flex min-w-0 flex-1 flex-col items-start gap-2 rounded-[24px] bg-white p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+          <span class="min-w-0 text-base text-foreground/60">{{ t('fab.calculator.monthly') }}</span>
+          <span class="min-w-0 text-lg font-medium text-[#252525] sm:text-xl">
             <AppNumberFlow :value="monthly" :format="fmt" suffix="₮" />
           </span>
         </div>
-        <div class="flex flex-1 items-center justify-between gap-4 rounded-[24px] bg-white p-6">
-          <span class="text-base text-foreground/60">{{ t('fab.calculator.total') }}</span>
-          <span class="text-xl font-bold text-accent-bright">
+        <div class="flex min-w-0 flex-1 flex-col items-start gap-2 rounded-[24px] bg-white p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+          <span class="min-w-0 text-base text-foreground/60">{{ t('fab.calculator.total') }}</span>
+          <span class="min-w-0 text-lg font-bold text-accent-bright sm:text-xl">
             <AppNumberFlow :value="total" :format="fmt" suffix="₮" />
           </span>
         </div>

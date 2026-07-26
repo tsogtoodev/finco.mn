@@ -31,7 +31,7 @@ The dev server would not boot at the start of this audit: stale npm-era `@unhead
 | Severity | Count | Open |
 |---|---|---|
 | Critical | 6 | **0 — all fixed** |
-| Major | 24 | **6** — M2–M7, M10–M12, M14, M16–M18, M21, M22, M25, M26, M28 fixed |
+| Major | 24 | **4** — M2–M12, M14, M16–M18, M21, M22, M25, M26, M28 fixed |
 | Minor | 40 | **37** — MapEmbed pin + both hover-only product card reveals fixed |
 
 All six Critical items are resolved (C1–C6), plus a z-index defect on the error page found after the audit, one Minor, and the six Tier-1 Majors above. Two follow-ups were deliberately left and are flagged in place: the **1024–1280 band** in HomeBeep (still 13.6px type) and the **short-laptop edge case** in the stats sticky gate.
@@ -162,17 +162,20 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Fix applied:** the card is now a `flex flex-col` that does **not** scroll; only an inner `min-h-0 flex-1 overflow-y-auto` wrapper around the slot does, so the ✕ stays absolute against the non-scrolling card. `min-h-0` is load-bearing — a flex child defaults to `min-height: auto` and refuses to shrink below its content, so without it the scroller never engages and the card grows past `max-h`.
 - **Verified** at 375×667 with the loan calculator, where the body genuinely overflows (588px of content in a 488px scroller): scrolled to the bottom, the ✕ stays at `top: 61` — unmoved. Card bottom 622 inside a 667 viewport.
 
-### M8 — Loan calculator result rows overflow at 375 and again at 640–800
+### M8 — Loan calculator result rows overflow at 375 and again at 640–800 — ✅ **FIXED**
 - **File:** [app/components/LoanCalculatorDialog.vue:48](app/components/LoanCalculatorDialog.vue:48)
 - **Viewport:** both
 - **Problem:** each row is `flex justify-between gap-4 … p-6` with no `min-w-0`. Nested padding (`AppDialog p-4` → card `p-6` → tray `p-6` → row `p-6`) leaves ≈199px of interior at 375. `AppNumberFlow` renders a fixed-width `tabular-nums` digit strip that cannot shrink or wrap; the input accepts up to 1,000,000,000₮. Because the card is `overflow-y-auto`, `overflow-x` computes to `auto` — so it becomes a horizontal scrollbar inside the modal. `sm:flex-row` puts the two rows side by side from 640px, halving the space and reproducing the same overflow at 640–800.
-- **Fix:** `flex-col items-start` at base with `sm:flex-row` only once the tray is full width; add `min-w-0`, drop the value to `text-lg` on mobile, and reduce the nested `p-6 p-6` to `p-4 sm:p-6`.
+- **Fix applied:** the result cards stack label-above-value until **`lg`**, not `sm:` — the tray itself splits side-by-side at `sm`, so a row layout inside the card overflowed twice (once at 375, again at 640–800 once each card lost half its width). Added `min-w-0` throughout, dropped the value to `text-lg` below `sm`, and reduced the nested `p-6 p-6` to `p-4 sm:p-6`. `AppNumberFlow` renders a fixed-width tabular digit strip that can neither wrap nor shrink, so the room has to come from the layout.
+- **Verified at 375** with the worst case the inputs allow (₮1,000,000,000 at 5% over 360 months): rows 252px wide, label 106 + value 149 both inside, no child escaping, no horizontal scroll in the dialog. **At 700:** `bodyOverflowPx: 0`. **At 1024 and 1440:** result rows back to label-beside-value, still 0.
 
-### M9 — Loan-term steppers are 24×24, and the term cannot be typed
+### M9 — Loan-term steppers are 24×24, and the term cannot be typed — ✅ **FIXED**
 - **File:** [app/components/NumberStepper.vue:34](app/components/NumberStepper.vue:34), used at [app/components/LoanCalculatorDialog.vue:41](app/components/LoanCalculatorDialog.vue:41)
 - **Viewport:** both
 - **Problem:** each chip is `p-1` around a `size-4` icon = 24×24px, and they are the *only* control for the term — the value is a plain `<span>`, not an input. Going from the default 3 months to 24 is 21 taps on a 24px target. The max is 360.
-- **Fix:** `min-h-11 min-w-11` on the buttons (keep the `size-4` glyph), and make the value an `<input type="number" inputmode="numeric">`.
+- **Fix applied:** the chips are `size-11` (44×44, `offsetWidth` confirmed) around the unchanged `size-4` glyph, and the value is now a real `<input type="number" inputmode="numeric">` with min/max/step, clamp-on-input and a resync on blur — so the 360-month maximum is one typed entry instead of 357 taps. Field padding dropped to `p-1.5 pl-4` so the taller chips keep the field near `AppInput`'s height (56 vs 52).
+- **Regression I introduced and then fixed:** 44px chips raise the stepper's min-content width, and at 640–1023 all three input fields were already sitting on their min-content floors — the row overflowed its container by ~35px. The field row is now `lg:flex-row` (stacked below), which clears every floor; at `lg` the dialog is at its 840px cap and each field gets 227px.
+- **Measurement note:** `getBoundingClientRect()` reads 4% small inside this dialog — the `.t-modal` enter transition strands at `scale(0.96)` under the preview pane's paused rAF. `offsetWidth` is the trustworthy metric here and reports the true 44×44.
 
 ## Home page
 
