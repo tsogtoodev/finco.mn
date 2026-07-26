@@ -19,7 +19,7 @@ import { setSmoothScroll } from '~/utils/smoothScroll'
 //   TOUCH — touch delta multiplier. Touch itself stays native (`syncTouch` off),
 //           so phones keep the OS momentum they already had; this only trims
 //           the drag distance to match the desktop weight.
-const LERP = 0.065
+const LERP = 0.1
 const WHEEL = 0.9
 const TOUCH = 1.4
 
