@@ -187,6 +187,19 @@ function measure() {
   rootW.value = rootEl.value.clientWidth
   edgePad.value = Number.parseFloat(getComputedStyle(trackEl.value).paddingLeft) || 0
 }
+// Floating peeks + arrows live in the gutter beside the track, sized for the
+// 1440 layout. `--carousel-edge` is a `max(1rem, ...)` that collapses to its
+// floor whenever the viewport is below the container cap — 16px for the
+// related-products carousel at ANY width under 1280 — so they stopped sitting in
+// the gutter and started sitting on the active card: ~104px of it under a blur,
+// with the arrow's hit area stealing taps meant for the product link. Gate them
+// on the measured gutter instead of a breakpoint, since each consumer sets its
+// own edge. Drag and the 44px footer arrows still drive the carousel without them.
+const ARROW_MIN_EDGE = 100 // lg offset (56) + the 44px button
+const PEEK_MIN_EDGE = 120 // narrowest peek width
+const gutterFitsArrows = computed(() => edgePad.value >= ARROW_MIN_EDGE)
+const gutterFitsPeeks = computed(() => edgePad.value >= PEEK_MIN_EDGE)
+
 // Staggered card reveal (see .carousel-reveal in main.css): SSR/no-JS renders
 // the cards visible; after hydration they hide (`hydrated`) until the carousel
 // enters the viewport, then rise in one by one via inline animation-delay.
@@ -297,13 +310,13 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
 
       <!-- Blurred peeks — previous cards on the left, upcoming on the right. -->
       <div
-        v-show="overflowsLeft"
+        v-show="overflowsLeft && gutterFitsPeeks"
         aria-hidden="true"
         class="pointer-events-none absolute inset-y-0 left-0 hidden w-[120px] backdrop-blur-[6px] md:block lg:w-[156px]"
         :style="{ maskImage: MASK_L, WebkitMaskImage: MASK_L }"
       />
       <div
-        v-show="overflowsRight"
+        v-show="overflowsRight && gutterFitsPeeks"
         aria-hidden="true"
         class="pointer-events-none absolute inset-y-0 right-0 hidden w-[120px] backdrop-blur-[6px] md:block lg:w-[156px]"
         :style="{ maskImage: MASK_R, WebkitMaskImage: MASK_R }"
@@ -315,13 +328,13 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
            the rest of the peek still accepts drag. `.stop` keeps a button press
            from also starting a track drag. -->
       <div
-        v-show="overflowsLeft"
+        v-show="overflowsLeft && gutterFitsArrows"
         class="pointer-events-none absolute left-[38px] top-1/2 z-10 hidden -translate-y-1/2 md:block lg:left-[56px]"
       >
         <IconButton tone="dark" direction="prev" :label="t('common.prev')" class="pointer-events-auto border border-white/40 backdrop-blur-[20px]" @click="go(-1)" @pointerdown.stop />
       </div>
       <div
-        v-show="overflowsRight"
+        v-show="overflowsRight && gutterFitsArrows"
         class="pointer-events-none absolute right-[38px] top-1/2 z-10 hidden -translate-y-1/2 md:block lg:right-[56px]"
       >
         <IconButton tone="dark" direction="next" :label="t('common.next')" class="pointer-events-auto border border-white/40 backdrop-blur-[20px]" @click="go(1)" @pointerdown.stop />

@@ -31,10 +31,10 @@ The dev server would not boot at the start of this audit: stale npm-era `@unhead
 | Severity | Count | Open |
 |---|---|---|
 | Critical | 6 | **0 — all fixed** |
-| Major | 24 | **3 open** — M1, M23, M24. Fixed: M2–M22, M25–M28 |
+| Major | 24 | **0 — all fixed** |
 | Minor | 40 | **37** — MapEmbed pin + both hover-only product card reveals fixed |
 
-All six Critical items are resolved (C1–C6), plus a z-index defect on the error page found after the audit, one Minor, and the six Tier-1 Majors above. Two follow-ups were deliberately left and are flagged in place: the **1024–1280 band** in HomeBeep (still 13.6px type) and the **short-laptop edge case** in the stats sticky gate.
+**Every Critical and Major finding is now fixed** (C1–C6, M1–M28), plus a z-index defect on the error page found after the audit and three Minors. What remains is 37 Minor items — cosmetic cramping, sub-40px targets on secondary controls, and `sizes` hints — none of which lose content or break a flow. Two follow-ups were deliberately left and are flagged in place: the **1024–1280 band** in HomeBeep (still 13.6px type) and the **short-laptop edge case** in the stats sticky gate.
 
 **Not a responsiveness issue, but the most consequential thing found in scope:** the careers application form is a stub end-to-end. `ApplicationForm.vue:76` puts `v-model` on `<input type="file">`, which Vue does not support, so the required CV never binds; and `server/api/careers/apply.post.ts` logs the payload and returns `{ ok: true }` with a `TODO(P8)` for multipart + blob storage. An applicant attaches a CV, submits, and sees a success screen while nothing is persisted. Known incomplete work rather than a regression — but it currently reads as finished to a user.
 
@@ -113,11 +113,12 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 
 ## Navigation & global chrome
 
-### M1 — Mega-menu is clipped rather than reflowed at 1024–1230px
+### M1 — Mega-menu is clipped rather than reflowed at 1024–1230px — ✅ **FIXED**
 - **File:** [app/components/SiteHeader.vue:407](app/components/SiteHeader.vue:407), [app/components/NavMegaMenu.vue:39](app/components/NavMegaMenu.vue:39)
 - **Viewport:** iPad Pro 12.9" portrait is exactly 1024, where `lg:` flips on
 - **Problem:** the business menu's natural width is ~1197px. `measureMega()` (`SiteHeader.vue:155`) pins the width to the `w-max` inner element's `offsetWidth`, then the frame caps it with `max-w-[calc(100vw-2rem)] overflow-hidden`. Because the inner keeps `w-max`, the columns never reflow — the frame just crops ~200px off the right, hiding the entire second column of product links. The comment at `NavMegaMenu.vue:42` claims `min-w-0` lets columns shrink; the `w-max` parent defeats it.
-- **Fix:** clamp the measurement (`Math.min(el.offsetWidth, window.innerWidth - 32)`) *and* replace `w-max` with `max-w-full`, or gate the 2-column layout behind `xl:`.
+- **Fix applied:** the inner is now `w-max max-w-full`, so it keeps its natural width while the frame tweens (which is what `w-max` was for) but reflows once the viewport is the binding constraint — the columns already carry `min-w-0`. The measurement clamps to `min(natural, innerWidth - 32)`, and a resize listener re-measures while the panel is open so a pinned px width can't go stale.
+  The measurement itself needed care: with `max-w-full` in place, reading `offsetWidth` on an Иргэнд → Бизнесд switch would have measured the *previous* menu's pinned frame width, so the panel could never grow. It now lifts the cap, reads the natural width, and restores it — all inside one task, so nothing paints in between and the size tween is preserved.
 
 ### M2 — Mega-menu is hover-only; tapping the trigger navigates away — ✅ **FIXED**
 - **File:** [app/components/SiteHeader.vue:345](app/components/SiteHeader.vue:345)
@@ -282,17 +283,19 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Fix applied:** dropped `whitespace-nowrap`, moved the 3-column switch from `sm:` to `md:`, added `min-w-0 text-balance text-center`, and stepped the type down below `lg` (`dt` 18px, `dd` 20px).
 - **Verified at 700** (inside the old 640–760 failure band): single column, `white-space: normal`, no text escaping its box. **At 768:** three 224px columns, no overlap, widest value 166px inside a 200px interior, no overflow. Applies to all 14 product slugs, which share this template.
 
-### M23 — DetailTabs sliding underline is mis-positioned because tabs are not equal width
+### M23 — DetailTabs sliding underline is mis-positioned because tabs are not equal width — ✅ **FIXED**
 - **File:** [app/components/DetailTabs.vue:51](app/components/DetailTabs.vue:51) vs `:41`
 - **Viewport:** mobile 375 / 390
 - **Problem:** the indicator hard-codes `width: 100/available.length %` and `translateX(activeIndex * 100%)`, which is only correct if the tabs are exactly equal width. `flex-1` is `flex: 1 1 0%` with default `min-width: auto`, so a tab can never shrink below its longest word. In a 343px column the three Mongolian labels get ~132 / 105 / 105px while the indicator renders 114px wide at offsets 0/114/229 — off by up to ~18px, sitting under the wrong tab's edge.
-- **Fix:** measure the active tab's `offsetLeft`/`offsetWidth` (as `TabPills.vue:22` already does), or force equality with `basis-0 min-w-0`.
+- **Fix applied:** `min-w-0` on the tabs, keeping the CSS-only indicator rather than porting `TabPills`' measurement. `flex-1` is `flex: 1 1 0%` but `min-width: auto` floored each tab at its longest word, so the three Mongolian labels rendered ~132/105/105 while the indicator drew equal 114px slots. Removing the floor makes them genuinely equal, which is the assumption the `100/n %` + `translateX(i * 100%)` math already made.
+- **Verified at 1024** on a product with all three tabs: widths exactly **330.7 / 330.7 / 330.7**, indicator aligned to the active tab. Clicking the third sets `width: 33.3333%; transform: translateX(200%)` — correct; the rendered position lags only because the 300ms transition cannot progress with rAF paused in the preview pane.
 
-### M24 — Related-products carousel arrows and blur peeks sit on top of the active card below 1280px
+### M24 — Related-products carousel arrows and blur peeks sit on top of the active card below 1280px — ✅ **FIXED**
 - **File:** [app/components/RelatedProductsCarousel.vue:37](app/components/RelatedProductsCarousel.vue:37), consumed by `HomeProductsCarousel.vue:281,302,319`
 - **Viewport:** tablet 768 / 820
 - **Problem:** `--carousel-edge: max(1rem, calc((100vw - 1280px)/2 + 1rem))` collapses to a flat 16px under 1280px, so the active card starts at x=16. The 120px `backdrop-blur-[6px]` peeks and the frosted arrows at `left-[38px]`/`right-[38px]` (both `md:block`) are positioned for the 1440 layout where the edge is ~96px and they sit in the gutter. At 768 they land on the card: ~104px of it is blurred, and the `pointer-events-auto` arrow covers the card's left region — so a tap there steps the carousel instead of opening the product.
-- **Fix:** only render the peeks and floating arrows from `xl:`/`2xl:`, or give `--carousel-edge` a real tablet value.
+- **Fix applied:** gated on the **measured** gutter (`edgePad`, which the carousel already tracks) rather than a breakpoint — each consumer sets its own `--carousel-edge`, so no single breakpoint is right for both. Arrows need `56 + 44 = 100px`, peeks need their 120px width; below that they are not rendered. Drag and the 44px footer arrows still drive the carousel.
+- **Verified at 1024** on a product page (edge collapses to its 16px floor): peeks and arrows both `display: none`, **0 elements overlapping the active card** — previously ~104px of it sat under a blur with the arrow's hit area stealing taps meant for the product link. **At 1440 on the home page** (edge 144px): peeks and arrows visible on both carousels, still 0 overlapping the card, so the desktop affordance is intact.
 
 ## News, careers, legal
 

@@ -38,14 +38,19 @@ const activeIndex = computed(() =>
         type="button"
         role="tab"
         :aria-selected="active === tab.key"
-        class="relative flex-1 cursor-pointer px-2 pb-6 pt-2 text-center text-base leading-5 transition-colors duration-300"
+        class="relative min-w-0 flex-1 cursor-pointer px-2 pb-6 pt-2 text-center text-base leading-5 transition-colors duration-300"
         :class="active === tab.key ? 'font-medium text-black/80' : 'font-light text-black/60 hover:text-black/80'"
         @click="active = tab.key"
       >
         {{ tab.label }}
       </button>
       <span class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-black/10" />
-      <!-- Sliding active indicator: one slot wide, translated to the active tab -->
+      <!-- Sliding active indicator: one slot wide, translated to the active tab.
+           This only lines up because the tabs are `flex-1 min-w-0`. `flex-1`
+           alone is `flex: 1 1 0%` with `min-width: auto`, which floors each tab
+           at its longest word — so the three Mongolian labels rendered ~132/105/105
+           while the indicator drew 114px slots at 0/114/229 and sat under the
+           wrong tab's edge. `min-w-0` removes the floor and makes them equal. -->
       <span
         class="pointer-events-none absolute bottom-0 left-0 h-0.5 bg-black/80 transition-transform duration-300 ease-out"
         :style="{ width: `${100 / available.length}%`, transform: `translateX(${activeIndex * 100}%)` }"

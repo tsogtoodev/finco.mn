@@ -182,9 +182,26 @@ async function measureMega() {
   // Pin WIDTH only (the 1-col ↔ 2-col change). Height is left auto: both menus
   // are ≤5 rows so it barely differs, and an exact pinned height would risk a
   // 1px clip against the overflow-hidden frame.
-  if (el) megaSize.value = { width: `${el.offsetWidth}px` }
+  if (!el) return
+  // Read the content's NATURAL width with its cap lifted. The inner carries
+  // `max-w-full` so it can reflow when the viewport is the binding constraint —
+  // but that also means measuring it as-is on an Иргэнд → Бизнесд switch would
+  // read the PREVIOUS menu's pinned frame width and the panel could never grow.
+  // Lifting the cap for the read happens inside one task, so nothing paints.
+  const prevCap = el.style.maxWidth
+  el.style.maxWidth = 'none'
+  const natural = el.offsetWidth
+  el.style.maxWidth = prevCap
+  // Clamp to what the frame can actually show. Pinning the un-clamped max-content
+  // width just told the frame to be wider than the screen and `overflow-hidden`
+  // cropped the rest: the two-column business menu is ~1197px, so on a 1024px
+  // iPad Pro the entire second column of product links was unreachable.
+  megaSize.value = { width: `${Math.min(natural, window.innerWidth - 32)}px` }
 }
 watch(openMenu, (v) => { if (v) measureMega() })
+// A resize while the panel is open would otherwise leave the pinned px width
+// stale — and potentially wider than the new viewport.
+function onMegaResize() { if (openMenu.value) measureMega() }
 
 // ── triggers (keyboard + focus management) ─────────────────────────────────
 // Triggers are <NuxtLink>s, so a template ref yields the component instance —
@@ -241,10 +258,12 @@ onMounted(() => {
   onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('keydown', onKeydown)
+  window.addEventListener('resize', onMegaResize, { passive: true })
 })
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)
   window.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('resize', onMegaResize)
   clearTimers()
   clearTimeout(exitTimer)
 })
@@ -456,7 +475,7 @@ const barHidden = computed(
               :key="openMenu"
               role="region"
               :aria-label="menus[openMenu].label"
-              class="w-max"
+              class="w-max max-w-full"
               :class="closing ? 'mega-pop-out' : swapped ? 'mega-swap' : 'mega-pop'"
             >
               <NavMegaMenu
