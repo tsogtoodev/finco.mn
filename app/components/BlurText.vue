@@ -122,13 +122,12 @@ function displaySegment(segment: string, index: number): string {
 }
 
 // motion-v writes each keyframe as an INLINE style, so when the reveal finishes
-// every word keeps `filter: blur(0px)` — which is not the same as no filter. A
-// filter (even a zero-radius one) keeps the element rasterised in its own layer,
-// which drops subpixel antialiasing to grayscale and bakes the inherited
-// text-shadow into that layer. On a large white headline over a dark photo the
-// result reads as a permanent haze; on a high-DPI phone it is imperceptible,
-// which is why it showed up on desktop only. Clearing it hands the text back to
-// normal glyph rendering once there is nothing left to animate.
+// every word keeps `filter: blur(0px)` and `transform: translateY(0px)` — neither
+// of which is the same as having none. Both keep the element rasterised in its own
+// compositing layer, which drops subpixel antialiasing to grayscale. Clearing them
+// hands the text back to normal glyph rendering once there is nothing left to
+// animate, and releases one layer per word (this component previously janked
+// scroll site-wide by holding 68 of them on /about).
 const settled = ref(false)
 function handleComplete() {
   settled.value = true
