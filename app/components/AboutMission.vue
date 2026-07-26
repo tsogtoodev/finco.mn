@@ -45,7 +45,9 @@ let resizeObserver: ResizeObserver | null = null
 // because that element is positioned.
 function measure() {
   const inner = innerEl.value
-  if (!inner) return
+  // Static flow below lg / under reduced-motion: nothing to measure, and the
+  // resize listener would otherwise force layout reads for no reason.
+  if (!inner || !enabled.value) return
   const kids = [...inner.children] as HTMLElement[]
   blockTops.value = kids.map(k => k.offsetTop)
   viewportH.value = inner.parentElement?.clientHeight ?? 0
@@ -76,7 +78,7 @@ function syncOffset() {
 // scroll event forces a synchronous layout per event and janks the scroll.
 let rafId = 0
 function onScroll() {
-  if (rafId) return
+  if (!enabled.value || rafId) return
   rafId = requestAnimationFrame(() => {
     rafId = 0
     syncOffset()
@@ -91,22 +93,54 @@ const revealClass = (i: number) => {
 const revealStyle = (i: number, step: number) =>
   enabled.value && i > 0 && revealed.value[i] ? { animationDelay: `${step * 80}ms` } : undefined
 
+// The pin is desktop-only. A sticky stage sized to 100vh, with the copy column
+// clipped inside it and driven by `transform`, assumes there is room for a block
+// to sit in the middle of the viewport. On a phone the visible window is ~460px
+// at 375×667 — and `100vh` resolves to the LARGE viewport on mobile browsers, so
+// the real window is smaller than the number suggests. Anything that does not fit
+// is silently cut off with no way to scroll it, because the only scroll is the
+// page-level pin and it stops at `travel`.
+//
+// Below lg the component falls back to the static stacked flow it already renders
+// for reduced-motion, which needs no JS and cannot clip.
+const PIN_MQ = '(min-width: 1024px)'
+let pinMql: MediaQueryList | null = null
+let reduceMql: MediaQueryList | null = null
+
+// Also gates the decorative Spline slot — see the template.
+const isDesktop = ref(false)
+
+function applyPin() {
+  isDesktop.value = !!pinMql?.matches
+  const on = isDesktop.value && !reduceMql?.matches
+  enabled.value = on
+  if (!on) {
+    // Drop the transform and the track's extra height so the static flow is clean.
+    offset.value = 0
+    travel.value = 0
+    return
+  }
+  nextTick(measure)
+}
+
 onMounted(() => {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-  enabled.value = true
-  nextTick(() => {
-    measure()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', measure, { passive: true })
-    if (typeof ResizeObserver !== 'undefined' && innerEl.value) {
-      resizeObserver = new ResizeObserver(measure)
-      resizeObserver.observe(innerEl.value)
-    }
-  })
+  pinMql = window.matchMedia(PIN_MQ)
+  reduceMql = window.matchMedia('(prefers-reduced-motion: reduce)')
+  applyPin()
+  pinMql.addEventListener('change', applyPin)
+  reduceMql.addEventListener('change', applyPin)
+  window.addEventListener('scroll', onScroll, { passive: true })
+  window.addEventListener('resize', measure, { passive: true })
+  if (typeof ResizeObserver !== 'undefined' && innerEl.value) {
+    resizeObserver = new ResizeObserver(measure)
+    resizeObserver.observe(innerEl.value)
+  }
 })
 
 onBeforeUnmount(() => {
   if (rafId) cancelAnimationFrame(rafId)
+  pinMql?.removeEventListener('change', applyPin)
+  reduceMql?.removeEventListener('change', applyPin)
   window.removeEventListener('scroll', onScroll)
   window.removeEventListener('resize', measure)
   resizeObserver?.disconnect()
@@ -189,7 +223,23 @@ onBeforeUnmount(() => {
              1920×1080 and be CSS-scaled to the slot. tan(atan2(w, 1920px))
              divides the slot width by 1920px into the unitless factor scale()
              needs — i.e. 0.79373 at 1920, shrinking proportionally below. -->
-        <div class="pointer-events-auto absolute left-[42.297%] top-[min(8.894vw,171px)] aspect-video w-[min(79.373vw,1524px)] overflow-hidden">
+        <!-- Desktop only, for two reasons.
+             (1) The slot is positioned in viewport-% (`left-[42.297%]`,
+             `top-[min(8.894vw,…)]`) rather than as a fraction of the 1920 design
+             frame, so on a phone it landed at x 165→390 / y 35→209 — directly
+             behind block 1's badge and heading. Only `-z-10` kept it off the
+             text, leaving white copy over a bright saturated raster.
+             (2) The canvas must stay at the scene's native 1920×1080 (the Spline
+             camera crops rather than reframes on resize), so its drawing buffer
+             is 1920×1080 × DPR regardless of the CSS scale — ~18.7M pixels per
+             frame on a DPR-3 phone to paint a 309×174 decoration.
+             `v-if` rather than `hidden lg:block`: CSS-hiding still mounts
+             SplineScene, and it prefetches the runtime + scene on idle even when
+             it never renders. -->
+        <div
+          v-if="isDesktop"
+          class="pointer-events-auto absolute left-[42.297%] top-[min(8.894vw,171px)] aspect-video w-[min(79.373vw,1524px)] overflow-hidden"
+        >
           <div class="h-[1080px] w-[1920px] origin-top-left scale-[calc(tan(atan2(min(79.373vw,1524px),1920px)))]">
             <ClientOnly>
               <SplineScene

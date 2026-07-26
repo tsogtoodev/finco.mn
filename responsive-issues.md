@@ -31,7 +31,7 @@ The dev server would not boot at the start of this audit: stale npm-era `@unhead
 | Severity | Count | Open |
 |---|---|---|
 | Critical | 6 | **0 — all fixed** |
-| Major | 24 | **13** — M2, M3, M4, M5, M6, M7, M11, M14, M21, M25, M28 fixed |
+| Major | 24 | **10** — M2–M7, M11, M14, M16–M18, M21, M25, M28 fixed |
 | Minor | 40 | **37** — MapEmbed pin + both hover-only product card reveals fixed |
 
 All six Critical items are resolved (C1–C6), plus a z-index defect on the error page found after the audit, one Minor, and the six Tier-1 Majors above. Two follow-ups were deliberately left and are flagged in place: the **1024–1280 band** in HomeBeep (still 13.6px type) and the **short-laptop edge case** in the stats sticky gate.
@@ -215,23 +215,28 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 
 ## About page
 
-### M16 — AboutMission pin is enabled at every width, with `100vh` sizing on mobile
+### M16 + M17 + M18 — AboutMission: pin at every width, art behind the headline, 1920×1080 canvas on phones — ✅ **FIXED**
 - **File:** [app/components/AboutMission.vue:128](app/components/AboutMission.vue:128), `:133`
 - **Viewport:** mobile 375 / 390
 - **Problem:** `enabled` is gated only on `prefers-reduced-motion` (`:95`), never on a breakpoint. The copy window is `100vh − 192px` of padding, and `100vh`/`h-screen` resolve to the *large* viewport on mobile — so with browser chrome visible the actual window is ~460px at 375×667. Block 1 fits today at ~334px, but the column is `overflow-hidden` and driven by `transform`, so any CMS copy that grows past the window is **silently cut off with no scroll escape**.
-- **Fix:** gate the pin behind `matchMedia('(min-width: 1024px)')` so mobile falls back to the already-implemented static stacked flow; at minimum switch to `h-dvh` and `py-12` below `md`.
+- **Fix applied**, one change resolving all three:
+  - **Pin gated to `lg`** via `matchMedia('(min-width: 1024px)')`, combined with the existing reduced-motion check and kept reactive via a `change` listener. Below `lg` the component falls back to the static stacked flow it already renders for reduced-motion — no JS, nothing clipped. `measure()` and `onScroll()` now early-return when the pin is off, so the resize listener stops forcing layout reads for nothing.
+  - **Spline slot `v-if="isDesktop"`** rather than `hidden lg:block`. CSS-hiding still mounts `SplineScene`, which prefetches the runtime and scene on idle even when it never renders (the same trap as M15) — hiding alone would have fixed the paint cost but not the download.
+- **Verified at 375×667:** pin off (no inline track height, stage `static`, no transform, column `overflow: visible`), both blocks fully rendered at opacity 1 (362px + 268px) with nothing clipped, Spline slot absent, **0 canvases**, and **0 network requests matching `spline`** — the ~1MB runtime and the scene are genuinely not fetched on a phone.
+- **Verified at 768:** pin off, 0 canvases, both blocks visible, no overflow.
+- **Verified at 1440:** unchanged — track `height: calc(914px + 100vh)`, stage `sticky`, column `overflow: hidden`, 70vh block gap, Spline slot present at 1143×643.
 
-### M17 — AboutMission Spline art is positioned in viewport-% and lands behind the headline
+### M17 — AboutMission Spline art is positioned in viewport-% and lands behind the headline — ✅ **FIXED** (see M16)
 - **File:** [app/components/AboutMission.vue:192](app/components/AboutMission.vue:192)
 - **Viewport:** mobile 375 / 390
 - **Problem:** the slot is `left-[42.297%] top-[min(8.894vw,171px)] w-[min(79.373vw,1524px)]` — percentages of the **viewport**, not of the 1920 design frame. At 390 that places the art at x 165→390, y 35→209, directly behind block 1's badge and heading (y ≈ 96→266). Only `-z-10` stops it covering the text, leaving white-on-near-black over a saturated bright raster.
-- **Fix:** `hidden lg:block` on the wrapper, or a bottom-anchored narrower slot on mobile.
+- **Fix applied:** the slot is no longer rendered below `lg` — see M16 above.
 
-### M18 — AboutMission ships a 1920×1080 WebGL canvas to phones
+### M18 — AboutMission ships a 1920×1080 WebGL canvas to phones — ✅ **FIXED** (see M16)
 - **File:** [app/components/AboutMission.vue:193](app/components/AboutMission.vue:193)
 - **Viewport:** mobile 375 / 390, tablet
 - **Problem:** `h-[1080px] w-[1920px]` with a CSS `scale()` is deliberate (the Spline camera crops on canvas resize), but the drawing buffer stays 1920×1080 × DPR. On a DPR-3 phone that is ~18.7M pixels per frame to paint a 309×174 decoration. Unlike `AboutValues`' Spline — which sits inside `hidden lg:block` and is skipped by `SplineScene`'s `r.width > 0` check — this one has no gate and *will* render on mobile.
-- **Fix:** wrap the `<ClientOnly>` in `hidden lg:block`, or use the `torus` SVG fallback below `lg`.
+- **Fix applied:** `v-if` on the slot, which also avoids the prefetch a CSS `hidden` would have left in place — see M16 above.
 
 ### M19 — AboutValues squeezes three cards into ~229px columns at tablet
 - **File:** [app/components/AboutValues.vue:88](app/components/AboutValues.vue:88), `:92`
