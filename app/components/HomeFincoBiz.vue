@@ -26,10 +26,14 @@ type CardId = 'eligibility' | 'receivables' | 'request'
 // (Figma clips them there): eligibility 566.6px, receivables 576px, request
 // 514.1px. Heights are the full 397px body, and the exports' aspect ratios
 // match, so `object-cover` can't distort them.
+// `gx`/`gy` place the decorative glass panel (Figma 782:15522 / 15446 / 15542):
+// a 944x674 frame, centred then nudged, so each card catches a different slice of
+// the same artwork. gx is a % of the 1152px body so it tracks the card's width;
+// gy stays px because the body height is fixed at lg.
 const cards = [
-  { id: 'eligibility' as CardId, dot: '#12b76a', art: '49.18%' },
-  { id: 'receivables' as CardId, dot: '#4e83fd', art: '50%' },
-  { id: 'request' as CardId, dot: '#f7b23b', art: '44.63%' },
+  { id: 'eligibility' as CardId, dot: '#12b76a', art: '49.18%', gx: '27.03%', gy: '-247px' },
+  { id: 'receivables' as CardId, dot: '#4e83fd', art: '50%', gx: '3.47%', gy: '158px' },
+  { id: 'request' as CardId, dot: '#f7b23b', art: '44.63%', gx: '16.67%', gy: '0px' },
 ]
 
 // The request card's heading/body map onto the callout fields editors already
@@ -145,8 +149,21 @@ onBeforeUnmount(stopAuto)
                      327px card, so it reads as artwork under the copy instead of
                      shrinking the text to match it. -->
                 <div class="relative flex min-h-0 flex-1 flex-col lg:block">
+                  <!-- Frosted-glass backdrop (Figma "Glass", 14 slats over a blurred
+                       teal bloom). Desktop only: its geometry is a fixed 944x674
+                       frame hung off the body's centre, which means nothing once the
+                       body stacks. -->
                   <div
-                    class="px-5 pb-4 pt-5 lg:absolute lg:left-[5.21%] lg:top-[15.11%] lg:w-[30.85%] lg:p-0"
+                    aria-hidden="true"
+                    class="biz-glass hidden lg:block"
+                    :style="{ '--gx': card.gx, '--gy': card.gy }"
+                  >
+                    <img src="/images/home/fincobiz-glass-glow.svg" alt="" class="biz-glow">
+                    <div class="biz-slats" />
+                  </div>
+
+                  <div
+                    class="relative z-10 px-5 pb-4 pt-5 lg:absolute lg:left-[5.21%] lg:top-[15.11%] lg:w-[30.85%] lg:p-0"
                   >
                     <h3
                       class="font-display text-lg font-bold leading-6 text-[#2de0c6] lg:text-2xl lg:leading-[30px]"
@@ -276,10 +293,55 @@ onBeforeUnmount(stopAuto)
   to { transform: translate3d(-4%, -3%, 0) scale(1.08); }
 }
 
+/* ── Frosted-glass backdrop ────────────────────────────────────────────────
+   Figma layers a blurred teal bloom under 14 contiguous vertical slats, each
+   carrying the same left-facing white sheen and a 90px backdrop blur. The slats
+   are edge-to-edge with no gaps, so one repeating-linear-gradient reproduces all
+   14 — with the period as a % it also keeps producing exactly 14 as the card
+   narrows. The final stop is 0.05 rather than 0.008 because Figma's last stop
+   sits at 123.64%, i.e. past the slat's own edge, so the ramp is still mid-fall
+   when it gets cut off. */
+.biz-glass {
+  position: absolute;
+  left: calc(50% + var(--gx));
+  top: var(--gy);
+  width: 81.944%; /* 944 / 1152 */
+  height: 674px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Rotated 180deg and rendered at its natural size, centred on Figma's slot —
+   the export's own dimensions carry the gaussian blur, so scaling it would
+   change the bloom's softness. */
+.biz-glow {
+  position: absolute;
+  left: 12.962%; /* 122.36 / 944 */
+  top: 26.85px;
+  width: 71.026%; /* 670.484 / 944 */
+  height: 470.108px;
+  transform: rotate(180deg);
+}
+
+.biz-slats {
+  position: absolute;
+  inset: 0 0.99%;
+  backdrop-filter: blur(90px);
+  -webkit-backdrop-filter: blur(90px);
+  background-image: repeating-linear-gradient(
+    270deg,
+    rgba(255, 255, 255, 0.008) 0%,
+    rgba(255, 255, 255, 0.008) 1.4286%,
+    rgba(255, 255, 255, 0.093) 5.4113%,
+    rgba(255, 255, 255, 0.05) 7.143%
+  );
+}
+
 /* Per-card artwork width (set inline as --art-w); only applies once the body
    switches to the side-by-side desktop layout. */
 @media (min-width: 1024px) {
-  .biz-card img {
+  .biz-card img:not(.biz-glow) {
     width: var(--art-w);
   }
 }
