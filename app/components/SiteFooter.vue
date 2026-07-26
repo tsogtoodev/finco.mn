@@ -57,17 +57,20 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
 
 <template>
   <footer class="bg-[#fbfbfb]">
-    <div class="mx-auto w-full max-w-[1200px] px-6 lg:px-0 pt-20 lg:pt-[120px]">
-      <!-- Link columns: About + Other stacked left, then the two catalogs -->
+    <div class="mx-auto w-full max-w-[1200px] px-6 lg:px-0 pt-20 pb-10 md:pb-0 lg:pt-[120px]">
+      <!-- Link columns. Two balanced columns on mobile (meta groups | catalog
+           groups, each pair stacked), expanding to three on desktop: the catalog
+           wrapper is `md:contents` so at md its two groups dissolve into direct
+           grid cells, giving [About+Other] [Individuals] [Business]. -->
       <div class="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-3">
         <div class="flex flex-col gap-[48px]">
           <div v-for="col in [aboutGroup, otherGroup]" :key="col.heading">
             <h3 class="text-sm text-accent">{{ col.heading }}</h3>
             <div class="mt-[16px] space-y-[16px] text-sm font-light leading-normal">
-              <div v-for="l in col.links" :key="l.label" class="h-[18px]">
+              <div v-for="l in col.links" :key="l.label">
                 <NuxtLink
                   :to="localePath(l.to)"
-                  class="text-black/60 transition-colors hover:text-foreground text-[14px] leading-[18px]"
+                  class="block text-black/60 transition-colors hover:text-foreground text-[14px] leading-[18px]"
                 >
                   {{ l.label }}
                 </NuxtLink>
@@ -75,16 +78,18 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
             </div>
           </div>
         </div>
-        <div v-for="col in [individualsGroup, businessGroup]" :key="col.heading">
-          <h3 class="text-sm text-accent">{{ col.heading }}</h3>
-          <div class="mt-[16px] space-y-[16px] text-sm font-light leading-normal">
-            <div v-for="l in col.links" :key="l.label" class="h-[18px]">
-              <NuxtLink
-                :to="localePath(l.to)"
-                class="text-black/60 transition-colors hover:text-foreground text-[14px] leading-[18px]"
-              >
-                {{ l.label }}
-              </NuxtLink>
+        <div class="flex flex-col gap-[48px] md:contents">
+          <div v-for="col in [individualsGroup, businessGroup]" :key="col.heading">
+            <h3 class="text-sm text-accent">{{ col.heading }}</h3>
+            <div class="mt-[16px] space-y-[16px] text-sm font-light leading-normal">
+              <div v-for="l in col.links" :key="l.label">
+                <NuxtLink
+                  :to="localePath(l.to)"
+                  class="block text-black/60 transition-colors hover:text-foreground text-[14px] leading-[18px]"
+                >
+                  {{ l.label }}
+                </NuxtLink>
+              </div>
             </div>
           </div>
         </div>
@@ -92,7 +97,7 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
 
       <!-- Contact -->
       <div class="mt-12">
-        <h3 class="text-sm text-black">{{ t('footer.contact') }}</h3>
+        <h3 class="text-sm text-accent">{{ t('footer.contact') }}</h3>
         <div class="mt-4 flex flex-wrap items-center gap-4">
           <a
             v-for="s in socials"
@@ -144,9 +149,11 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
 
       <!-- Giant wordmark, bottom half clipped by the footer edge (Figma 568:5878).
            The negative bottom margin (half the logo's height as % of width,
-           aspect 139.355:28) shrinks the wrapper so overflow-hidden crops it. -->
+           aspect 139.355:28) shrinks the wrapper so overflow-hidden crops it.
+           Mobile (< md) shows the wordmark in full — no negative margin, nothing
+           to crop; the bleeding half-clip returns at md and up. -->
       <div class="mt-10 overflow-hidden" aria-hidden="true">
-        <FincoLogo class="block w-full" style="margin-bottom: -10.05%" />
+        <FincoLogo class="block w-full md:[margin-bottom:-10.05%]" />
       </div>
     </div>
   </footer>
