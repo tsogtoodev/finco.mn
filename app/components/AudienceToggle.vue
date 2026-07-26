@@ -24,8 +24,8 @@ const tabs = computed(() =>
 // brand pill — same scheme as the HomeProducts toggle).
 const tabTheme = computed(() =>
   props.audience === 'business'
-    ? { bar: 'rgba(76, 65, 216, 0.1)', pill: 'var(--color-accent)' }
-    : { bar: 'rgba(19, 207, 185, 0.1)', pill: 'var(--color-teal)' },
+    ? { bar: 'rgba(76, 65, 216, 0.18)', pill: 'var(--color-accent)' }
+    : { bar: 'rgba(19, 207, 185, 0.18)', pill: 'var(--color-teal)' },
 )
 
 function onSelect(value: string) {
