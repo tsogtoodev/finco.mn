@@ -63,30 +63,30 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
         <div class="flex flex-col gap-[48px]">
           <div v-for="col in [aboutGroup, otherGroup]" :key="col.heading">
             <h3 class="text-sm text-black">{{ col.heading }}</h3>
-            <ul class="mt-[16px] space-y-[16px] text-sm font-light leading-normal">
-              <li v-for="l in col.links" :key="l.label">
+            <div class="mt-[16px] space-y-[16px] text-sm font-light leading-normal">
+              <div v-for="l in col.links" :key="l.label" class="h-[18px]">
                 <NuxtLink
                   :to="localePath(l.to)"
-                  class="text-black/60 transition-colors hover:text-foreground"
+                  class="text-black/60 transition-colors hover:text-foreground text-[14px] leading-[18px]"
                 >
                   {{ l.label }}
                 </NuxtLink>
-              </li>
-            </ul>
+              </div>
+            </div>
           </div>
         </div>
         <div v-for="col in [individualsGroup, businessGroup]" :key="col.heading">
           <h3 class="text-sm text-black">{{ col.heading }}</h3>
-          <ul class="mt-[16px] space-y-[16px] text-sm font-light leading-normal">
-            <li v-for="l in col.links" :key="l.label">
+          <div class="mt-[16px] space-y-[16px] text-sm font-light leading-normal">
+            <div v-for="l in col.links" :key="l.label" class="h-[18px]">
               <NuxtLink
                 :to="localePath(l.to)"
-                class="text-black/60 transition-colors hover:text-foreground"
+                class="text-black/60 transition-colors hover:text-foreground text-[14px] leading-[18px]"
               >
                 {{ l.label }}
               </NuxtLink>
-            </li>
-          </ul>
+            </div>
+          </div>
         </div>
       </div>
 
