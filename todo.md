@@ -1,7 +1,7 @@
 [ ] about us page (structure section) will be redesigned
 [ ] branches page will redesigned
 
-2026-07-27 TODOS
+2026-07-26 TODOS
 [ ] Mobile optimizations (60%)
 [X] SiteFooter link items uudiin hoorondiin spacing yanzlar
 [X] SiteFooter mobile-r oroh ued logog buten haragduulah
@@ -21,3 +21,10 @@ https://stackoverflow.com/questions/26271203/locking-screen-orientation-on-mobil
 [x] AboutMission section vertical fractal-g butsaaj oruulah
 [x] AboutMission spline container box-s cut hiiged bgag zasah
 [X] HomeFincoBiz deerh uldsen card-uudiin zurgiig shinchleh
+
+2026-07-27 TODOS
+[ ] ProductDetailHero noos breadcrumb-g arilgah. Orond ni back button-g uldeegeed ghost style bolgoh.
+[ ] ProductsIntro dotorh text-g 18px-n font size-toi bolgoh.
+[ ] AboutMission-n spline model dooroos taslagdaj bgag zasah.
+[ ] AboutCeoMessage deerh step fractal-g 5% -s 3% ruu oruulah.
+[ ] HomeFincoBiz card content uudiig shine zurgaar avj update hiih.
