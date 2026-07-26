@@ -1,8 +1,4 @@
 <script setup lang="ts">
-// History timeline (Figma 775:10182) — heading + a series of year-PAIR rows,
-// closed by a full-bleed "stepped fractal" band. Milestones are grouped
-// two-per-row, and each row sits on its own full-bleed band whose lavender tint
-// deepens down the section.
 import type { Milestone } from '~/composables/useAboutContent'
 
 const props = defineProps<{
@@ -12,11 +8,6 @@ const props = defineProps<{
   milestones: Milestone[]
 }>()
 
-// Full-bleed band background per row, deepening down the section (Figma
-// 782:15562 / 775:10183 / 775:10184). The first two are near-imperceptible
-// gradients (~2/255 between stops); Figma doesn't expose the angle in the
-// emitted context, and at that delta the direction is not visible. Rows past
-// the last entry clamp to the deepest tint.
 const ROW_TINTS = [
   'linear-gradient(to right, #f9f9fd, #fbfbfe)',
   'linear-gradient(to right, #f7f6ff, #f9f8ff)',
@@ -36,7 +27,6 @@ const rows = computed(() => {
 
 <template>
   <section class="relative overflow-hidden bg-[#fbfbfb]">
-    <!-- pt-8 (32px) pairs with AboutValues' pb-8 for a fixed 64px gap between the two sections. -->
     <div class="mx-auto max-w-7xl px-4 pt-8 sm:pt-16">
       <MotionReveal class="max-w-5xl">
         <h2 class="font-display text-3xl font-medium text-[#141414] sm:text-4xl">
@@ -48,9 +38,6 @@ const rows = computed(() => {
       </MotionReveal>
     </div>
 
-    <!-- Year-pair rows. Each band is full-bleed with its own tint and reveals as
-         a single unit (both columns together) once it reaches the vertical centre
-         of the viewport — so the rows cascade in row by row as you scroll. -->
     <div class="mt-8 lg:mt-10">
       <div
         v-for="(row, ri) in rows"

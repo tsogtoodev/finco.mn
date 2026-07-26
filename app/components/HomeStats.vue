@@ -1,14 +1,4 @@
 <script setup lang="ts">
-// Stats band (Figma 1:14154): dark #0a0a1a panel, full-bleed 3D Spline scene
-// background, centred heading, three count-up stats over it.
-//
-// Background is an interactive Spline scene on >= sm, a static poster image on
-// mobile. The WebGL scene is client-only (ClientOnly) and never loaded on
-// phones — they keep the lightweight stats-wave.png poster, which also serves
-// as the SSR / no-JS / load-in-progress fallback so there's no flash.
-//
-// Heading + stat values/labels come from the `pages` home doc so editors
-// manage them in /content; i18n remains the fallback.
 const { t } = useI18n()
 
 const page = await usePageContent('home')
@@ -26,14 +16,6 @@ const stats = computed(
 
 <template>
   <section class="relative isolate overflow-hidden bg-[#0a0a1a] px-6 py-6 lg:py-32">
-    <!-- Background Spline scene (>= sm). pointer-events-none → pure backdrop,
-         no drag/orbit; ClientOnly keeps WebGL off the server and shows the
-         poster until the scene has loaded. -->
-    <!-- Full-bleed Spline backdrop. `min-h-[51vw]` caps the render aspect at
-         ~1.96:1 (the framing the wave was authored for) so ultra-wide screens
-         (≥~1440px) don't stretch the camera and leave the wave short of the
-         edges — the extra height clips (centered). Below ~1437px, 51vw < the
-         section height, so this is a no-op and the framing is unchanged. -->
     <div class="pointer-events-none absolute left-1/2 top-2/3 hidden h-full min-h-[51vw] w-full -translate-x-1/2 -translate-y-[calc(50%+100px)] scale-120 sm:block">
       <ClientOnly>
         <SplineScene scene="https://prod.spline.design/2MYVnmuRqu28b88y/scene.splinecode" no-drag />
@@ -47,19 +29,12 @@ const stats = computed(
         </template>
       </ClientOnly>
     </div>
-    <!-- Static poster (mobile only) — avoids the WebGL payload on phones.
-         The Spline wrapper above is `hidden sm:block`, so without this the
-         whole panel was flat #0a0a1a on every phone. -->
     <NuxtImg
       src="/images/home/stats-wave.png"
       alt=""
       aria-hidden="true"
       class="pointer-events-none absolute inset-0 size-full object-cover sm:hidden"
     />
-    <!-- Edge fade masks: blend the scene into the panel at the left/right edges.
-         Above the background, below the content (no z so DOM order keeps text on
-         top). Two layers per side: a TRANSPARENT backdrop-blur (masked to fade
-         inward — a solid fill would hide the blur) + a darkening gradient. -->
     <div class="pointer-events-none absolute inset-y-0 left-0 w-[28%] backdrop-blur-[4px] [mask-image:linear-gradient(to_right,black,transparent)] [-webkit-mask-image:linear-gradient(to_right,black,transparent)]" />
     <div class="pointer-events-none absolute inset-y-0 right-0 w-[28%] backdrop-blur-[4px] [mask-image:linear-gradient(to_left,black,transparent)] [-webkit-mask-image:linear-gradient(to_left,black,transparent)]" />
     <div class="pointer-events-none absolute inset-y-0 left-0 w-[28%] bg-gradient-to-r from-[#0a0a1a] to-transparent" />
@@ -73,21 +48,12 @@ const stats = computed(
         {{ heading }}
       </MotionReveal>
 
-      <!-- The 320px spacer clears the Spline wave, which only renders from `sm`
-           up — on phones it was 320px of dead panel between the heading and the
-           numbers, and it pushed the section past the viewport height (see the
-           sticky gate in pages/index.vue). -->
       <div class="mt-24 grid w-full grid-cols-1 gap-12 sm:mt-80 sm:grid-cols-3 sm:gap-6">
         <div
           v-for="(s, i) in stats"
           :key="i"
           class="relative flex flex-col items-center gap-2 text-center"
         >
-          <!-- Gradient "drop" line centred on each column (Figma 238:9704–06):
-               starts 34px above the number and runs down BEHIND the text (the
-               number/label are `relative`, so they paint on top). Colourful at
-               the top fading to transparent; the middle column's line is taller
-               (216px vs 156px). Desktop only. -->
           <span
             aria-hidden="true"
             class="pointer-events-none absolute left-1/2 top-0 hidden w-px -translate-x-1/2 -translate-y-[134px] sm:block [background:linear-gradient(to_bottom,#3b06cd_0%,#cd06ab_15.87%,#600a51_31.73%,rgba(118,70,108,0)_100%)]"

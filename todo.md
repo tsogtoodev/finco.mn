@@ -15,9 +15,9 @@
 [X] AboutValues items from mobile devices are being selectable, it should not be.
 [X] manifest.json nemej mobile device-n landscape orientation-g disable hiih.
 https://stackoverflow.com/questions/26271203/locking-screen-orientation-on-mobile-browser
-[ ] smooth-scroll idevhjuulj, scrolldoh jingiig ihesgeh.
-[ ] AboutTimeline section-n door step fractal oruulah. Figma deerh shig.
+[X] smooth-scroll idevhjuulj, scrolldoh jingiig ihesgeh.
+[X] AboutTimeline section-n door step fractal oruulah. Figma deerh shig.
 [x] AboutMission section text hemjeeg, line height, hoorondiin spacing update hiih
 [x] AboutMission section vertical fractal-g butsaaj oruulah
 [x] AboutMission spline container box-s cut hiiged bgag zasah
-[ ] HomeFincoBiz deerh uldsen card-uudiin zurgiig shinchleh
+[X] HomeFincoBiz deerh uldsen card-uudiin zurgiig shinchleh

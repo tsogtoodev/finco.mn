@@ -78,7 +78,9 @@ export default defineNuxtConfig({
     },
   },
 
-  css: ['~/assets/css/main.css'],
+  // lenis.css first — it only relaxes html/body height and marks nested
+  // `data-lenis-prevent` scrollers, so main.css still wins on anything shared.
+  css: ['lenis/dist/lenis.css', '~/assets/css/main.css'],
 
   // Geologica is a variable font (Thin 100 → Black 900). @nuxt/fonts otherwise
   // auto-fetches only weight 400, so font-light/medium/semibold/bold rendered as

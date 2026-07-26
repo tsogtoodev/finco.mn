@@ -116,7 +116,10 @@ onBeforeUnmount(() => {
           <!-- min-h-0 is load-bearing: a flex child defaults to min-height:auto,
                which refuses to shrink below its content, so the scroller would
                never engage and the card would grow past max-h instead. -->
-          <div class="min-h-0 flex-1 overflow-y-auto">
+          <!-- data-lenis-prevent keeps the smooth-scroll layer off this scroller
+               (it gets overscroll-behavior: contain from lenis.css too, so a
+               wheel past its end doesn't leak to the page behind). -->
+          <div data-lenis-prevent class="min-h-0 flex-1 overflow-y-auto">
             <slot />
           </div>
         </div>

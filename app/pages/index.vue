@@ -16,9 +16,6 @@ useSeoMeta({
     <HomeHero />
     <HomeFeatures />
     <div class="relative">
-      <!-- Stats pins while Products slides over it. Desktop only: a sticky box
-           taller than the viewport pins its top and never scrolls its own
-           bottom into view, so on phones the third stat was unreachable. -->
       <div class="z-0 lg:motion-safe:sticky lg:motion-safe:top-0">
         <HomeStats />
       </div>

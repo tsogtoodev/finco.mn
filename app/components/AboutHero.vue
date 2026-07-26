@@ -1,18 +1,6 @@
 <script setup lang="ts">
-// About hero (Figma 1:12190) — full-bleed dark office photo with a vertical
-// dark gradient; centred headline (white→#d8d8d8 gradient text) + intro
-// paragraph sitting in the lower third. The transparent overlay nav floats on
-// top (page opts in via `definePageMeta({ transparentHeader: true })`).
 defineProps<{ headline: string; intro: string; photo: string }>()
 
-// Reveal WITHOUT the blur step, unlike the other five heroes.
-// BlurText's default keyframes go blur(10px) → blur(5px) → blur(0). That reads as
-// a quick fade on a short subtitle, but this hero's intro is 63 words: at 20ms of
-// stagger per word the last one doesn't start until ~1.34s, so the paragraph
-// spends the better part of two seconds as a word-by-word smear. On desktop the
-// whole block sits in view at once, so all of it smears together — which is why
-// this hero looked wrong and the others didn't. Keeping the fade + slide preserves
-// the staggered reveal; only the blur goes.
 const FADE_FROM = { opacity: 0, y: -20 }
 const FADE_TO = [
   { opacity: 0.5, y: 5 },

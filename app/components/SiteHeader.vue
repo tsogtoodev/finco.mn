@@ -513,7 +513,7 @@ const barHidden = computed(
              up, so `100dvh - 60px` ended 36px below the fold — and because the
              header is sticky, scrolling can't bring that back. --announcement-h is
              global (main.css) and eases to 0 when the bar is dismissed. -->
-        <nav class="mx-auto flex max-h-[calc(100dvh-60px-var(--announcement-h,0px))] max-w-7xl flex-col gap-1 overflow-y-auto px-4 py-3">
+        <nav data-lenis-prevent class="mx-auto flex max-h-[calc(100dvh-60px-var(--announcement-h,0px))] max-w-7xl flex-col gap-1 overflow-y-auto px-4 py-3">
           <template v-for="item in navItems" :key="item.kind === 'menu' ? item.audience : item.to">
             <NuxtLink
               v-if="item.kind === 'link'"

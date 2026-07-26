@@ -96,17 +96,16 @@ body {
   overscroll-behavior: none !important;
 }
 
-/* Smooth in-page scrolling (anchor jumps, route-to-top). scroll-padding-top
-   clears the ~96px transparent fixed nav so anchored sections aren't hidden
-   under it. Disabled for reduced-motion users. */
+/* Page scrolling is smoothed in JS by Lenis (plugins/smooth-scroll.client.ts),
+   which owns anchor jumps too (`anchors: { offset: -96 }`) — so CSS
+   `scroll-behavior: smooth` is deliberately NOT set here: it would double up
+   with Lenis on any programmatic page scroll. Reduced-motion users get no Lenis
+   instance and therefore plain instant native scrolling.
+
+   scroll-padding-top still clears the ~96px transparent fixed nav for scrolls
+   the browser performs itself (focus, `:target`, Nuxt's restore-position). */
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: 96px;
-}
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
 }
 
 /* Expose the announcement strip's height while it's on screen so heroes can

@@ -1,12 +1,4 @@
 <script setup lang="ts">
-// Features bento (Figma 238:9670 redesign): heading + subtext, then three
-// #f6f6ff cards — tall left card (text top-left), top-right (text upper-left),
-// bottom-right (text bottom-right). Each card's pastel ribbon backdrop is a
-// STATIC raster (features-card-{1..3}.png) exported from Figma — the exact
-// per-card render of the wave layer (25% multiply, -15°, flipped) clipped to
-// the card, replacing the design's video layer per request. Edge fades + copy
-// stay live CSS/text. Copy comes from the `pages` home doc's valueProps
-// (i18n fallback), paired to the three slots by index.
 const { t } = useI18n()
 
 const page = await usePageContent('home')
@@ -29,9 +21,6 @@ const cards = computed(() => {
 
 <template>
   <section class="bg-[#fcfcff] py-[60px] lg:pb-[120px]">
-    <!-- px-6 unconditionally: `px-0 lg:px-6` inverted mobile-first and left the
-         heading and all three bento cards flush to both viewport edges from
-         320px to 1023px, unlike every other home section. -->
     <div class="mx-auto w-full max-w-[1200px] px-6">
       <MotionReveal class="flex flex-col items-center gap-5 text-center">
         <h2 class="font-display text-3xl font-medium leading-tight text-[#141414] sm:text-4xl">
@@ -43,7 +32,6 @@ const cards = computed(() => {
       </MotionReveal>
 
       <div class="mt-16 grid gap-6 lg:grid-cols-[453.33fr_722.67fr] lg:grid-rows-2">
-        <!-- 1 · tall left card — text top-left, ribbon sweeping the lower half -->
         <MotionReveal :delay="0.1" class="lg:row-span-2">
           <article class="feature-card h-full min-h-[320px] lg:min-h-[533px]">
             <img src="/images/home/features-card-1.png" alt="" aria-hidden="true" class="feature-bg">
@@ -59,7 +47,6 @@ const cards = computed(() => {
           </article>
         </MotionReveal>
 
-        <!-- 2 · top-right card — text upper-left, ribbon rising to the top-right -->
         <MotionReveal :delay="0.22">
           <article class="feature-card h-full min-h-[254px]">
             <img src="/images/home/features-card-2.png" alt="" aria-hidden="true" class="feature-bg">
@@ -75,7 +62,6 @@ const cards = computed(() => {
           </article>
         </MotionReveal>
 
-        <!-- 3 · bottom-right card — ribbon on top fading to white, text bottom-right -->
         <MotionReveal :delay="0.34">
           <article class="feature-card h-full min-h-[254px]">
             <img src="/images/home/features-card-3.png" alt="" aria-hidden="true" class="feature-bg">
@@ -96,7 +82,6 @@ const cards = computed(() => {
 </template>
 
 <style scoped>
-/* Card chrome per Figma 238:9671/77/82 */
 .feature-card {
   position: relative;
   overflow: hidden;
@@ -105,8 +90,6 @@ const cards = computed(() => {
   border: 1px solid rgba(149, 49, 239, 0.05);
 }
 
-/* Baked ribbon backdrop — Figma render of the card's wave layer, exported at
-   the card's aspect; cover keeps it edge-to-edge when the card flexes. */
 .feature-bg {
   position: absolute;
   inset: 0;

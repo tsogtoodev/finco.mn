@@ -26,11 +26,6 @@ function goBack() {
 
 <template>
   <section class="relative isolate overflow-hidden bg-dark text-white">
-    <!-- Base photo. Figma blurs the whole plate (progressive layer blur, 10px at
-         its far end) and oversizes it ~13% so the blur can't sample past the
-         frame and darken the edges — `scale` reproduces that. Both radii are
-         authored against the 1920 design, so they step down with the viewport:
-         a flat 40px would swallow a phone-width photo whole. -->
     <HeroBackgroundImage
       :src="photoSrc"
       alt=""
@@ -40,10 +35,6 @@ function goBack() {
       img-class="size-full scale-[1.16] object-cover"
       preload
     />
-    <!-- Progressive-blur ramp: the design runs 40px of blur at the left edge,
-         easing to the base 10px by ~52% across, which keeps the headline and
-         breadcrumb legible over a busy photo. CSS has no progressive blur, so a
-         second heavily-blurred copy is masked to fade out at that same 52%. -->
     <HeroBackgroundImage
       :src="photoSrc"
       alt=""
@@ -57,16 +48,12 @@ function goBack() {
         mask-image: linear-gradient(to right, #000 0%, #000 12%, transparent 52%);
       "
     />
-    <!-- Diagonal scrim (Figma gradient fill: 250.94deg, 25% → 75% black) -->
     <div
       aria-hidden="true"
       class="absolute inset-0 -z-10"
       style="background: linear-gradient(250.94deg, rgba(0, 0, 0, 0.25) 7.446%, rgba(0, 0, 0, 0.75) 95.599%)"
     />
 
-    <!-- 1200px content column (max-w 1248 − 2×24 padding), matching the design's
-         360px left edge at 1920. Top padding = 60px nav clearance + the design's
-         65px breathing room, tightened on smaller screens. -->
     <div
       class="relative mx-auto w-full max-w-[1248px] px-6 lg:px-0 pb-10 pt-[100px] sm:pb-12 sm:pt-[112px] lg:pb-[54px] lg:pt-[100px]"
     >

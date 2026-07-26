@@ -1,27 +1,14 @@
 <script setup lang="ts">
-// CEO message (Figma 1:12393) — heading + subtext, then a 2-up: portrait card
-// (left, purple wash) and a greeting card (right) carrying the long message,
-// tagline and signature. Purple radiant swirls drift in behind.
 import type { AboutContent } from '~/composables/useAboutContent'
 import signature from '~/assets/images/about-ceo-signature.png'
 
 defineProps<{ ceo: AboutContent['ceo'] }>()
 
-// The duplicate card peeking out behind the letter tilts to 6.46° once the whole
-// sheet is inside the viewport — a threshold reveal, not a scroll-tracked value.
 const TILT_MAX = 6.46
 const letterRef = ref<{ $el?: HTMLElement } | null>(null)
 const tilted = ref(false)
 let observer: IntersectionObserver | null = null
 
-// --- stepped fractal (Figma 775:10209) -------------------------------------
-// In flow at the top of this section. Five full-bleed layers, each running from
-// its step offset down to the container's bottom, so their top edges land on the
-// design's 0/40/80/120/160px steps of a 200px band. Stacking translucent copies
-// is what deepens the wash downward. Pure CSS — no raster.
-//
-// The horizontal ramp was sampled off the design: lavender at the left, a pale
-// gap around a third in, lavender-blue past centre, teal at the right.
 const FRACTAL_RAMP = `linear-gradient(to right,
   rgb(188,181,250) 0%,
   rgb(220,217,249) 22%,
@@ -37,10 +24,6 @@ const FRACTAL_LAYERS = [
   { t: 80, o: 0.22 },
 ] as const
 
-// Scroll response: `fs` scales the CONTAINER's height, and the layers hold their
-// percentage offsets inside it — so the risers and the last step shrink together
-// while the first step stays pinned to the container's top edge. Because the box
-// itself shrinks, the section's content rises with it as you scroll.
 const FRACTAL_MIN = 0.35
 const bandEl = ref<HTMLElement | null>(null)
 const fs = ref(1)
@@ -49,15 +32,10 @@ function syncFractal() {
   const el = bandEl.value
   if (!el) return
   const vh = window.innerHeight || 1
-  // Progress off the band's TOP only. Its height is now driven by `fs`, so
-  // feeding the live height back into this would make the two chase each other;
-  // the top edge is fixed by the content above and is stable.
   const p = Math.min(Math.max((vh - el.getBoundingClientRect().top) / vh, 0), 1)
   fs.value = 1 - p * (1 - FRACTAL_MIN)
 }
 
-// rAF-throttled: the handler reads getBoundingClientRect, so one layout read
-// per frame rather than per scroll event.
 let rafId = 0
 function onScroll() {
   if (rafId) return
@@ -85,10 +63,7 @@ onMounted(() => {
   observer = new IntersectionObserver(([entry]) => {
     const r = entry.boundingClientRect
     const vh = window.innerHeight || document.documentElement.clientHeight
-    // "fully in viewport": the sheet fits entirely inside — or, on short
-    // viewports where it can't, it spans the whole viewport height.
     const fullyInView = (r.top >= 0 && r.bottom <= vh) || (r.top <= 0 && r.bottom >= vh)
-    // Once tilted, latch it — never tilt back until the page reloads.
     if (fullyInView) {
       tilted.value = true
       observer?.disconnect()
@@ -106,8 +81,6 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <!-- No top padding: the fractal band is in flow now and provides the section's
-       top space itself (and shrinks it back on scroll). -->
   <section class="relative overflow-hidden bg-[#fbfbfb]">
     <!-- purple swirl decoration, upper-right -->
     <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-0">
@@ -115,10 +88,6 @@ onBeforeUnmount(() => {
       <div class="absolute -left-40 top-1/3 size-[420px] rounded-full bg-[#c4b5fd]/20 blur-[130px]" />
     </div>
 
-    <!-- Stepped fractal (Figma 775:10209), in flow at the top of the section.
-         The container's own height scales with `--fs`, so the band contracts and
-         the content below rises with it; the layers keep their % offsets inside,
-         which keeps the first step pinned to the top edge. -->
     <div
       ref="bandEl"
       aria-hidden="true"
@@ -180,13 +149,6 @@ onBeforeUnmount(() => {
             class="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-white shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
           />
           <h3 class="text-lg font-medium text-[#141414]">{{ ceo.greetingTitle }}</h3>
-          <!-- The letter-sheet ratio is a desktop conceit and only holds where the
-               copy actually fits. Below lg the card grows to its content instead:
-               with the ratio pinning the height, the body was the only flex child
-               that could give (its `overflow-y-auto` sets min-height to 0), so
-               ~1370 characters collapsed into a ~230px inner scroller nested
-               inside page scroll — about five screens of text behind the hardest
-               gesture on touch, with no visible scroll affordance. -->
           <div class="mt-5 space-y-4 text-sm font-light leading-6 text-[rgba(0,0,0,0.7)] lg:overflow-y-auto">
             <p v-for="(para, i) in ceo.greetingBody" :key="i">{{ para }}</p>
           </div>

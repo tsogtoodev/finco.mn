@@ -9,6 +9,12 @@
 // Counting the locks instead means the page only unlocks when the last holder
 // releases. Module scope is deliberate — the count is shared across callers — and
 // it is only ever touched in the browser, so there is no SSR cross-request state.
+//
+// `overflow: hidden` alone no longer stops the page: Lenis listens on window and
+// scrolls programmatically, so it has to be told to stand down as well (no-op
+// when there is no instance — reduced-motion users).
+
+import { getSmoothScroll } from '~/utils/smoothScroll'
 
 let lockCount = 0
 let savedOverflow = ''
@@ -18,6 +24,7 @@ export function lockBodyScroll() {
   if (lockCount === 0) {
     savedOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
+    getSmoothScroll()?.stop()
   }
   lockCount++
 }
@@ -26,5 +33,8 @@ export function unlockBodyScroll() {
   if (import.meta.server) return
   if (lockCount === 0) return
   lockCount--
-  if (lockCount === 0) document.body.style.overflow = savedOverflow
+  if (lockCount === 0) {
+    document.body.style.overflow = savedOverflow
+    getSmoothScroll()?.start()
+  }
 }
