@@ -84,24 +84,6 @@ const routeD = computed(() => {
           </ClientOnly>
         </div>
 
-        <!-- Tablet: static 2-over-3 card grid (no spine / selection chrome). -->
-        <div class="relative z-10 hidden grid-cols-6 gap-6 md:grid lg:hidden">
-          <div
-            v-for="(it, i) in items"
-            :key="`t-${i}`"
-            class="hero-rise flex flex-col gap-4 rounded-[12px] bg-white p-8 shadow-[0px_0px_20px_0px_rgba(0,0,0,0.05)]"
-            :class="i < 2 ? 'col-span-3' : 'col-span-2'"
-            :style="{ animationDelay: `${0.1 + i * 0.08}s` }"
-          >
-            <h3 class="text-[20px] font-medium leading-7 text-[rgba(0,0,0,0.6)]">
-              {{ it.title }}
-            </h3>
-            <p class="text-base font-light leading-6 text-[rgba(0,0,0,0.4)]">
-              {{ it.body }}
-            </p>
-          </div>
-        </div>
-
         <!-- pointer-events-none on the row so its empty left gutter (the 367px
              cluster slot) falls through to the Spline canvas beneath it; the
              interactive children below re-enable pointer events for themselves. -->
@@ -199,13 +181,18 @@ const routeD = computed(() => {
           </div>
         </div>
 
-        <!-- Mobile: stacked interactive cards. -->
-        <div class="relative z-10 flex flex-col gap-6 md:hidden">
+        <!-- Mobile + tablet: interactive cards, one column then two.
+             This replaces a separate static `grid-cols-6` tablet variant whose
+             row-2 cards were `col-span-2` — ~229px at 768, and `p-8` left only
+             ~165px of text column for a 20px title. It was also the only one of
+             the three viewport variants with no selection state, so the section's
+             whole "pick a value" affordance vanished between 768 and 1023. -->
+        <div class="relative z-10 grid grid-cols-1 gap-6 md:grid-cols-2 lg:hidden">
           <button
             v-for="(it, i) in items"
             :key="`m-${i}`"
             type="button"
-            class="hero-rise flex w-full flex-col gap-2 rounded-[12px] p-4 text-left transition-[background-color,box-shadow] duration-300 cursor-pointer"
+            class="hero-rise flex w-full flex-col gap-2 rounded-[12px] p-4 text-left transition-[background-color,box-shadow] duration-300 cursor-pointer md:p-6"
             :style="{ animationDelay: `${0.1 + i * 0.08}s` }"
             :class="active === i
               ? 'bg-white shadow-[0px_0px_20px_0px_rgba(0,0,0,0.05)]'

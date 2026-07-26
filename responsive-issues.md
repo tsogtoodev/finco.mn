@@ -31,7 +31,7 @@ The dev server would not boot at the start of this audit: stale npm-era `@unhead
 | Severity | Count | Open |
 |---|---|---|
 | Critical | 6 | **0 — all fixed** |
-| Major | 24 | **5 open** — M1, M19, M20, M23, M24. Fixed: M2–M18, M21, M22, M25–M28 |
+| Major | 24 | **3 open** — M1, M23, M24. Fixed: M2–M22, M25–M28 |
 | Minor | 40 | **37** — MapEmbed pin + both hover-only product card reveals fixed |
 
 All six Critical items are resolved (C1–C6), plus a z-index defect on the error page found after the audit, one Minor, and the six Tier-1 Majors above. Two follow-ups were deliberately left and are flagged in place: the **1024–1280 band** in HomeBeep (still 13.6px type) and the **short-laptop edge case** in the stats sticky gate.
@@ -250,17 +250,19 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Problem:** `h-[1080px] w-[1920px]` with a CSS `scale()` is deliberate (the Spline camera crops on canvas resize), but the drawing buffer stays 1920×1080 × DPR. On a DPR-3 phone that is ~18.7M pixels per frame to paint a 309×174 decoration. Unlike `AboutValues`' Spline — which sits inside `hidden lg:block` and is skipped by `SplineScene`'s `r.width > 0` check — this one has no gate and *will* render on mobile.
 - **Fix applied:** `v-if` on the slot, which also avoids the prefetch a CSS `hidden` would have left in place — see M16 above.
 
-### M19 — AboutValues squeezes three cards into ~229px columns at tablet
+### M19 — AboutValues squeezes three cards into ~229px columns at tablet — ✅ **FIXED**
 - **File:** [app/components/AboutValues.vue:88](app/components/AboutValues.vue:88), `:92`
 - **Viewport:** tablet 768 / 820
 - **Problem:** at 768 the container is 736px; `grid-cols-6 gap-6` gives ~103px columns, so the three `col-span-2` cards in row 2 are ~229px wide and `p-8` leaves **165px of text column** for a 20px title plus 16px body. `Ухаалаг шийдэл, бүтээлч сэтгэлгээ` runs to ~5 lines.
-- **Fix:** `p-5 md:p-6` below `lg`, and switch row 2 to `col-span-3` or drop to `grid-cols-2` at `md`.
+- **Fix applied:** deleted the tablet-only static `grid-cols-6` variant entirely and extended the interactive mobile cards to two columns (`grid-cols-1 md:grid-cols-2 lg:hidden`, `p-4 md:p-6`). That also resolves the related Minor below — tablet was the only one of the three viewport variants with no selection state, so the section's "pick a value" affordance vanished between 768 and 1023 — and removes a third copy of the same content.
+- **Verified at 768:** two 356px columns with 24px padding, giving a **308px text column** (was ~165px inside a ~229px card). All five cards are `<button>`s and clicking the second sets it active. Desktop unaffected: the tablet grid is `display: none` at 1440 and the `lg` spine variant still renders its five cards at their original 16px padding.
 
-### M20 — CEO letter collapses into a ~230px nested scroll box
+### M20 — CEO letter collapses into a ~230px nested scroll box — ✅ **FIXED**
 - **File:** [app/components/AboutCeoMessage.vue:83](app/components/AboutCeoMessage.vue:83), `:96`
 - **Viewport:** both (mobile worst)
 - **Problem:** the card height is pinned by `aspect-[210/272]` and the body is a flex child with `overflow-y-auto` — which sets its automatic minimum size to 0, so it is the only thing that shrinks. At 375 the card is 343×444; after padding, title, tagline and the 48px signature row, roughly **230px** remains for ~1370 characters that need ~1100px. The result is ~5 screens of text inside a 230px inner scroller nested inside page scroll, with no visible scroll affordance — the hardest possible gesture on touch. Tablet has the same failure mode.
-- **Fix:** `aspect-auto lg:aspect-[210/272]` and drop `overflow-y-auto` so the card grows to its content below `lg`.
+- **Fix applied:** `lg:aspect-[210/272]` and `lg:overflow-y-auto` — the letter-sheet ratio and its inner scroller are now desktop-only, so below `lg` the card grows to its content. With the ratio pinning the height, the body was the only flex child that could give (its `overflow-y-auto` sets `min-height: 0`), which is why ~1370 characters collapsed into a ~230px scroller nested inside page scroll.
+- **Verified at 375:** `aspect-ratio: auto`, card 343×1088, body `overflow-y: visible` with `scrollHeight === clientHeight` — **no nested scroller**, the letter simply reads in page flow. At 1440 unchanged: aspect back to `210 / 272`, body `overflow-y: auto`, card 764px.
 
 ### M21 — Board member career histories are hover-only and unreachable on touch — ✅ **FIXED**
 - **File:** [app/components/BoardMemberRow.vue:29](app/components/BoardMemberRow.vue:29)

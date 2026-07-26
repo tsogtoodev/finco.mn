@@ -80,7 +80,7 @@ onBeforeUnmount(() => observer?.disconnect())
         <MotionReveal
           ref="letterRef"
           :delay="0.1"
-          class="relative z-10 mx-auto mt-6 flex aspect-[210/272] w-full max-w-[520px] flex-col rounded-[2rem] bg-white px-8 py-6 shadow-[0_4px_24px_rgba(0,0,0,0.1)] sm:px-10 sm:py-8 lg:mx-0 lg:-ml-16 lg:mt-0 lg:max-w-[560px] lg:self-center lg:px-14 lg:py-10"
+          class="relative z-10 mx-auto mt-6 flex w-full max-w-[520px] flex-col rounded-[2rem] bg-white px-8 py-6 shadow-[0_4px_24px_rgba(0,0,0,0.1)] sm:px-10 sm:py-8 lg:mx-0 lg:-ml-16 lg:mt-0 lg:aspect-[210/272] lg:max-w-[560px] lg:self-center lg:px-14 lg:py-10"
         >
           <!-- duplicate card peeking out behind the letter; tilts in when fully in view -->
           <div
@@ -93,7 +93,14 @@ onBeforeUnmount(() => observer?.disconnect())
             class="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-white shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
           />
           <h3 class="text-lg font-medium text-[#141414]">{{ ceo.greetingTitle }}</h3>
-          <div class="mt-5 space-y-4 overflow-y-auto text-sm font-light leading-6 text-[rgba(0,0,0,0.7)]">
+          <!-- The letter-sheet ratio is a desktop conceit and only holds where the
+               copy actually fits. Below lg the card grows to its content instead:
+               with the ratio pinning the height, the body was the only flex child
+               that could give (its `overflow-y-auto` sets min-height to 0), so
+               ~1370 characters collapsed into a ~230px inner scroller nested
+               inside page scroll — about five screens of text behind the hardest
+               gesture on touch, with no visible scroll affordance. -->
+          <div class="mt-5 space-y-4 text-sm font-light leading-6 text-[rgba(0,0,0,0.7)] lg:overflow-y-auto">
             <p v-for="(para, i) in ceo.greetingBody" :key="i">{{ para }}</p>
           </div>
           <p class="mt-6 text-sm font-medium text-[#4c41d8]">{{ ceo.tagline }}</p>
