@@ -1,32 +1,47 @@
 <script setup lang="ts">
-// FincoBiz showcase (Figma 1:14224): FincoBiz wordmark + intro + accent CTA,
-// then the platform mockup as a live deck of three stacked browser cards.
-// Clicking a peeked card brings it to the front (the others shift back one
-// slot). The front "Зээлийн хүсэлт илгээх" card shows the baked platform
-// artwork (fincobiz-mockup-body.png = the original mockup cropped to that
-// card's body) overlaid with two white masks + crisp/translatable live text;
-// the other two cards carry abstract skeleton UIs in the same design language.
-// All geometry is % of the card / cqw of the stack so it tracks any width.
-// Copy (subtext, callout, card tab titles) comes from the `pages` home doc's
-// fincobiz group, with i18n as fallback.
+// FincoBiz showcase (Figma 1:14224 + the 2026-07 card bodies 782:15408 /
+// 782:15445 / 782:15469): FincoBiz wordmark + intro + accent CTA, then the
+// platform as a live deck of three stacked browser cards. Clicking a peeked
+// card brings it to the front (the others shift back one slot).
+//
+// Every card now carries the designer's own body: a teal heading + supporting
+// line on the left and that card's product screenshot bleeding off the right
+// edge. The screenshots are node exports whose crop is already baked in by the
+// Figma frame, so each is placed at its own width flush to the right — see
+// `art` below. (This replaced one baked full-card raster with masked overlay
+// text, plus two hand-built skeleton UIs.)
+//
+// Copy comes from the `pages` home doc's fincobiz group where fields exist,
+// with i18n as the fallback and the source for the new per-card strings.
 const { t } = useI18n()
 
 const page = await usePageContent('home')
 const copy = computed(() => ({
   subtext: page.value?.fincobiz?.subtext ?? t('home.fincobiz.subtext'),
-  calloutHeading: page.value?.fincobiz?.calloutHeading ?? t('home.fincobiz.calloutHeading'),
-  calloutSubtext: page.value?.fincobiz?.calloutSubtext ?? t('home.fincobiz.calloutSubtext'),
 }))
-const cardTitle = (id: CardId) =>
-  page.value?.fincobiz?.cards?.[id] ?? t(`home.fincobiz.cards.${id}`)
 
 type CardId = 'eligibility' | 'receivables' | 'request'
 
+// Artwork width as a % of the 1152px design body, each flush to the right edge
+// (Figma clips them there): eligibility 566.6px, receivables 576px, request
+// 514.1px. Heights are the full 397px body, and the exports' aspect ratios
+// match, so `object-cover` can't distort them.
 const cards = [
-  { id: 'eligibility' as CardId, dot: '#12b76a' },
-  { id: 'receivables' as CardId, dot: '#4e83fd' },
-  { id: 'request' as CardId, dot: '#f7b23b' },
+  { id: 'eligibility' as CardId, dot: '#12b76a', art: '49.18%' },
+  { id: 'receivables' as CardId, dot: '#4e83fd', art: '50%' },
+  { id: 'request' as CardId, dot: '#f7b23b', art: '44.63%' },
 ]
+
+// The request card's heading/body map onto the callout fields editors already
+// have in Directus; the other two are i18n-only until matching CMS fields exist.
+function cardCopy(id: CardId) {
+  const cms = page.value?.fincobiz
+  return {
+    tab: cms?.cards?.[id] ?? t(`home.fincobiz.cards.${id}.tab`),
+    heading: (id === 'request' ? cms?.calloutHeading : undefined) ?? t(`home.fincobiz.cards.${id}.heading`),
+    body: (id === 'request' ? cms?.calloutSubtext : undefined) ?? t(`home.fincobiz.cards.${id}.body`),
+  }
+}
 
 // Front-first stacking order; depth 0 = front, 2 = back (matches the mockup).
 const order = ref<CardId[]>(['request', 'receivables', 'eligibility'])
@@ -120,95 +135,41 @@ onBeforeUnmount(stopAuto)
                 >
                   <span aria-hidden="true" class="biz-dot" :style="{ background: card.dot }" />
                   <span class="text-sm font-normal text-black/80 sm:text-base">
-                    {{ cardTitle(card.id) }}
+                    {{ cardCopy(card.id).tab }}
                   </span>
                 </button>
 
-                <!-- Зээлийн хүсэлт илгээх: baked artwork + live callout -->
-                <div v-if="card.id === 'request'" class="relative">
-                  <NuxtImg
-                    src="/images/home/fincobiz-mockup-body.png"
-                    :alt="copy.calloutHeading"
-                    width="2872"
-                    height="1322"
-                    sizes="100vw lg:1200px"
-                    class="block w-full"
-                  />
-                  <!-- Live callout (desktop): white masks cover the mockup's baked text -->
-                  <div class="pointer-events-none absolute inset-0 hidden lg:block">
-                    <div class="absolute bg-white" style="left:1.977%;top:7.858%;width:28.601%;height:15.968%" />
-                    <div class="absolute bg-white" style="left:2.606%;top:25.708%;width:30.118%;height:19.788%" />
+                <!-- Card body (Figma 782:15408 / 15445 / 15469): copy left,
+                     that card's screenshot bleeding off the right edge. Below lg
+                     the two stack — a 1152px-wide screenshot is unreadable at a
+                     327px card, so it reads as artwork under the copy instead of
+                     shrinking the text to match it. -->
+                <div class="relative flex min-h-0 flex-1 flex-col lg:block">
+                  <div
+                    class="px-5 pb-4 pt-5 lg:absolute lg:left-[5.21%] lg:top-[15.11%] lg:w-[30.85%] lg:p-0"
+                  >
                     <h3
-                      class="absolute whitespace-nowrap font-display font-semibold tracking-[0.01em] text-black"
-                      style="left:3.088%;top:7.858%;font-size:2.4cqw;line-height:2.74cqw"
+                      class="font-display text-lg font-bold leading-6 text-[#2de0c6] lg:text-2xl lg:leading-[30px]"
                     >
-                      {{ copy.calloutHeading }}
+                      {{ cardCopy(card.id).heading }}
                     </h3>
                     <p
-                      class="absolute font-light tracking-[0.01em] text-black/60"
-                      style="left:3.088%;top:18.081%;width:36.033%;font-size:1.2cqw;line-height:2.06cqw"
+                      class="mt-2 text-sm font-extralight leading-[22px] text-black/60 lg:mt-3 lg:text-[18px] lg:leading-[28px] lg:tracking-[0.18px]"
                     >
-                      {{ copy.calloutSubtext }}
+                      {{ cardCopy(card.id).body }}
                     </p>
                   </div>
-                  <!-- Same copy, in flow, below lg. The overlay above is anchored
-                       to the mockup's baked text in %, which only works while the
-                       raster is large enough to read — at a 327px card it renders
-                       at ~11% scale. Below lg the baked text was therefore the only
-                       copy shown: illegible, and untranslated (the live strings come
-                       from the `pages` home doc, the raster does not). -->
-                  <div class="px-5 pb-6 pt-4 lg:hidden">
-                    <h3 class="font-display text-lg font-semibold tracking-[0.01em] text-black">
-                      {{ copy.calloutHeading }}
-                    </h3>
-                    <p class="mt-2 text-sm font-light leading-6 tracking-[0.01em] text-black/60">
-                      {{ copy.calloutSubtext }}
-                    </p>
-                  </div>
-                </div>
 
-                <!-- Авлагын мэдээлэл хянах: receivables-table skeleton -->
-                <div v-else-if="card.id === 'receivables'" aria-hidden="true" class="relative min-h-0 flex-1 overflow-hidden">
-                  <div class="absolute -bottom-[28%] -left-[10%] h-[85%] w-[58%] rounded-full bg-[radial-gradient(closest-side,rgba(76,65,216,0.16),rgba(45,212,191,0.1),transparent_72%)] blur-2xl" />
-                  <div class="absolute left-[4.5%] right-[42%] top-[10%]">
-                    <div class="h-[1.8cqw] w-[46%] rounded-full bg-black/[0.14]" />
-                    <div class="mt-[3.5%] h-[1.1cqw] w-[68%] rounded-full bg-black/[0.06]" />
-                    <div class="mt-[9%] space-y-[4.5%]">
-                      <div v-for="(row, i) in [[62, '#12b76a'], [78, '#12b76a'], [54, '#f7b23b'], [70, '#12b76a']]" :key="i" class="flex items-center gap-[3%]">
-                        <span class="size-[1.5cqw] shrink-0 rounded-full" :style="{ background: `${row[1]}b3` }" />
-                        <span class="h-[1.1cqw] rounded-full bg-black/[0.07]" :style="{ width: `${row[0]}%` }" />
-                        <span class="ml-auto h-[1.1cqw] w-[16%] shrink-0 rounded-full bg-black/[0.12]" />
-                      </div>
-                    </div>
-                  </div>
-                  <div class="absolute bottom-[12%] right-[4.5%] top-[10%] w-[31%] rounded-[1.2cqw] bg-white p-[2.4%] shadow-[0_16px_40px_-24px_rgba(23,16,84,0.25)] ring-1 ring-black/[0.05]">
-                    <div class="h-[1.2cqw] w-[55%] rounded-full bg-black/[0.12]" />
-                    <div class="absolute inset-x-[10%] bottom-[10%] top-[28%] flex items-end justify-between gap-[6%]">
-                      <div v-for="(h, i) in [42, 64, 50, 82, 58, 70]" :key="i" class="w-full rounded-t-[0.5cqw]" :class="i === 3 ? 'bg-[#4c41d8]/60' : 'bg-[#4c41d8]/15'" :style="{ height: `${h}%` }" />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Зээлийн эрх шалгах: eligibility-score skeleton -->
-                <div v-else aria-hidden="true" class="relative min-h-0 flex-1 overflow-hidden">
-                  <div class="absolute -bottom-[28%] -right-[10%] h-[85%] w-[58%] rounded-full bg-[radial-gradient(closest-side,rgba(76,65,216,0.14),rgba(45,212,191,0.1),transparent_72%)] blur-2xl" />
-                  <div class="absolute left-[4.5%] top-[12%] w-[40%]">
-                    <div class="h-[1.8cqw] w-[78%] rounded-full bg-black/[0.14]" />
-                    <div class="mt-[4%] h-[1.1cqw] w-full rounded-full bg-black/[0.06]" />
-                    <div class="mt-[2.5%] h-[1.1cqw] w-[84%] rounded-full bg-black/[0.06]" />
-                    <div class="mt-[10%] space-y-[5%]">
-                      <div v-for="(w, i) in [58, 72, 48]" :key="i" class="flex items-center gap-[4%]">
-                        <span class="size-[1.5cqw] shrink-0 rounded-full bg-[#12b76a]/70" />
-                        <span class="h-[1.1cqw] rounded-full bg-black/[0.07]" :style="{ width: `${w}%` }" />
-                      </div>
-                    </div>
-                  </div>
-                  <!-- score donut: conic accent arc + white core -->
-                  <div class="absolute right-[13%] top-1/2 size-[22cqw] -translate-y-1/2 rounded-full bg-[conic-gradient(#4c41d8_0deg_236deg,rgba(0,0,0,0.06)_236deg_360deg)]">
-                    <div class="absolute inset-[11%] rounded-full bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
-                      <div class="absolute left-1/2 top-1/2 h-[10%] w-[42%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/[0.14]" />
-                    </div>
-                  </div>
+                  <NuxtImg
+                    :src="`/images/home/fincobiz-card-${card.id}.png`"
+                    alt=""
+                    aria-hidden="true"
+                    :width="1152"
+                    :height="794"
+                    sizes="100vw lg:600px"
+                    class="mt-auto block w-full object-cover lg:absolute lg:inset-y-0 lg:right-0 lg:mt-0 lg:h-full"
+                    :style="{ '--art-w': card.art }"
+                  />
                 </div>
               </article>
             </div>
@@ -313,6 +274,14 @@ onBeforeUnmount(stopAuto)
 @keyframes biz-drift-c {
   from { transform: translate3d(2%, 0, 0) scale(1); }
   to { transform: translate3d(-4%, -3%, 0) scale(1.08); }
+}
+
+/* Per-card artwork width (set inline as --art-w); only applies once the body
+   switches to the side-by-side desktop layout. */
+@media (min-width: 1024px) {
+  .biz-card img {
+    width: var(--art-w);
+  }
 }
 
 /* organic pebble, like the baked tab dots */

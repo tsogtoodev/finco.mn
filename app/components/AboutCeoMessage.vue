@@ -14,8 +14,69 @@ const letterRef = ref<{ $el?: HTMLElement } | null>(null)
 const tilted = ref(false)
 let observer: IntersectionObserver | null = null
 
+// --- stepped fractal (Figma 775:10209) -------------------------------------
+// In flow at the top of this section. Five full-bleed layers, each running from
+// its step offset down to the container's bottom, so their top edges land on the
+// design's 0/40/80/120/160px steps of a 200px band. Stacking translucent copies
+// is what deepens the wash downward. Pure CSS — no raster.
+//
+// The horizontal ramp was sampled off the design: lavender at the left, a pale
+// gap around a third in, lavender-blue past centre, teal at the right.
+const FRACTAL_RAMP = `linear-gradient(to right,
+  rgb(188,181,250) 0%,
+  rgb(220,217,249) 22%,
+  rgb(223,220,249) 40%,
+  rgb(166,161,237) 62%,
+  rgb(139,201,228) 82%,
+  rgb(154,217,231) 100%)`
+const FRACTAL_LAYERS = [
+  { t: 0, o: 0.1 },
+  { t: 20, o: 0.16 },
+  { t: 40, o: 0.18 },
+  { t: 60, o: 0.2 },
+  { t: 80, o: 0.22 },
+] as const
+
+// Scroll response: `fs` scales the CONTAINER's height, and the layers hold their
+// percentage offsets inside it — so the risers and the last step shrink together
+// while the first step stays pinned to the container's top edge. Because the box
+// itself shrinks, the section's content rises with it as you scroll.
+const FRACTAL_MIN = 0.35
+const bandEl = ref<HTMLElement | null>(null)
+const fs = ref(1)
+
+function syncFractal() {
+  const el = bandEl.value
+  if (!el) return
+  const vh = window.innerHeight || 1
+  // Progress off the band's TOP only. Its height is now driven by `fs`, so
+  // feeding the live height back into this would make the two chase each other;
+  // the top edge is fixed by the content above and is stable.
+  const p = Math.min(Math.max((vh - el.getBoundingClientRect().top) / vh, 0), 1)
+  fs.value = 1 - p * (1 - FRACTAL_MIN)
+}
+
+// rAF-throttled: the handler reads getBoundingClientRect, so one layout read
+// per frame rather than per scroll event.
+let rafId = 0
+function onScroll() {
+  if (rafId) return
+  rafId = requestAnimationFrame(() => {
+    rafId = 0
+    syncFractal()
+  })
+}
+
 onMounted(() => {
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+  const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+  if (!reduced) {
+    syncFractal()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
+  }
+
+  if (reduced) {
     tilted.value = true
     return
   }
@@ -36,10 +97,17 @@ onMounted(() => {
   }, { threshold: [0, 0.5, 0.9, 0.99, 1] })
   observer.observe(el)
 })
-onBeforeUnmount(() => observer?.disconnect())
+onBeforeUnmount(() => {
+  observer?.disconnect()
+  if (rafId) cancelAnimationFrame(rafId)
+  window.removeEventListener('scroll', onScroll)
+  window.removeEventListener('resize', onScroll)
+})
 </script>
 
 <template>
+  <!-- No top padding: the fractal band is in flow now and provides the section's
+       top space itself (and shrinks it back on scroll). -->
   <section class="relative overflow-hidden bg-[#fbfbfb]">
     <!-- purple swirl decoration, upper-right -->
     <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-0">
@@ -47,14 +115,33 @@ onBeforeUnmount(() => observer?.disconnect())
       <div class="absolute -left-40 top-1/3 size-[420px] rounded-full bg-[#c4b5fd]/20 blur-[130px]" />
     </div>
 
-    <div class="relative mx-auto max-w-7xl px-4 py-20 sm:py-24 lg:py-32">
+    <!-- Stepped fractal (Figma 775:10209), in flow at the top of the section.
+         The container's own height scales with `--fs`, so the band contracts and
+         the content below rises with it; the layers keep their % offsets inside,
+         which keeps the first step pinned to the top edge. -->
+    <div
+      ref="bandEl"
+      aria-hidden="true"
+      class="pointer-events-none relative z-0 w-full overflow-hidden"
+      :style="{ '--fs': fs, height: 'calc(min(10.417vw, 200px) * var(--fs))', background: 'linear-gradient(180deg, rgba(76, 65, 216, 0.03) 0%, rgba(255, 255, 255, 0.03) 100%)', backdropFilter: 'blur(80px)' }"
+    >
+      <div style="background: linear-gradient(180deg, rgba(76, 65, 216, 0.03) 0%, rgba(255, 255, 255, 0.03) 100%); backdrop-filter: blur(80px); width: 100%; height: 100%; position: absolute; left: 0; top: 0;"></div>
+      <div
+        v-for="(l, i) in FRACTAL_LAYERS"
+        :key="i"
+        class="absolute inset-x-0 bottom-0"
+        :style="{ top: `${l.t}%`, opacity: l.o, backgroundImage: FRACTAL_RAMP }"
+      />
+    </div>
+
+    <div class="relative mx-auto max-w-7xl px-4 py-[80px]">
       <MotionReveal class="max-w-4xl">
         <h2 class="font-display text-3xl font-normal leading-tight text-[#141414] sm:text-4xl">
           {{ ceo.headingLead }}<span class="text-[#4c41d8]">{{ ceo.headingAccent }}</span>
         </h2>
-        <p class="mt-6 max-w-4xl text-lg font-extralight leading-7 text-[rgba(0,0,0,0.6)] sm:text-xl">
+        <!-- <p class="mt-6 max-w-4xl text-lg font-extralight leading-7 text-[rgba(0,0,0,0.6)] sm:text-xl">
           {{ ceo.subheading }}
-        </p>
+        </p> -->
       </MotionReveal>
 
       <div class="mt-12 lg:mt-20 lg:flex lg:items-stretch lg:items-center lg:justify-center">

@@ -7,7 +7,7 @@ defineProps<{ board: AboutContent['board'] }>()
 
 <template>
   <section class="bg-[#fbfbfb]">
-    <div class="mx-auto max-w-7xl px-4 py-20 sm:py-24">
+    <div class="mx-auto max-w-7xl px-4 py-[80px]">
       <MotionReveal>
         <h2 class="font-display text-3xl font-normal leading-tight text-[#141414] sm:text-4xl">
           {{ board.headingLead }}<span class="text-[#4c41d8]">{{ board.headingAccent }}</span>

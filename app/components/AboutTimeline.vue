@@ -1,7 +1,8 @@
 <script setup lang="ts">
-// History timeline (Figma 238:7952) — heading + a series of year-PAIR rows.
-// Milestones are grouped two-per-row, and each row sits on its own full-bleed
-// band whose lavender tint deepens down the page (#fbfbfb → #f7f6ff → #efeefd).
+// History timeline (Figma 775:10182) — heading + a series of year-PAIR rows,
+// closed by a full-bleed "stepped fractal" band. Milestones are grouped
+// two-per-row, and each row sits on its own full-bleed band whose lavender tint
+// deepens down the section.
 import type { Milestone } from '~/composables/useAboutContent'
 
 const props = defineProps<{
@@ -11,9 +12,16 @@ const props = defineProps<{
   milestones: Milestone[]
 }>()
 
-// Full-bleed band tint per row, deepening down the section (Figma). Rows past
-// the last tint clamp to the deepest one.
-const ROW_TINTS = ['#fbfbfb', '#f7f6ff', '#efeefd'] as const
+// Full-bleed band background per row, deepening down the section (Figma
+// 782:15562 / 775:10183 / 775:10184). The first two are near-imperceptible
+// gradients (~2/255 between stops); Figma doesn't expose the angle in the
+// emitted context, and at that delta the direction is not visible. Rows past
+// the last entry clamp to the deepest tint.
+const ROW_TINTS = [
+  'linear-gradient(to right, #f9f9fd, #fbfbfe)',
+  'linear-gradient(to right, #f7f6ff, #f9f8ff)',
+  '#efeefd',
+] as const
 const rowTint = (i: number) => ROW_TINTS[Math.min(i, ROW_TINTS.length - 1)]
 
 // Pair milestones up: [2005, 2023], [2024, 2025], [2025, 2026] …
@@ -48,7 +56,7 @@ const rows = computed(() => {
         v-for="(row, ri) in rows"
         :key="ri"
         class="w-full"
-        :style="{ backgroundColor: rowTint(ri) }"
+        :style="{ background: rowTint(ri) }"
       >
         <Motion
           as="div"
