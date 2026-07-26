@@ -13,3 +13,4 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - '@tsogtoodev/prelo'
+  - '@tsogtoodev/particle-glock@0.1.0'
