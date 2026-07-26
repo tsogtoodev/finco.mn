@@ -118,27 +118,27 @@ onBeforeUnmount(() => {
         <div :class="enabled ? 'h-[100vh] overflow-hidden py-24' : ''">
           <div
             ref="innerEl"
-            class="relative flex max-w-[654px] flex-col"
+            class="relative flex max-w-[578px] flex-col"
             :class="enabled ? 'gap-[70vh] will-change-transform' : 'gap-20 lg:gap-32'"
             :style="enabled ? { transform: `translateY(${-offset}px)` } : undefined"
           >
-            <div v-for="(b, i) in blocks" :key="i" class="flex flex-col gap-6">
+            <div v-for="(b, i) in blocks" :key="i" class="flex flex-col gap-[16px]">
               <span
-                class="inline-flex w-fit items-center rounded-[24px] bg-white/20 px-4 py-1.5 text-base font-normal leading-5 text-white"
+                class="inline-flex w-fit items-center rounded-[24px] bg-white/20 px-4 py-1.5 text-[16px] font-normal leading-[20px] text-white"
                 :class="revealClass(i)"
                 :style="revealStyle(i, 0)"
               >
                 {{ b.badge }}
               </span>
               <h2
-                class="font-display text-[28px] font-semibold leading-[38px] tracking-[0.4px] sm:text-[40px] sm:leading-[54px]"
+                class="font-display text-[28px] font-normal leading-[36px] tracking-[0.4px] max-w-[415px]"
                 :class="revealClass(i)"
                 :style="revealStyle(i, 1)"
               >
                 {{ b.heading }}
               </h2>
               <p
-                class="text-lg font-extralight leading-7 tracking-[0.2px] text-white/80 sm:text-[20px] sm:leading-[32px]"
+                class="text-[18px] font-extralight leading-[24px] tracking-[0.2px] text-white/80"
                 :class="revealClass(i)"
                 :style="revealStyle(i, 2)"
               >

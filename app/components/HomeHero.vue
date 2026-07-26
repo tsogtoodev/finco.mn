@@ -350,12 +350,14 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- ── Tab switcher (overlaps card bottom) ───────────────────────── -->
-        <div
-          role="tablist"
-          :aria-label="t('hero.carouselLabel')"
-          class="hero-tabs absolute inset-x-0 bottom-0 lg:bottom-9"
-        >
-          <ul class="mx-auto flex w-full max-w-[1200px] gap-4 overflow-x-auto px-6 pb-6 lg:justify-between lg:gap-0 lg:px-0 lg:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div class="hero-tabs absolute inset-x-0 bottom-0 lg:bottom-9">
+          <!-- Desktop (lg+): the full interactive four-tab switcher. Hidden on
+               mobile, where a single passive indicator (below) replaces it. -->
+          <ul
+            role="tablist"
+            :aria-label="t('hero.carouselLabel')"
+            class="mx-auto hidden w-full max-w-[1200px] gap-4 overflow-x-auto px-6 pb-6 lg:flex lg:justify-between lg:gap-0 lg:px-0 lg:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
             <li
               v-for="(s, i) in slides"
               :key="s.key"
@@ -397,6 +399,26 @@ onBeforeUnmount(() => {
               </button>
             </li>
           </ul>
+
+          <!-- Mobile (<lg): a single, non-interactive indicator for the ACTIVE
+               slide only — one progress line + one label. It still drives the
+               auto-advance (its progress bar's animationend calls `next`), but
+               there are no tabs to select and, per the desktop-scoped pause
+               rules in <style>, hovering/touching never pauses it. -->
+          <div class="mx-auto w-full max-w-[1200px] px-6 pb-10 lg:hidden" aria-hidden="true">
+            <span class="relative block h-0.5 w-[40vw] overflow-hidden bg-white/20">
+              <span
+                :key="`m-prog-${current}-${reduced}`"
+                class="absolute inset-0 origin-left"
+                :class="[
+                  isBeepSlide ? 'bg-lime' : 'bg-teal',
+                  reduced ? 'scale-x-100' : 'hero-progress',
+                ]"
+                :style="reduced ? undefined : { animationDuration: `${SLIDE_MS}ms` }"
+                @animationend="next"
+              />
+            </span>
+          </div>
         </div>
       </div>
 
@@ -481,15 +503,19 @@ onBeforeUnmount(() => {
    switcher) — hovering the rest of the card/section keeps it advancing. Also pause
    while a control is KEYBOARD-focused (`:focus-visible`, not plain `:focus`) — so
    clicking a tab doesn't leave the bar stuck-paused on the now-focused button.
-   Browser-managed, so resume is guaranteed the moment hover/focus leaves. */
-.hero-tabs:hover .hero-progress {
-  animation-play-state: paused;
-}
-/* Separate rule: if a browser lacks :has(), only this rule is dropped — hover
-   pause above still works. :focus-visible (not :focus) so a mouse CLICK on a tab
-   doesn't leave the bar paused on the now-focused button. */
-.hero-tabs:has(:focus-visible) .hero-progress {
-  animation-play-state: paused;
+   Browser-managed, so resume is guaranteed the moment hover/focus leaves.
+   Desktop-only (min-width:1024px): the interactive tabs exist only at lg, and the
+   mobile indicator must never pause (it's passive, auto-advance only). */
+@media (min-width: 1024px) {
+  .hero-tabs:hover .hero-progress {
+    animation-play-state: paused;
+  }
+  /* Separate rule: if a browser lacks :has(), only this rule is dropped — hover
+     pause above still works. :focus-visible (not :focus) so a mouse CLICK on a tab
+     doesn't leave the bar paused on the now-focused button. */
+  .hero-tabs:has(:focus-visible) .hero-progress {
+    animation-play-state: paused;
+  }
 }
 
 /* Edge fade mask: logos dissolve into the section background at the left/right
