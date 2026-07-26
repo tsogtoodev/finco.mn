@@ -37,7 +37,7 @@ const FADE_TO = [
     <div
       aria-hidden="true"
       class="absolute inset-0 -z-10"
-      style="background: linear-gradient(to top, #000000 14.7%, rgba(8,10,18,0.8) 50.3%, rgba(8,10,18,0.2) 85.9%);"
+      style="background: linear-gradient(to top, #080A12 14.7%, rgba(8,10,18,0.8) 50.3%, rgba(8,10,18,0.2) 85.9%);"
     />
 
     <div class="mx-auto w-full max-w-5xl px-4 pb-[12vh] pt-32 text-center sm:pb-[14vh]">
