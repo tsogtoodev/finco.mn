@@ -31,7 +31,7 @@ The dev server would not boot at the start of this audit: stale npm-era `@unhead
 | Severity | Count | Open |
 |---|---|---|
 | Critical | 6 | **0 — all fixed** |
-| Major | 24 | 18 — M5, M6, M11, M14, M25, M28 fixed |
+| Major | 24 | **15** — M3, M4, M5, M6, M7, M11, M14, M25, M28 fixed |
 | Minor | 40 | 39 — MapEmbed pin fixed |
 
 All six Critical items are resolved (C1–C6), plus a z-index defect on the error page found after the audit, one Minor, and the six Tier-1 Majors above. Two follow-ups were deliberately left and are flagged in place: the **1024–1280 band** in HomeBeep (still 13.6px type) and the **short-laptop edge case** in the stats sticky gate.
@@ -125,17 +125,19 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Problem:** the triggers open only via `@mouseenter` and `@keydown.down`. There is no click/touch path, and the element is a `<NuxtLink>` — so a tap routes straight to `/products` or `/business` and the panel never opens. Below 1024 the drawer covers this, so it is strictly a `lg`-and-up touch problem.
 - **Fix:** intercept the first tap when `matchMedia('(hover: none)')` matches, or gate the desktop nav on `(hover: hover)` instead of width.
 
-### M3 — Mobile drawer's last 36px are unreachable when the announcement bar is present
+### M3 — Mobile drawer's last 36px are unreachable when the announcement bar is present — ✅ **FIXED**
 - **File:** [app/components/SiteHeader.vue:441](app/components/SiteHeader.vue:441)
 - **Viewport:** mobile 375 / tablet 768
 - **Problem:** the drawer's scroll container is `max-h-[calc(100dvh-60px)]`, but it is anchored at `top-full` of a header that is **96px** tall while the announcement bar is up (36 + 60). The panel therefore ends at `100dvh + 36`. Because the header is `sticky top-0`, page scrolling cannot bring the remainder into view. With both accordions expanded the last link is unreachable.
-- **Fix:** `max-h-[calc(100dvh-60px-var(--announcement-h))]` — the custom property already exists at `main.css:42`.
+- **Fix applied:** `max-h-[calc(100dvh-60px-var(--announcement-h,0px))]`. **Verified:** at 375×812 the panel's max-height is now 716px (was 752) so it ends exactly at the fold instead of 36px past it; at 375×667 it is 571px. The `,0px` fallback keeps it correct once the bar is dismissed and the variable eases to 0.
 
-### M4 — Mobile drawer has no body-scroll lock and no tap-outside scrim
+### M4 — Mobile drawer has no body-scroll lock and no tap-outside scrim — ✅ **FIXED**
 - **File:** [app/components/SiteHeader.vue:229](app/components/SiteHeader.vue:229), `:435`
 - **Viewport:** mobile 375 / tablet 768
 - **Problem:** `mobileOpen` only toggles classes. Unlike `AppDialog`, nothing locks body overflow, and the mega-menu scrim at `:294` is `hidden … lg:block` (desktop-only). Scrolling while the drawer is open scrolls the content behind an opaque panel, and the only exit is the small ✕.
-- **Fix:** lock `body` overflow while `mobileOpen`, and render an `lg:hidden` scrim with `@click="mobileOpen = false"`.
+- **Fix applied:** a `lg:hidden` scrim at `z-30` with `@click="mobileOpen = false"` (the panel gained `z-40` — without an explicit z the positioned scrim would paint *over* it), plus a body scroll lock.
+  The lock is **reference-counted** (`app/composables/useScrollLock.ts`) rather than a plain `overflow = 'hidden'` / `''` pair, because AppDialog also locks and the two can be open at once via the FAB — whichever closed first would otherwise unlock the page behind the other. AppDialog was migrated onto the same counter.
+- **Verified:** opening the drawer sets `body.overflow: hidden`; tapping the scrim closes it and unlocks. The interaction was checked explicitly — drawer open → dialog open → **dialog closed (still locked)** → drawer closed (unlocked). Desktop unaffected: scrim not rendered, panel `display: none`, mega menu still opens at 1248×504.
 
 ### M5 — Announcement bar dismiss is a 24×24 target — ✅ **FIXED**
 - **File:** [app/components/AnnouncementBar.vue:73](app/components/AnnouncementBar.vue:73)
@@ -152,11 +154,12 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Problem:** on iOS/Android `vh` resolves to the *large* viewport. On a 375×667 iPhone SE the small viewport is ~667px while `100vh` is ~748px, so `90vh` ≈ 673px — taller than what is visible. The bottom of the card (in `FeedbackDialog`, the submit button) sits under the browser chrome. Everything else in the codebase already uses `svh`/`dvh`.
 - **Fix applied:** `max-h-[90dvh]`. **Verified:** resolves to 730.8px at a 812px viewport — exactly 90% of the *small* viewport, where `90vh` would have exceeded it on a phone.
 
-### M7 — Dialog close button scrolls out of view with the content
+### M7 — Dialog close button scrolls out of view with the content — ✅ **FIXED**
 - **File:** [app/components/AppDialog.vue:87](app/components/AppDialog.vue:87), `:91`
 - **Viewport:** mobile 375 / tablet 768
 - **Problem:** the card is both `overflow-y-auto` and `relative`, and the ✕ is `absolute right-4 top-4` **inside** that scroll container. Once the body scrolls — guaranteed with FeedbackDialog's 5-field form on mobile — the close button is gone. Esc is unavailable on touch, leaving only a backdrop tap, which is an undiscoverable affordance.
-- **Fix:** make the ✕ `sticky top-4`, or lift it out of the scroll container.
+- **Fix applied:** the card is now a `flex flex-col` that does **not** scroll; only an inner `min-h-0 flex-1 overflow-y-auto` wrapper around the slot does, so the ✕ stays absolute against the non-scrolling card. `min-h-0` is load-bearing — a flex child defaults to `min-height: auto` and refuses to shrink below its content, so without it the scroller never engages and the card grows past `max-h`.
+- **Verified** at 375×667 with the loan calculator, where the body genuinely overflows (588px of content in a 488px scroller): scrolled to the bottom, the ✕ stays at `top: 61` — unmoved. Card bottom 622 inside a 667 viewport.
 
 ### M8 — Loan calculator result rows overflow at 375 and again at 640–800
 - **File:** [app/components/LoanCalculatorDialog.vue:48](app/components/LoanCalculatorDialog.vue:48)

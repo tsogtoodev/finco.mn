@@ -241,6 +241,17 @@ watch(() => route.fullPath, () => {
   hardClose()
 })
 
+// Lock the page behind the drawer. Without this, scrolling while the drawer is
+// open scrolls the content behind an opaque white panel. Reference-counted so it
+// composes with AppDialog, which can be opened on top of the drawer via the FAB.
+watch(mobileOpen, (open) => {
+  if (open) lockBodyScroll()
+  else unlockBodyScroll()
+})
+onBeforeUnmount(() => {
+  if (mobileOpen.value) unlockBodyScroll()
+})
+
 // A mega-menu is visually present while open OR mid-exit animation.
 const menuVisible = computed(() => openMenu.value !== null)
 
@@ -441,15 +452,32 @@ const barHidden = computed(
       </div>
     </div>
 
+    <!-- Tap-outside-to-close scrim for the mobile drawer, mirroring the desktop
+         mega-menu scrim above (which is lg:block, so it never covered this case).
+         Starts at top-full so the nav and announcement bar stay crisp. Sits below
+         the panel's z-40 — without an explicit z the positioned scrim would paint
+         over it. -->
+    <div
+      v-if="mobileOpen"
+      class="absolute inset-x-0 top-full z-30 h-screen bg-black/20 lg:hidden"
+      aria-hidden="true"
+      @click="mobileOpen = false"
+    />
+
     <!-- mobile menu — solid white panel (readable in both modes), overlays content.
          Height animates via the CSS grid-rows 0fr→1fr trick (reliable, no JS). -->
     <div
-      class="absolute inset-x-0 top-full grid bg-white transition-[grid-template-rows,border-color] duration-300 ease-out motion-reduce:transition-none lg:hidden"
+      class="absolute inset-x-0 top-full z-40 grid bg-white transition-[grid-template-rows,border-color] duration-300 ease-out motion-reduce:transition-none lg:hidden"
       :class="mobileOpen ? 'grid-rows-[1fr] border-black/10 shadow-2xs' : 'grid-rows-[0fr] border-transparent'"
       :aria-hidden="!mobileOpen"
     >
       <div class="overflow-hidden">
-        <nav class="mx-auto flex max-h-[calc(100dvh-60px)] max-w-7xl flex-col gap-1 overflow-y-auto px-4 py-3">
+        <!-- Subtract the announcement strip as well as the 60px nav row: the panel
+             is anchored at top-full of a header that is 96px tall while the bar is
+             up, so `100dvh - 60px` ended 36px below the fold — and because the
+             header is sticky, scrolling can't bring that back. --announcement-h is
+             global (main.css) and eases to 0 when the bar is dismissed. -->
+        <nav class="mx-auto flex max-h-[calc(100dvh-60px-var(--announcement-h,0px))] max-w-7xl flex-col gap-1 overflow-y-auto px-4 py-3">
           <template v-for="item in navItems" :key="item.kind === 'menu' ? item.audience : item.to">
             <NuxtLink
               v-if="item.kind === 'link'"
