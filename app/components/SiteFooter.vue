@@ -62,7 +62,7 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
       <div class="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-3">
         <div class="flex flex-col gap-[48px]">
           <div v-for="col in [aboutGroup, otherGroup]" :key="col.heading">
-            <h3 class="text-sm text-black">{{ col.heading }}</h3>
+            <h3 class="text-sm text-accent">{{ col.heading }}</h3>
             <div class="mt-[16px] space-y-[16px] text-sm font-light leading-normal">
               <div v-for="l in col.links" :key="l.label" class="h-[18px]">
                 <NuxtLink
@@ -76,7 +76,7 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
           </div>
         </div>
         <div v-for="col in [individualsGroup, businessGroup]" :key="col.heading">
-          <h3 class="text-sm text-black">{{ col.heading }}</h3>
+          <h3 class="text-sm text-accent">{{ col.heading }}</h3>
           <div class="mt-[16px] space-y-[16px] text-sm font-light leading-normal">
             <div v-for="l in col.links" :key="l.label" class="h-[18px]">
               <NuxtLink
