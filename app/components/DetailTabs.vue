@@ -65,7 +65,7 @@ const activeIndex = computed(() =>
         :animate="{ opacity: 1, y: 0 }"
         :exit="{ opacity: 0, y: -8 }"
         :transition="{ duration: 0.2, ease: 'easeOut' }"
-        class="mt-6"
+        class="mt-6 min-h-[320px]"
       >
         <div v-if="active === 'info'" class="prose max-w-none text-base font-light leading-7 text-black/80">
           <ContentRenderer v-if="body" :value="{ body } as any" />

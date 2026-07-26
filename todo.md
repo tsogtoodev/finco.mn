@@ -1,77 +1,23 @@
 [ ] about us page (structure section) will be redesigned
-[X] news list & news detail page is missing
-[X] report list & report detail page is missing
 [ ] branches page will redesigned
 
-for site footer section: https://prod.spline.design/ctfpPmq7XLx77Ni2/scene.splinecode
-for about us page: https://prod.spline.design/5QI6kS8kPdn7j7Y3/scene.splinecode
-about us page manifesto section scene (https://prod.spline.design/5QI6kS8kPdn7j7Y3/scene.splinecode)
-
-Inspiration: https://worklouder.cc/framer-f1
-
-Global
-[X] localeSwitcher deer label (mn, en) oruulah
-[X] promotion bar-g home hero toi conflict bolood bgag zasah
-[X] promotion bar-g close hiigegui ued bainga haragdah estoi, navbar-tai hamt
-[X] navbar deerh irgend menu-g /products/ ruu link-leh
-[X] navbar deerh business menu-g /business/ ruu link-leh
-[X] navbar bolon mega menu nii hoorondiin gap-g bagasgaad, hover aldaj bga aldaag zasah
-[ ] Footer has been redesigned
-
-Home Page
-[X] home-n hero bolon company logo section hoorondiin zaig bagasgaj zasah
-[X] home-n hero dotorh item uudaas beep item ni zuvhun nogoon ungutei button-tai baina, busad ni finco giin tsenher unguur yuvna.
-[X] HomeStats section 1920x1080 deer evdreltei haragdjin
-[X] HomeProducts -n card-n description-g static 3 line-tai bolgoh
-[X] HomeProducts -n card-n description-g line-height 24px bolgoh
-[X] HomeProducts -n card-n title -n line-height -g 28px bolgoh
-[X] HomeProducts -n carousel-g drag hiij boldog bolgoh
-[X] HomeProducts -n zuun/baruun tald Next button oruulah
-[X] HomeBeep deer hover hiihed footer section reveal hiij garch ireh
-[X] HomeBeep -n App tatah button hover/click hiihed QR Code-toi Popover gargaj ireh
-[X] HomeBeep -n Delgerengui button deer beep.finco.mn linkleh
-[X] HomeFinco -n 5 second tutamd auto soligddog bailgah
-[X] HomeFinco -n card uudiin unduriig bagasgah (300px havitsaa)
-[X] HomeNews -n card description hesegiig 3 line bolgoh
-[X] HomeNews -n card title -g 1 line bolgoh
-[X] HomeNews -n card image hesegiig togtmol size-tai bolgoh
-[X] HomeContactCTA section spline-g zoom out hiine
-[X] SiteFooter-n legal strip deerees ni 48px -n zai avna
-[X] SiteFooter-n legal strip dooroos ni 48px -n zai avna
-[ ] FincoBiz section content needs to be centered
-[ ] Fix the text bug in Beep section
-[ ] Fix the partner companies marquee spacing on different monitor sizes
-[ ] HomeContactCTA section has a regular button that needs to open a popup
-
-About Page
-[ ] AboutMission section-g buten yanzlah
-[X] AboutValues bolon AboutTimeline hoorondiin zaig 64px bolgoh
-[X] AboutTimeline -n font-size, line-height, padding -g negen jigd bagasgah
-[X] AboutMission, AboutValues, AboutTimeline, AboutCEOMessage uudiin title deer ungu dutuu bn
-[X] AboutCEOMessage-n letter hesegiig A4 hemjeetei bolgoh
-[X] AboutCEOMessage-n ariin letter hesegiig scroll doj viewport-n orj irhed smooth tilt hiih
-[X] AboutBoard -n description hover hiihed delgerengui description garch irdeg bolgoh
-[X] AboutValues has been redesigned, implement it.
-[ ] AboutValues dotorh item uudiig 5 second tutamd auto soligddog bolgoh
-[ ] AboutCEOMessage Fix the border on the CEO image
-[ ] AboutOrg make it an image, instead of html construction
-[ ] Implement the intented scrolling effect in AboutMission section
-
-Detail Page
-[X] Hero section dotorh buh element-n size-g bagasgah (figma deerh zaasan size uudiin daguu yuvah)
-[X] Hero section image deer predefined blur mask-g bolgoh
-[X] RelatedProductsCarousel deerh products uudiig duudaj bga hesegiig zasah
-[X] FAQAccordion dotorh + button background-g zasah
-[X] FAQAccordion first item expanded bolgohgui bolgoh
-[X] RelatedProducts -n headline -g avch hayah
-[X] Tab bolon tab content-g smooth transition tavih
-[X] Hero bolon content hoorondiin zaig 2/1 -r hasah
-[X] Hero dotorh tootsoolol-n card-n blur background-g yag zuv bolgoh
-[X] RelatedProducts-n carousel home deer baidag shig carousel effect baih estoi
-
-Services Page
-[X] Hero section deer button baihgui baih estoi
-[X] RelatedServices section title-n font weight zursun baigaag zasah
-
-Branches Page
-[ ] Whole page will be redesigned
+2026-07-27 TODOS
+[ ] Mobile optimizations (60%)
+[X] SiteFooter link items uudiin hoorondiin spacing yanzlar
+[X] SiteFooter mobile-r oroh ued logog buten haragduulah
+[ ] SiteFooter desktop-r oroh ued elastic effect logo deer oruulah
+[X] AboutHero deerh headline, subline text uudiin load hiij bga blur-tei transition-g zasah
+[X] ProductsHero deerh tab uudiin background ungunii transparency-g bagasgah
+[X] ProductsGrid dotorh list figma deer shinchlegdsen, teriig update hiih. Hover hiih ued blur hiihiig martaj bolohgui.
+[X] Product detail huudas dotorh hero bolon tab hoorondiin zaig zasah
+[ ] Product detail huudas dotorh hero-g buren zasah
+[ ] HomeHero from mobile device it will show only 1 progress line and 1 active item label. Will work like a timer. Selectable item will be removed.
+[ ] AboutValues items from mobile devices are being selectable, it should not be.
+[ ] manifest.json nemej mobile device-n landscape orientation-g disable hiih.
+https://stackoverflow.com/questions/26271203/locking-screen-orientation-on-mobile-browser
+[ ] smooth-scroll idevhjuulj, scrolldoh jingiig ihesgeh.
+[ ] AboutTimeline section-n door step fractal oruulah. Figma deerh shig.
+[ ] AboutMission section text hemjeeg, line height, hoorondiin spacing update hiih
+[ ] AboutMission section vertical fractal-g butsaaj oruulah
+[ ] AboutMission spline container box-s cut hiiged bgag zasah
+[ ] HomeFincoBiz deerh uldsen card-uudiin zurgiig shinchleh

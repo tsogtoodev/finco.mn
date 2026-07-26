@@ -7,7 +7,7 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <section v-if="items?.length" class="bg-white px-6 py-20 sm:py-28">
+  <section v-if="items?.length" class="bg-white px-6 py-[80px]">
     <div class="mx-auto flex w-full max-w-[1240px] flex-col gap-10 sm:gap-16">
       <MotionReveal>
         <h2 class="text-center font-display text-3xl font-normal leading-tight text-black sm:text-4xl">

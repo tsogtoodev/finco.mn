@@ -1,14 +1,22 @@
 <script setup lang="ts">
-// Products-listing hero (Figma 1:13610 / 1:13834). Dark lifestyle photo + scrim,
-// breadcrumb + "Буцах" back button top-left, centered headline, and the audience
-// toggle pinned below it. The global transparent nav overlays the top 96px, so the
-// content gets top clearance. Photo + headline come from the `pages` collection
-// (products/business docs) via the parent; i18n keeps the chrome labels.
+// Products-listing hero — Figma 574:6802 (2026-07 redesign; supersedes 1:13610).
+// Progressively-blurred lifestyle photo under a diagonal scrim, breadcrumb +
+// outlined "Буцах" button pinned to the left of the 1200px column, then a
+// centred 32/48 headline with the audience toggle beneath it.
+//
+// Only the 60px nav overlays this section — SiteHeader's transparent variant
+// pulls it over the page with `-mb-[60px]`, while the announcement bar keeps its
+// own flow height above us. So the top padding is 60px of nav clearance plus the
+// design's own breathing room, and it stays correct when the bar is dismissed.
+// Photo + headline come from the `pages` collection via the parent; i18n keeps
+// the chrome labels.
 import type { Audience } from '~/composables/useProducts'
 
 const props = defineProps<{ audience: Audience; photo?: string; headline?: string }>()
 const { t } = useI18n()
 const localePath = useLocalePath()
+
+const photoSrc = computed(() => props.photo ?? `/images/products/hero-${props.audience}.jpg`)
 
 function goBack() {
   if (import.meta.client && window.history.length > 1) window.history.back()
@@ -17,58 +25,89 @@ function goBack() {
 </script>
 
 <template>
-  <section class="relative isolate flex min-h-[560px] flex-col overflow-hidden bg-dark text-white sm:min-h-[620px]">
-    <!-- background photo + diagonal scrim (Figma: 250.94deg, 0.25 → 0.75 black) -->
+  <section class="relative isolate overflow-hidden bg-dark text-white">
+    <!-- Base photo. Figma blurs the whole plate (progressive layer blur, 10px at
+         its far end) and oversizes it ~13% so the blur can't sample past the
+         frame and darken the edges — `scale` reproduces that. Both radii are
+         authored against the 1920 design, so they step down with the viewport:
+         a flat 40px would swallow a phone-width photo whole. -->
     <HeroBackgroundImage
-      :src="props.photo ?? `/images/products/hero-${props.audience}.jpg`"
+      :src="photoSrc"
       alt=""
       :width="1920"
       :height="660"
       wrapper-class="-z-10"
-      img-class="size-full object-cover"
+      img-class="size-full scale-[1.16] object-cover"
       preload
     />
+    <!-- Progressive-blur ramp: the design runs 40px of blur at the left edge,
+         easing to the base 10px by ~52% across, which keeps the headline and
+         breadcrumb legible over a busy photo. CSS has no progressive blur, so a
+         second heavily-blurred copy is masked to fade out at that same 52%. -->
+    <HeroBackgroundImage
+      :src="photoSrc"
+      alt=""
+      aria-hidden="true"
+      :width="1920"
+      :height="660"
+      wrapper-class="-z-10"
+      img-class="size-full scale-[1.22] object-cover blur-[20px] sm:blur-[30px] lg:blur-[40px]"
+      style="
+        -webkit-mask-image: linear-gradient(to right, #000 0%, #000 12%, transparent 52%);
+        mask-image: linear-gradient(to right, #000 0%, #000 12%, transparent 52%);
+      "
+    />
+    <!-- Diagonal scrim (Figma gradient fill: 250.94deg, 25% → 75% black) -->
     <div
       aria-hidden="true"
       class="absolute inset-0 -z-10"
-      style="background: linear-gradient(250.94deg, rgba(0, 0, 0, 0.3) 7%, rgba(0, 0, 0, 0.78) 96%)"
+      style="background: linear-gradient(250.94deg, rgba(0, 0, 0, 0.25) 7.446%, rgba(0, 0, 0, 0.75) 95.599%)"
     />
 
-    <!-- max-w-7xl + px-4 matches the header and page sections so the breadcrumb aligns with the nav logo -->
-    <div class="relative mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pb-14 pt-24 sm:pt-28">
+    <!-- 1200px content column (max-w 1248 − 2×24 padding), matching the design's
+         360px left edge at 1920. Top padding = 60px nav clearance + the design's
+         65px breathing room, tightened on smaller screens. -->
+    <div
+      class="relative mx-auto w-full max-w-[1248px] px-6 lg:px-0 pb-10 pt-[100px] sm:pb-12 sm:pt-[112px] lg:pb-[54px] lg:pt-[100px]"
+    >
       <!-- breadcrumb + back -->
-      <div class="hero-rise flex flex-col gap-5">
+      <div class="hero-rise flex flex-col items-start gap-4 sm:gap-5 lg:gap-[23px]">
         <nav aria-label="Breadcrumb">
-          <ol class="flex items-center gap-2.5 text-sm">
+          <ol class="flex flex-wrap items-center gap-x-2.5 gap-y-1 leading-7">
             <li>
-              <NuxtLink :to="localePath('/')" class="font-extralight text-white/60 transition-colors hover:text-white">
+              <NuxtLink
+                :to="localePath('/')"
+                class="text-sm font-extralight text-white/60 transition-colors hover:text-white"
+              >
                 {{ t('productsPage.breadcrumbHome') }}
               </NuxtLink>
             </li>
-            <li aria-hidden="true" class="font-extralight text-white">/</li>
-            <li class="font-light text-white" aria-current="page">{{ t('productsPage.breadcrumbCurrent') }}</li>
+            <li aria-hidden="true" class="text-sm font-extralight text-white">/</li>
+            <li class="text-base font-light text-white" aria-current="page">
+              {{ t('productsPage.breadcrumbCurrent') }}
+            </li>
           </ol>
         </nav>
 
         <button
           type="button"
-          class="inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius)] bg-secondary px-4 text-sm font-medium text-[#171717] transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-white active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none cursor-pointer"
+          class="inline-flex h-10 w-fit cursor-pointer items-center gap-2 rounded-[var(--radius)] border border-white/20 px-4 text-sm font-medium text-white shadow-[0_4px_4px_rgba(0,0,0,0.25)] transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-white/10 active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none"
           @click="goBack"
         >
-          <Icon name="lucide:arrow-left" class="size-4" />
+          <Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />
           {{ t('common.back') }}
         </button>
       </div>
 
-      <!-- centered headline + audience toggle -->
-      <div class="flex flex-1 flex-col items-center justify-center gap-10 pb-6 pt-10 text-center sm:gap-12">
+      <!-- centred headline + audience toggle -->
+      <div class="mt-6 flex flex-col items-center gap-7 text-center sm:gap-8">
         <BlurText
           :text="props.headline ?? t('productsPage.headline')"
           as="h1"
           animate-by="words"
           :delay="60"
           :start-delay="0.06"
-          class="max-w-[700px] justify-center font-display text-3xl font-bold leading-[1.2] sm:text-4xl md:text-[40px] md:leading-[48px]"
+          class="max-w-[880px] justify-center font-display text-[26px] font-bold leading-[34px] sm:text-[28px] sm:leading-[40px] lg:text-[32px] lg:leading-[48px]"
         />
         <div class="hero-rise" style="animation-delay: 0.24s">
           <AudienceToggle :audience="props.audience" />

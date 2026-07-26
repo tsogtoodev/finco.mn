@@ -70,7 +70,7 @@ useSeoMeta({
       :breadcrumb="[{ label: t('common.homeBreadcrumb'), to: '/' }, audienceCrumb, { label: product.title }]"
     />
 
-    <section class="bg-white py-16 sm:py-20">
+    <section class="bg-white py-[20px]">
       <div class="mx-auto max-w-7xl px-4">
         <DetailTabs :tabs="product.tabs ?? {}" :body="product.body" />
       </div>
