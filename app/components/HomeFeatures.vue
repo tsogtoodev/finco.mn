@@ -29,7 +29,10 @@ const cards = computed(() => {
 
 <template>
   <section class="bg-[#fcfcff] py-[60px] lg:pb-[120px]">
-    <div class="mx-auto w-full max-w-[1200px] px-0 lg:px-6">
+    <!-- px-6 unconditionally: `px-0 lg:px-6` inverted mobile-first and left the
+         heading and all three bento cards flush to both viewport edges from
+         320px to 1023px, unlike every other home section. -->
+    <div class="mx-auto w-full max-w-[1200px] px-6">
       <MotionReveal class="flex flex-col items-center gap-5 text-center">
         <h2 class="font-display text-3xl font-medium leading-tight text-[#141414] sm:text-4xl">
           {{ heading }}<span class="text-accent">{{ headingAccent }}</span>

@@ -78,13 +78,17 @@ onBeforeUnmount(() => {
           :class="{ 'is-closing': closing }"
           @click="close"
         />
+        <!-- max-h uses dvh, not vh: on mobile `vh` resolves to the LARGE viewport
+             (toolbars retracted), so 90vh ≈ 673px on a 667px-tall iPhone SE and
+             the bottom of the card — the submit button — sat under the browser
+             chrome. -->
         <div
           ref="card"
           role="dialog"
           aria-modal="true"
           :aria-label="title"
           tabindex="-1"
-          class="t-modal relative z-[1] max-h-[90vh] w-full overflow-y-auto rounded-[24px] bg-white p-6 shadow-2xl outline-none sm:p-8"
+          class="t-modal relative z-[1] max-h-[90dvh] w-full overflow-y-auto rounded-[24px] bg-white p-6 shadow-2xl outline-none sm:p-8"
           :class="{ 'is-open': opened, 'is-closing': closing }"
           :style="{ maxWidth }"
         >

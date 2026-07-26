@@ -43,7 +43,11 @@ const feedbackOpen = ref(false)
           <h2 class="font-display text-3xl font-medium leading-tight text-white sm:text-[40px] sm:leading-[48px]">
             {{ t('home.contact.heading') }}
           </h2>
-          <p class="max-w-[605px] text-xl font-extralight leading-[20px] tracking-[0.01em] text-white/80 sm:text-[16px]">
+          <!-- Was `text-xl leading-[20px] sm:text-[16px]` — mobile-first inverted:
+               20px type with a 20px line-height on phones, shrinking to 16px on
+               larger screens. The Mongolian string wraps to ~4 lines at 327px, so
+               Cyrillic ascenders and descenders collided between them. -->
+          <p class="max-w-[605px] text-base font-extralight leading-6 tracking-[0.01em] text-white/80 sm:text-[16px] sm:leading-[20px]">
             {{ t('home.contact.subtext') }}
           </p>
         </div>

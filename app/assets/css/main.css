@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* legal/[slug].vue styles CMS markdown with `prose` + `prose-*` modifiers, which
+   are this plugin's API. Without it those classes are inert AND v4's Preflight
+   has already stripped the browser defaults (headings inherit font-size/weight,
+   lists lose their markers) — so the policy pages rendered as one flat block. */
+@plugin "@tailwindcss/typography";
+
 /* ── finco.mn design tokens (Tailwind v4 @theme) ──────────────────────────────
    Values from the Figma `final` page variables (structure.md §4).
    Tailwind generates utilities from these, e.g. --color-primary → bg-primary,

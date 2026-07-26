@@ -70,9 +70,12 @@ onBeforeUnmount(() => clearTimeout(collapseTimer))
         </svg>
       </NuxtLink>
 
+      <!-- size-10 hit area around a size-6 glyph: this is the only way to reclaim
+           the 36px strip, and at size-6 it was a 24×24 target. The negative margin
+           keeps the glyph on its original optical position. -->
       <button
         type="button"
-        class="absolute right-4 flex size-6 items-center justify-center text-white/70 transition-colors hover:text-white"
+        class="absolute right-4 -mr-2 flex size-10 items-center justify-center text-white/70 transition-colors hover:text-white"
         :aria-label="t('announcement.dismiss')"
         @click="dismiss()"
       >

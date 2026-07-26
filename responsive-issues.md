@@ -31,10 +31,12 @@ The dev server would not boot at the start of this audit: stale npm-era `@unhead
 | Severity | Count | Open |
 |---|---|---|
 | Critical | 6 | **0 — all fixed** |
-| Major | 24 | 24 |
+| Major | 24 | 18 — M5, M6, M11, M14, M25, M28 fixed |
 | Minor | 40 | 39 — MapEmbed pin fixed |
 
-All six Critical items are resolved (C1–C6), plus one Minor and a z-index defect on the error page found after the audit. Two follow-ups were deliberately left and are flagged in place: the **1024–1280 band** in HomeBeep (still 13.6px type) and the **short-laptop edge case** in the stats sticky gate.
+All six Critical items are resolved (C1–C6), plus a z-index defect on the error page found after the audit, one Minor, and the six Tier-1 Majors above. Two follow-ups were deliberately left and are flagged in place: the **1024–1280 band** in HomeBeep (still 13.6px type) and the **short-laptop edge case** in the stats sticky gate.
+
+**Not a responsiveness issue, but the most consequential thing found in scope:** the careers application form is a stub end-to-end. `ApplicationForm.vue:76` puts `v-model` on `<input type="file">`, which Vue does not support, so the required CV never binds; and `server/api/careers/apply.post.ts` logs the payload and returns `{ ok: true }` with a `TODO(P8)` for multipart + blob storage. An applicant attaches a CV, submits, and sees a success screen while nothing is persisted. Known incomplete work rather than a regression — but it currently reads as finished to a user.
 
 **The good news first, and it is substantial:** there is **no document-level horizontal scroll on any real page** at 375 or 768, in either locale. Every full-bleed section clips itself. Layout grids are consistently mobile-first. The mobile drawer reaches every destination including product sub-links. Layouts correctly use `dvh`/`svh`. Both carousels have real touch-drag.
 
@@ -135,20 +137,20 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Problem:** `mobileOpen` only toggles classes. Unlike `AppDialog`, nothing locks body overflow, and the mega-menu scrim at `:294` is `hidden … lg:block` (desktop-only). Scrolling while the drawer is open scrolls the content behind an opaque panel, and the only exit is the small ✕.
 - **Fix:** lock `body` overflow while `mobileOpen`, and render an `lg:hidden` scrim with `@click="mobileOpen = false"`.
 
-### M5 — Announcement bar dismiss is a 24×24 target **[measured]**
+### M5 — Announcement bar dismiss is a 24×24 target — ✅ **FIXED**
 - **File:** [app/components/AnnouncementBar.vue:73](app/components/AnnouncementBar.vue:73)
 - **Viewport:** both
 - **Measured:** 24×24px on every page scanned.
 - **Problem:** `size-6`. This is the only way to reclaim the 36px strip, and it is the smallest control in the global chrome.
-- **Fix:** keep the 24px glyph, grow the hit area to `size-10 -mr-2`.
+- **Fix applied:** `size-10 -mr-2` around the unchanged `size-6` glyph — the negative margin keeps it on its original optical position. **Verified:** 40×40 at 375, right edge 367 inside a 375 viewport.
 
 ## Dialogs
 
-### M6 — `max-h-[90vh]` overflows the visible viewport on mobile browsers
+### M6 — `max-h-[90vh]` overflows the visible viewport on mobile browsers — ✅ **FIXED**
 - **File:** [app/components/AppDialog.vue:87](app/components/AppDialog.vue:87)
 - **Viewport:** mobile 375×667
 - **Problem:** on iOS/Android `vh` resolves to the *large* viewport. On a 375×667 iPhone SE the small viewport is ~667px while `100vh` is ~748px, so `90vh` ≈ 673px — taller than what is visible. The bottom of the card (in `FeedbackDialog`, the submit button) sits under the browser chrome. Everything else in the codebase already uses `svh`/`dvh`.
-- **Fix:** `max-h-[90dvh]`.
+- **Fix applied:** `max-h-[90dvh]`. **Verified:** resolves to 730.8px at a 812px viewport — exactly 90% of the *small* viewport, where `90vh` would have exceeded it on a phone.
 
 ### M7 — Dialog close button scrolls out of view with the content
 - **File:** [app/components/AppDialog.vue:87](app/components/AppDialog.vue:87), `:91`
@@ -177,11 +179,11 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Problem:** `--carousel-edge` collapses to 24px on mobile, so the active card runs x = 24 → 432. Every card loses ~57px off its right edge permanently — the image is cropped and the `line-clamp-3` excerpt is cut mid-word. Unlike the products carousel there is no size ramp, so it never self-corrects.
 - **Fix:** derive `CARD_W` from the already-tracked `rootW` (`:174`): `Math.min(408, rootW - edgePad - 24)`. The travel math all derives from `CARD_W`, so a reactive value flows through.
 
-### M11 — HomeFeatures has zero horizontal gutter below 1024px
+### M11 — HomeFeatures has zero horizontal gutter below 1024px — ✅ **FIXED**
 - **File:** [app/components/HomeFeatures.vue:32](app/components/HomeFeatures.vue:32) — `px-0 lg:px-6`
 - **Viewport:** mobile 375 / 390, tablet 768 / 820
 - **Problem:** mobile-first inverted. The `<section>` adds no padding either, so the heading and all three bento cards sit flush against the viewport edges from 320px to 1023px. Every other home section uses `px-6` unconditionally (`HomeProducts.vue:67`, `HomeNews.vue:37`, `HomeBeep.vue:120`, `HomeFincoBiz.vue:76`), which makes this look accidental rather than a deliberate full-bleed.
-- **Fix:** `px-6`.
+- **Fix applied:** `px-6` unconditionally. **Verified:** computed padding 24px both sides at 375, content spanning 24→351; desktop unchanged (it already had `px-6` from `lg`).
 
 ### M12 — HomeFincoBiz: fixed 450px card with an illegible baked-raster caption
 - **File:** [app/components/HomeFincoBiz.vue:101](app/components/HomeFincoBiz.vue:101) (`h-[450px]`), `:123`, `:132` (`hidden lg:block`)
@@ -195,11 +197,11 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Problem:** the scene wrapper turns on at `md` at `w-[80%]`. At 768 that is 614px anchored right (x = 154 → 768), while the text column occupies x = 24 → 644. The blend scrim is only fully opaque to 38% and fully transparent by 72%, so the artwork renders directly behind the heading and CTA across the 292–644px band. There is no `lg:` reduction.
 - **Fix:** gate to `lg:block`, or `md:w-[55%] lg:w-[80%]` with the scrim's opaque stop pushed right at `md`.
 
-### M14 — HomeContactCta subtext is larger on mobile than desktop, with leading equal to font-size
+### M14 — HomeContactCta subtext is larger on mobile than desktop, with leading equal to font-size — ✅ **FIXED**
 - **File:** [app/components/HomeContactCta.vue:46](app/components/HomeContactCta.vue:46)
 - **Viewport:** mobile 375 / 390
 - **Problem:** `text-xl … leading-[20px] … sm:text-[16px]` — base is 20px with a 20px line-height, and `sm:` makes it *smaller* on larger screens while the leading stays. The Mongolian string wraps to ~4 lines at 327px, so Cyrillic ascenders and descenders collide between lines.
-- **Fix:** `text-base leading-6 sm:text-[16px] sm:leading-[20px]`.
+- **Fix applied:** `text-base leading-6 sm:text-[16px] sm:leading-[20px]`. **Verified:** 16px/24px at 375 (was 20px type on a 20px leading).
 
 ### M15 — Spline runtime (~1MB) is prefetched on mobile for scenes that are `hidden`
 - **File:** [app/components/SplineScene.vue:275](app/components/SplineScene.vue:275), triggered from `HomeContactCta.vue:18` and `HomeStats.vue:37`
@@ -268,11 +270,11 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 
 ## News, careers, legal
 
-### M25 — Legal pages render as an undifferentiated wall of text
+### M25 — Legal pages render as an undifferentiated wall of text — ✅ **FIXED**
 - **File:** [app/pages/legal/[slug].vue:56](app/pages/legal/[slug].vue:56)
 - **Viewport:** both (worst on mobile — narrowest column, longest scroll)
 - **Problem:** the `prose prose-neutral prose-headings:… prose-p:…` classes require `@tailwindcss/typography`, which is **not** in `package.json`, and there is no hand-rolled `.prose` rule in `main.css`. Tailwind v4 Preflight then actively strips the browser defaults: headings get `font-size: inherit; font-weight: inherit` and lists get `list-style: none; margin: 0; padding: 0`. So `## 1. Оршил` headings and `- …` bullets render as plain 16px body text with no hierarchy, no bullets and no paragraph spacing.
-- **Fix:** add `@plugin "@tailwindcss/typography";` to `main.css`, or copy the working hand-written approach from `news/[slug].vue:155` (`.article-body :deep(…)`) into a shared style.
+- **Fix applied:** installed `@tailwindcss/typography@0.5.20` and added `@plugin "@tailwindcss/typography";` to `main.css`. The existing `prose-headings:` / `prose-p:` / `prose-li:` modifiers on the page are that plugin's own API, so this is what the author intended — no markup changed. **Verified** on `/en/legal/privacy` and `/mn/legal/terms`: `h2` 24px/500 against 16px/28px body, `ul` back to `list-style: disc` with a 26px indent, no overflow at 375.
 
 ### M26 — News pagination squeezes to ~32px controls with zero gap
 - **File:** [app/pages/news/index.vue:195](app/pages/news/index.vue:195)
@@ -286,12 +288,12 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Problem:** both overlays are fixed and both are mounted from `layouts/default.vue:20`. The FAB is `bottom-6 right-6 z-50` over a 64×124 GlassSurface (x = vw−88 … vw−24, y = 24…148 from the bottom). AutoNextNews is `z-40` spanning nearly the full width at these viewports (y ≈ 32…141). They intersect, and the FAB wins on z-index — landing exactly on the "Close" and "Read next" buttons. At 1440 the `max-w-[1200px]` cap keeps them apart, which is why it only appears on tablet.
 - **Fix:** hide the FAB while the overlay is open, extend AutoNextNews' suppression to `(max-width: 1023px)`, or reserve room with `pr-24 lg:pr-4`.
 
-### M28 — `/test` is a stray dev page that overflows by 635px and is crawlable **[measured]**
+### M28 — `/test` is a stray dev page that overflows by 635px and is crawlable — ✅ **FIXED**
 - **File:** [app/pages/test.vue:1](app/pages/test.vue:1), [nuxt.config.ts:114](nuxt.config.ts:114)
 - **Viewport:** both
 - **Measured at 375:** document `scrollWidth` 1010 vs 375 — **635px of horizontal overflow**, by far the worst on the site.
 - **Problem:** a bare `<div>` wrapping `<SplineScene>` with no height, so the canvas' `size-full` resolves to 0 and the page renders header + footer with nothing between. It is also **not** sitemap-excluded — `nuxt.config.ts:116` excludes only `['/**/careers/exam']`, so `/test` and `/en/test` will be emitted and indexed.
-- **Fix:** delete the file before launch. If it must stay, gate it on `import.meta.dev`, add `robots: 'noindex'`, and add `/**/test` to the sitemap `exclude` list.
+- **Fix applied:** deleted `app/pages/test.vue`. Nothing in `app/` or `content/` linked to it, and removing the page drops the route entirely, so no sitemap `exclude` entry was needed. **Verified:** `/en/test` now renders the 404 page.
 
 ---
 

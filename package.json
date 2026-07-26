@@ -22,6 +22,7 @@
     "@nuxtjs/i18n": "^10.4.0",
     "@nuxtjs/seo": "^5.3.0",
     "@splinetool/runtime": "^1.12.98",
+    "@tailwindcss/typography": "0.5.20",
     "@tailwindcss/vite": "^4.3.1",
     "@takumi-rs/core": "^1.8.5",
     "@takumi-rs/wasm": "^1.8.5",
