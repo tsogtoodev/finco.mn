@@ -31,8 +31,8 @@ The dev server would not boot at the start of this audit: stale npm-era `@unhead
 | Severity | Count | Open |
 |---|---|---|
 | Critical | 6 | **0 — all fixed** |
-| Major | 24 | **15** — M3, M4, M5, M6, M7, M11, M14, M25, M28 fixed |
-| Minor | 40 | 39 — MapEmbed pin fixed |
+| Major | 24 | **13** — M2, M3, M4, M5, M6, M7, M11, M14, M21, M25, M28 fixed |
+| Minor | 40 | **37** — MapEmbed pin + both hover-only product card reveals fixed |
 
 All six Critical items are resolved (C1–C6), plus a z-index defect on the error page found after the audit, one Minor, and the six Tier-1 Majors above. Two follow-ups were deliberately left and are flagged in place: the **1024–1280 band** in HomeBeep (still 13.6px type) and the **short-laptop edge case** in the stats sticky gate.
 
@@ -43,7 +43,7 @@ All six Critical items are resolved (C1–C6), plus a z-index defect on the erro
 The failures cluster into four recurring patterns rather than scattered one-offs:
 
 1. **Container-query (`cqw`) stages with no floor** — sections built as a scaled 1440px canvas. Below `lg` the type shrinks with the container and becomes microscopic. (HomeBeep — *fixed*; HomeFincoBiz — still open, see M12. The HomeBeep fix in that file is a working reference for the same treatment.)
-2. **Hover-only content with no touch path** — summaries, CTAs and bios that exist in the DOM but can never be revealed on a phone. (ProductGrid, ProductCard, BoardMemberRow, mega-menu)
+2. ~~**Hover-only content with no touch path**~~ — *resolved*. All four sites (ProductGrid, ProductCard, BoardMemberRow, mega-menu) now have a touch path; the shared `touch:` variant in `main.css` is the pattern to reuse for any new hover reveal.
 3. **Fixed pixel geometry surviving into mobile** — hardcoded card widths, fixed section heights, desktop-sized overlays. (HomeNewsCarousel, HomeFincoBiz, AboutCeoMessage, ParticleStatus)
 4. **Sub-40px touch targets**, systemic rather than local — the default `AppButton` size is 36px tall.
 
@@ -119,11 +119,12 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Problem:** the business menu's natural width is ~1197px. `measureMega()` (`SiteHeader.vue:155`) pins the width to the `w-max` inner element's `offsetWidth`, then the frame caps it with `max-w-[calc(100vw-2rem)] overflow-hidden`. Because the inner keeps `w-max`, the columns never reflow — the frame just crops ~200px off the right, hiding the entire second column of product links. The comment at `NavMegaMenu.vue:42` claims `min-w-0` lets columns shrink; the `w-max` parent defeats it.
 - **Fix:** clamp the measurement (`Math.min(el.offsetWidth, window.innerWidth - 32)`) *and* replace `w-max` with `max-w-full`, or gate the 2-column layout behind `xl:`.
 
-### M2 — Mega-menu is hover-only; tapping the trigger navigates away
+### M2 — Mega-menu is hover-only; tapping the trigger navigates away — ✅ **FIXED**
 - **File:** [app/components/SiteHeader.vue:345](app/components/SiteHeader.vue:345)
 - **Viewport:** any touch device ≥1024px
 - **Problem:** the triggers open only via `@mouseenter` and `@keydown.down`. There is no click/touch path, and the element is a `<NuxtLink>` — so a tap routes straight to `/products` or `/business` and the panel never opens. Below 1024 the drawer covers this, so it is strictly a `lg`-and-up touch problem.
-- **Fix:** intercept the first tap when `matchMedia('(hover: none)')` matches, or gate the desktop nav on `(hover: hover)` instead of width.
+- **Fix applied:** an `@click.capture` handler on the trigger — on a non-hover pointer the first tap opens the panel instead of navigating, and a second tap on the same trigger follows the link. `.capture` is load-bearing: vue-router's own click handler bails when the event is already `defaultPrevented`, but only if we get there first; a bubble-phase listener races with RouterLink's and navigates anyway.
+- **Verified** by stubbing `matchMedia` to report a non-hover pointer: first tap stayed on `/en/about` with the panel open (`aria-expanded="true"`), second tap navigated to `/en/products`. With a real hover-capable pointer the handler no-ops and the link navigates normally (`/en/about` → `/en/products`), so desktop is unchanged. Tap-outside-to-close is already handled by the existing `lg:block` scrim.
 
 ### M3 — Mobile drawer's last 36px are unreachable when the announcement bar is present — ✅ **FIXED**
 - **File:** [app/components/SiteHeader.vue:441](app/components/SiteHeader.vue:441)
@@ -244,11 +245,13 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 - **Problem:** the card height is pinned by `aspect-[210/272]` and the body is a flex child with `overflow-y-auto` — which sets its automatic minimum size to 0, so it is the only thing that shrinks. At 375 the card is 343×444; after padding, title, tagline and the 48px signature row, roughly **230px** remains for ~1370 characters that need ~1100px. The result is ~5 screens of text inside a 230px inner scroller nested inside page scroll, with no visible scroll affordance — the hardest possible gesture on touch. Tablet has the same failure mode.
 - **Fix:** `aspect-auto lg:aspect-[210/272]` and drop `overflow-y-auto` so the card grows to its content below `lg`.
 
-### M21 — Board member career histories are hover-only and unreachable on touch
+### M21 — Board member career histories are hover-only and unreachable on touch — ✅ **FIXED**
 - **File:** [app/components/BoardMemberRow.vue:29](app/components/BoardMemberRow.vue:29)
 - **Viewport:** both
 - **Problem:** all six board members in `content/pages/mn/about.yml` carry a six-line `bioHover` career history, rendered as an absolutely-positioned `opacity-0` sibling revealed solely by `group-hover/bio:opacity-100`. There is no click, tap or focus path. On touch the content is in the DOM — and read by screen readers, since it has no `aria-hidden` — but permanently invisible. The container is a plain `<div>` with no handler, so iOS' tap-to-hover heuristic does not apply.
-- **Fix:** make the bio column a `<button>` toggling a per-row `expanded` ref, keep hover as an `@media (hover: hover)` enhancement, and let the row grow with the `grid-rows-[0fr]→[1fr]` pattern already used in `BranchListItem.vue:43`.
+- **Fix applied:** the cross-fade moved from `group-hover:` utilities into scoped CSS so the two states can be scoped to pointer capability explicitly. Hover devices keep the designed cross-fade under `@media (hover: hover)`; under `@media (hover: none)` the timeline drops out of absolute positioning into normal flow beneath the bio, so both simply read with no interaction required.
+  Chose this over a tap-to-toggle button: it needs no new control or ARIA surface, and guarding on pointer capability rather than width also avoids iOS' sticky `:hover`-on-tap fading the bio out *underneath* the revealed timeline.
+- **Verified** at 375: each bio column grows 96px → 348px with the 240px timeline below it, no overlap, across all 6 members. That adds roughly 1500px to the About page on touch — the deliberate trade for content that was previously unreachable. Generated CSS confirmed to contain the hover, touch and `prefers-reduced-motion` branches.
 
 ## Products & services
 
@@ -347,8 +350,8 @@ The failures cluster into four recurring patterns rather than scattered one-offs
 ## Products / services
 - **DetailTabs' three-up bar is cramped at 375** with no scroll or wrap fallback (`:34`) — min-content ~318px against 343px available. A fourth tab or a longer string tips it into overflow.
 - **DetailTabs' CMS markdown has no `overflow-x-auto` wrapper** (`:65`) and its `prose` class is inert (same root cause as M25). No markdown tables exist in `content/products/**` today, but nothing prevents one.
-- **ProductGrid card summary and CTA are hover-only** (`ProductGrid.vue:50`) — `opacity-0 group-hover:opacity-100` with no `focus-within` and no `hover: none` fallback. On touch the cards show only the centred title. Navigation still works; the summary is simply never readable.
-- **ProductCard has the same hover-only reveal** (`:53`), affecting every card in `RelatedProductsCarousel` on both detail pages.
+- ~~**ProductGrid card summary and CTA are hover-only**~~ ✅ **FIXED** — a `touch:` custom variant (`@custom-variant touch (@media (hover: none))` in `main.css`) now pairs every hover reveal, plus `group-focus-visible:` for keyboard. Verified the variant compiles to real `@media (hover: none)` rules (`touch:opacity-100`, `touch:translate-y-0`, `touch:grid-rows-[1fr]`) applied to the 10 affected elements. Not rendered under an emulated touch pointer — the preview pane cannot emulate pointer capability — so worth one look on a real device.
+- ~~**ProductCard has the same hover-only reveal**~~ ✅ **FIXED** — same `touch:` variant on both the `grid-rows-[0fr]→[1fr]` reveal and the label's opacity, plus `group-focus-visible:`.
 - **ProductsIntro's 1920×159 backdrop lacks `object-cover`** (`:32`) so it stretches ~1.3× vertically once the tagline wraps to 4 lines at mobile width. The `min-h-[159px]` itself is a floor, not a fixed height — copy grows correctly, no clipping.
 
 ## News / careers / contact

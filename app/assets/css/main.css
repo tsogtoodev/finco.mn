@@ -6,6 +6,14 @@
    lists lose their markers) — so the policy pages rendered as one flat block. */
 @plugin "@tailwindcss/typography";
 
+/* `touch:` — applies only where the pointer cannot hover.
+   Several sections reveal content on :hover (product card summaries and CTAs,
+   board-member career timelines). On a touch device that content is in the DOM —
+   and read by screen readers — but can never be revealed, so it is silently lost.
+   Each of those hover rules now pairs with a `touch:` variant that simply shows
+   the content instead. */
+@custom-variant touch (@media (hover: none));
+
 /* ── finco.mn design tokens (Tailwind v4 @theme) ──────────────────────────────
    Values from the Figma `final` page variables (structure.md §4).
    Tailwind generates utilities from these, e.g. --color-primary → bg-primary,

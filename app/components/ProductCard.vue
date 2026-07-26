@@ -49,11 +49,13 @@ const to = computed(() =>
       <h3 class="font-display text-xl font-extrabold leading-7 text-white">{{ title }}</h3>
       <p v-if="summary" class="line-clamp-3 text-[15px] font-light leading-6 text-white/70">{{ summary }}</p>
       <!-- On hover the row expands 0fr→1fr; because the card is justify-end, the
-           title/subtitle lift as the "learn more" button reveals below them. -->
-      <div class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out group-hover:grid-rows-[1fr] motion-reduce:transition-none">
+           title/subtitle lift as the "learn more" button reveals below them.
+           `touch:` keeps the row expanded where there is no hover — otherwise the
+           affordance never appears on a phone or tablet. -->
+      <div class="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out group-hover:grid-rows-[1fr] group-focus-visible:grid-rows-[1fr] touch:grid-rows-[1fr] motion-reduce:transition-none">
         <div class="overflow-hidden">
           <span
-            class="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-hover:delay-75 motion-reduce:transition-none"
+            class="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-hover:delay-75 group-focus-visible:opacity-100 touch:opacity-100 motion-reduce:transition-none"
           >
             {{ $t('common.learnMore') }}
             <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-0.5" />

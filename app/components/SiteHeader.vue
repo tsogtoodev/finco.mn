@@ -129,6 +129,22 @@ function scheduleOpen(a: NavAudience) {
   }
   openTimer = setTimeout(() => showMenu(a), OPEN_DELAY)
 }
+// Touch at >=lg (iPad Pro portrait is exactly 1024, any tablet in landscape):
+// the trigger is a real <NuxtLink>, and the panel only ever opened on
+// @mouseenter — so a tap navigated straight to /products and the per-product
+// sub-links were unreachable from the nav entirely. First tap opens the panel,
+// a second tap on the same trigger follows the link. Below lg the drawer covers
+// this, and on a pointer device hover has already opened it so this is a no-op.
+//
+// Bound with .capture: vue-router's own click handler bails when the event is
+// already `defaultPrevented`, but only if we get there first — a bubble-phase
+// listener races with RouterLink's and would navigate anyway.
+function onTriggerActivate(e: MouseEvent, a: NavAudience) {
+  if (window.matchMedia('(hover: hover)').matches) return
+  if (openMenu.value === a) return
+  e.preventDefault()
+  showMenu(a)
+}
 function scheduleClose() {
   clearTimers()
   closeTimer = setTimeout(hideMenu, CLOSE_DELAY)
@@ -378,6 +394,7 @@ const barHidden = computed(
               :aria-expanded="openMenu === item.audience"
               aria-haspopup="true"
               :aria-controls="`mega-${item.audience}`"
+              @click.capture="onTriggerActivate($event, item.audience)"
               @mouseenter="scheduleOpen(item.audience)"
               @mouseleave="scheduleClose"
               @keydown.down.prevent="openAndFocus(item.audience)"

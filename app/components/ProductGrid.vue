@@ -44,17 +44,20 @@ const cards = await useProductList(props.audience)
           {{ c.title }}
         </h3>
 
-        <!-- Hover: summary fades in just below the (fixed) centered title. -->
+        <!-- Hover: summary fades in just below the (fixed) centered title.
+             `touch:` shows it outright where there is no hover — otherwise the
+             card is just a title on touch and the summary is unreachable.
+             `group-focus-visible:` gives keyboard users the same reveal. -->
         <p
           v-if="c.summary"
-          class="pointer-events-none absolute left-1/2 top-[calc(50%+30px)] w-[85%] max-w-[492px] -translate-x-1/2 text-center text-base font-extralight leading-[22px] text-white/70 opacity-0 transition-opacity duration-300 line-clamp-2 group-hover:opacity-100 motion-reduce:transition-none"
+          class="pointer-events-none absolute left-1/2 top-[calc(50%+30px)] w-[85%] max-w-[492px] -translate-x-1/2 text-center text-base font-extralight leading-[22px] text-white/70 opacity-0 transition-opacity duration-300 line-clamp-2 group-hover:opacity-100 group-focus-visible:opacity-100 touch:opacity-100 motion-reduce:transition-none"
         >
           {{ c.summary }}
         </p>
 
         <!-- Hover: "Дэлгэрэнгүй →" CTA slides up at the bottom-left. -->
         <span
-          class="pointer-events-none absolute bottom-0 left-0 flex translate-y-2 items-center gap-1.5 px-6 py-4 text-lg font-semibold text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 motion-reduce:transition-none"
+          class="pointer-events-none absolute bottom-0 left-0 flex translate-y-2 items-center gap-1.5 px-6 py-4 text-lg font-semibold text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 touch:translate-y-0 touch:opacity-100 motion-reduce:transition-none"
         >
           {{ $t('common.learnMore') }}
           <Icon name="lucide:arrow-right" class="size-4" />

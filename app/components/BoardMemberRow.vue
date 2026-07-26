@@ -24,17 +24,62 @@ defineProps<{ member: BoardMember }>()
     <!-- Bio column. When the member has a `bioHover` career timeline, hovering
          the description cross-fades the bio out and the timeline in (they're
          stacked, so no layout shift). The row's photo keeps it tall enough for
-         the timeline to reveal in place without pushing into the next row. -->
-    <div class="group/bio relative text-sm font-light leading-6 text-[rgba(0,0,0,0.6)] sm:text-base md:max-w-[720px] md:pt-1">
-      <p :class="member.bioHover && 'transition-opacity duration-300 group-hover/bio:opacity-0'">
+         the timeline to reveal in place without pushing into the next row.
+         See the scoped styles for the touch fallback. -->
+    <div class="bio relative text-sm font-light leading-6 text-[rgba(0,0,0,0.6)] sm:text-base md:max-w-[720px] md:pt-1">
+      <p class="bio-main">
         {{ member.bio }}
       </p>
-      <p
-        v-if="member.bioHover"
-        class="absolute inset-x-0 top-0 whitespace-pre-line opacity-0 transition-opacity duration-300 group-hover/bio:opacity-100 md:pt-1"
-      >
+      <p v-if="member.bioHover" class="bio-alt md:pt-1">
         {{ member.bioHover }}
       </p>
     </div>
   </div>
 </template>
+
+<style scoped>
+/* The cross-fade is expressed here rather than with `group-hover:` utilities so
+   the two states can be scoped to pointer capability explicitly. Every board
+   member carries a six-line `bioHover` career history; with a bare :hover rule
+   that content was present in the DOM (and announced by screen readers) but
+   impossible to reveal on any touch device. */
+.bio-main,
+.bio-alt {
+  transition: opacity 300ms;
+}
+.bio-alt {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  opacity: 0;
+  white-space: pre-line;
+}
+
+/* Pointer devices keep the designed cross-fade. */
+@media (hover: hover) {
+  .bio:hover .bio-main {
+    opacity: 0;
+  }
+  .bio:hover .bio-alt {
+    opacity: 1;
+  }
+}
+
+/* Touch: there is no hover to trigger, so the timeline drops into normal flow
+   under the bio and both simply read. Guarding on (hover: none) rather than
+   width also avoids iOS' sticky :hover-on-tap fading the bio out underneath it. */
+@media (hover: none) {
+  .bio-alt {
+    position: static;
+    margin-top: 0.75rem;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bio-main,
+  .bio-alt {
+    transition: none;
+  }
+}
+</style>
