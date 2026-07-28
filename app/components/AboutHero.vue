@@ -18,6 +18,7 @@ const FADE_TO = [
       :width="1920"
       :height="1228"
       fetchpriority="high"
+      preload
       wrapper-class="-z-20"
       img-class="size-full object-cover object-center"
     />

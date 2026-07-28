@@ -50,22 +50,16 @@ function syncFractal() {
   fs.value = 1 - p * (1 - FRACTAL_MIN)
 }
 
-let rafId = 0
-function onScroll() {
-  if (rafId) return
-  rafId = requestAnimationFrame(() => {
-    rafId = 0
-    syncFractal()
-  })
-}
+// Drives the fractal off the smooth-scroll layer so it tracks the page in the
+// same frame rather than a frame behind. Also owns the resize listener.
+const fractalScroll = useScrollSync(syncFractal)
 
 onMounted(() => {
   const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
   if (!reduced) {
     syncFractal()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll, { passive: true })
+    fractalScroll.start()
   }
 
   if (reduced) {
@@ -88,9 +82,7 @@ onMounted(() => {
 })
 onBeforeUnmount(() => {
   observer?.disconnect()
-  if (rafId) cancelAnimationFrame(rafId)
-  window.removeEventListener('scroll', onScroll)
-  window.removeEventListener('resize', onScroll)
+  // useScrollSync detaches its own listeners on unmount.
 })
 </script>
 
@@ -179,7 +171,13 @@ onBeforeUnmount(() => {
             class="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-white shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
           />
           <h3 class="text-lg font-medium text-[#141414]">{{ ceo.greetingTitle }}</h3>
-          <div class="mt-5 space-y-4 text-sm font-light leading-6 text-[rgba(0,0,0,0.7)] lg:overflow-y-auto">
+          <!-- data-lenis-prevent: the smooth-scroll layer runs with
+               allowNestedScroll off, so inner scrollers have to opt out by hand
+               or a wheel over this letter scrolls the page instead of it. -->
+          <div
+            data-lenis-prevent
+            class="mt-5 space-y-4 text-sm font-light leading-6 text-[rgba(0,0,0,0.7)] lg:overflow-y-auto"
+          >
             <p v-for="(para, i) in ceo.greetingBody" :key="i">{{ para }}</p>
           </div>
           <p class="mt-6 text-sm font-medium text-[#4c41d8]">{{ ceo.tagline }}</p>

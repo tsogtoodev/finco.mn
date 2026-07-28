@@ -9,18 +9,28 @@ import { setSmoothScroll } from '~/utils/smoothScroll'
 // pins (AboutMission, the news reading ruler), IntersectionObserver reveals and
 // the Spline scroll interactions.
 //
+// Wheel smoothing runs on EVERY platform, macOS included.
+//
+// This was briefly gated off on Apple platforms, on the theory that stacking
+// Lenis' easing on top of the OS' own trackpad momentum is what made fast
+// scrolling feel loose. The mechanism is real — macOS keeps emitting a decaying
+// tail of `wheel` events after the fingers lift, and Lenis adds every one of
+// those deltas to its target — but it is not a defect: lenis.dev itself ships
+// exactly that (smoothWheel on, lerp 0.1, no delta filtering, no platform gate)
+// and is the reference for how this is supposed to feel. Matching it here.
+//
 // Feel is tuned by the three constants below.
 //   LERP  — how much of the remaining distance is covered each frame. LOWER is
 //           heavier: the wheel sets a target and the page eases toward it over
-//           more frames. 0.1 is the library default; 0.065 is a noticeably
-//           weightier glide without feeling detached from the input.
-//   WHEEL — wheel delta multiplier. Slightly under 1 makes one notch travel a
-//           little less, which reads as mass rather than as lag.
-//   TOUCH — touch delta multiplier. Touch itself stays native (`syncTouch` off),
-//           so phones keep the OS momentum they already had; this only trims
-//           the drag distance to match the desktop weight.
+//           more frames. 0.1 matches both the library default and lenis.dev.
+//   WHEEL — wheel delta multiplier. 1 is lenis.dev's value; this was 0.9, which
+//           trimmed each notch slightly to read as mass. Drop it back if the
+//           full-strength notch feels too eager.
+//   TOUCH — touch delta multiplier. Touch stays native (`syncTouch` off), so
+//           phones keep the OS momentum they already had; this only trims the
+//           drag distance to match the desktop weight.
 const LERP = 0.1
-const WHEEL = 0.9
+const WHEEL = 1
 const TOUCH = 1.4
 
 export default defineNuxtPlugin((nuxtApp) => {
@@ -34,9 +44,13 @@ export default defineNuxtPlugin((nuxtApp) => {
     // Vertical only — horizontal wheel/trackpad gestures fall through to the
     // native scrollers (ProductCarousel and the other overflow-x rails).
     gestureOrientation: 'vertical',
-    // Hovering a nested scroll container (AppDialog's overflow-y-auto body,
-    // the mega-menu columns) scrolls THAT element instead of the page.
-    allowNestedScroll: true,
+    // Nested scrollers opt OUT explicitly via `data-lenis-prevent` rather than
+    // being auto-detected. lenis.dev runs with detection off too, and the
+    // tradeoff favours it: auto-detection walks the composed path of every wheel
+    // event, and the site only has three inner scrollers to annotate (AppDialog's
+    // body, SiteHeader's mobile nav, AboutCeoMessage's letter). The cost of
+    // forgetting one is that it scrolls the page instead of itself.
+    allowNestedScroll: false,
     // Lenis runs its own requestAnimationFrame loop.
     autoRaf: true,
     // In-page #hash links animate with the same weight. The negative offset is

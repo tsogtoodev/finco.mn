@@ -41,17 +41,12 @@ function goBack() {
     <!-- max-w-7xl + px-4 matches the header and the carousel/FAQ sections so the
          content aligns with the nav logo. pt clears the ~96px transparent nav. -->
     <div class="relative mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pb-16 pt-24 sm:pt-28">
-      <!-- Back, ghost style: no fill, border or shadow — hover is the only
-           affordance. Matches the products + product-detail heroes. -->
+      <!-- Back, ghost variant. Matches the products + product-detail heroes. -->
       <div class="hero-rise">
-        <button
-          type="button"
-          class="inline-flex h-10 w-fit cursor-pointer items-center gap-2 rounded-[var(--radius)] px-4 text-sm font-medium text-white transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-white/10 active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none"
-          @click="goBack"
-        >
+        <AppButton variant="ghost" class="h-10 w-fit" @click="goBack">
           <Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />
           {{ t('common.back') }}
-        </button>
+        </AppButton>
       </div>
 
       <!-- centered headline + subtext + CTA -->

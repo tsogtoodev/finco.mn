@@ -14,7 +14,7 @@
 // The 36px AnnouncementBar rides at the top of this sticky header (rendered
 // below), so it reveals/hides WITH the nav on scroll — returning on scroll-up
 // until dismissed — instead of scrolling away. The nav row is 60px per Figma.
-import { navPromos, type NavAudience } from '~/data/navMenus'
+import { navPromoArt, navPromos, type NavAudience } from '~/data/navMenus'
 
 const props = withDefaults(defineProps<{ transparent?: boolean }>(), {
   transparent: false,
@@ -254,11 +254,47 @@ function onScroll() {
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && openMenu.value) escClose()
 }
+// Warm the mega-menu promo art. The panel is `v-if`'d, so this art is requested
+// for the first time at the exact moment it becomes visible — hence the pop-in.
+//
+// Deliberately NOT `<link rel="preload">` in the head: these are decorative and
+// only some visitors ever open a menu, so a head preload would compete with the
+// hero/LCP image on every page and log "preloaded but not used" for everyone
+// else. Warming a detached <img> after hydration costs nothing on the critical
+// path and still lands in the HTTP cache long before a hover.
+//
+// srcset + sizes are set rather than a bare `src` so the browser runs its normal
+// candidate selection — the URL it picks here is the same one NavPromoCard's
+// NuxtImg will ask for, DPR included. A plain src would warm the wrong variant
+// on retina and download twice.
+function warmPromoArt() {
+  if (!window.matchMedia('(min-width: 1024px)').matches) return // desktop-only panel
+  const conn = (navigator as Navigator & {
+    connection?: { saveData?: boolean; effectiveType?: string }
+  }).connection
+  if (conn?.saveData || /(?:^|-)2g$/.test(conn?.effectiveType ?? '')) return
+
+  const img = useImage()
+  for (const art of navPromoArt) {
+    try {
+      const { srcset, sizes } = img.getSizes(art.src, { sizes: art.sizes })
+      const el = new Image()
+      if (sizes) el.sizes = sizes
+      if (srcset) el.srcset = srcset
+      el.src = img(art.src)
+    }
+    catch { /* a warm miss is never worth breaking the header over */ }
+  }
+}
+
 onMounted(() => {
   onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('keydown', onKeydown)
   window.addEventListener('resize', onMegaResize, { passive: true })
+
+  if ('requestIdleCallback' in window) window.requestIdleCallback(warmPromoArt, { timeout: 4000 })
+  else setTimeout(warmPromoArt, 2000)
 })
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)

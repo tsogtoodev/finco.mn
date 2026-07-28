@@ -7,6 +7,14 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', type: 'image/png', href: '/favicon.png' },
         { rel: 'manifest', href: '/manifest.json' },
+        // Spline CDN. Declared globally rather than inside SplineScene because
+        // every scene is wrapped in <ClientOnly>, so a `useHead` there never runs
+        // during SSR — the hint would only reach the DOM after hydration, which
+        // is the one moment it is no longer worth having. Scenes appear on home,
+        // about, product detail and (via MapEmbed) branches + contact, so the
+        // origin is wanted on effectively every page anyway.
+        { rel: 'preconnect', href: 'https://prod.spline.design', crossorigin: 'anonymous' },
+        { rel: 'dns-prefetch', href: 'https://prod.spline.design' },
       ],
     },
     // Cross-page fade+rise (classes in main.css). `out-in` so the old page
@@ -26,22 +34,9 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@nuxtjs/seo',
     'nuxt-auth-utils',
-    'nuxt-studio',
     'motion-v/nuxt',
     '@tsogtoodev/prelo/nuxt',
   ],
-
-  // Nuxt Studio v2 (self-hosted CMS). Editors visit /_studio on the deployed
-  // site and sign in via a GitHub OAuth app (STUDIO_GITHUB_CLIENT_ID/SECRET);
-  // edits commit to this repo's `main`, which triggers a redeploy.
-  studio: {
-    repository: {
-      provider: 'github',
-      owner: 'tsogtoodev',
-      repo: 'finco.mn',
-      branch: 'main',
-    },
-  },
 
   // Firebase = identity provider (client SDK). The server verifies its ID
   // tokens with `jose` and mints a sealed-cookie session via nuxt-auth-utils
@@ -210,8 +205,6 @@ export default defineNuxtConfig({
   },
 
   // @nuxt/content runs on the Cloudflare D1 binding provided by NuxtHub.
-  // (Studio v2 is configured above via the `studio` key — not content.preview,
-  // which was the deprecated v1 hosted approach.)
   content: {
     database: {
       type: 'd1',

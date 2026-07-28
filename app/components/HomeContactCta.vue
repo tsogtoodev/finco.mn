@@ -24,7 +24,7 @@ const feedbackOpen = ref(false)
       @click="feedbackOpen = true"
     >
       <ClientOnly>
-        <SplineScene scene="https://prod.spline.design/rAfqlL9pnx29yw5P/scene.splinecode" no-drag :zoom="2" />
+        <SplineScene scene="https://prod.spline.design/rAfqlL9pnx29yw5P/scene.splinecode" no-drag preload :zoom="2" />
         <template #fallback>
           <NuxtImg
             src="/images/home/contact-cards.png"

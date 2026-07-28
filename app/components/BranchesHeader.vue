@@ -39,14 +39,12 @@ function goBack() {
     />
 
     <div class="relative mx-auto max-w-7xl px-4 pb-14 pt-8 sm:pb-16">
-      <button
-        type="button"
-        class="inline-flex h-10 items-center gap-2 rounded-[var(--radius)] bg-secondary px-4 py-2 text-sm font-medium text-[#171717] transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-muted active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none cursor-pointer"
-        @click="goBack"
-      >
-        <Icon name="lucide:arrow-left" class="size-4" />
+      <!-- Back pill, secondary variant: filled, for this light surface. The dark
+           photo heroes use `ghost` instead. -->
+      <AppButton variant="secondary" class="h-10 w-fit" @click="goBack">
+        <Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />
         {{ t('common.back') }}
-      </button>
+      </AppButton>
 
       <div class="mx-auto mt-12 flex max-w-[760px] flex-col items-center gap-5 text-center">
         <h1 class="text-3xl font-medium tracking-tight text-[#141414] sm:text-[36px] sm:leading-[44px]">

@@ -19,5 +19,6 @@ const showFloatingActions = computed(() => route.meta.floatingActions !== false)
     <SiteFooter />
     <FloatingActions v-if="showFloatingActions" />
     <AutoNextNews />
+    <FpsMeter />
   </div>
 </template>

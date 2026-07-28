@@ -8,6 +8,7 @@
 // some embedded/headless renderers, and a rect check is reliable everywhere.
 // The listeners self-remove after the scene loads.
 import { onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
+import { getSmoothScroll } from '~/utils/smoothScroll'
 
 const props = withDefaults(
   defineProps<{
@@ -36,9 +37,28 @@ const props = withDefaults(
      * exported camera, untouched (default).
      */
     zoom?: number
+    /**
+     * Treat this scene as important: `preconnect` to the Spline CDN from the
+     * SSR'd head, and warm the runtime + `.splinecode` immediately on mount
+     * rather than waiting for browser idle. For the scenes a visitor reliably
+     * reaches (the About mission pin, the contact CTA) this removes the pause
+     * between scrolling to the section and the scene appearing.
+     */
+    preload?: boolean
   }>(),
-  { rootMargin: 200, noDrag: false, revealDelay: 0, zoom: 1 },
+  { rootMargin: 200, noDrag: false, revealDelay: 0, zoom: 1, preload: false },
 )
+
+// The `preconnect`/`dns-prefetch` for the Spline CDN lives in nuxt.config's
+// app.head, not here: every usage of this component is inside <ClientOnly>, so a
+// useHead in this setup never runs during SSR and the hint would arrive only
+// after hydration — too late to save the DNS + TLS round trips it exists for.
+//
+// Deliberately no `<link rel="preload" as="fetch">` for the scene itself either.
+// It is ~1MB of runtime plus the scene payload; a hard preload on a below-fold
+// asset competes with the LCP image and logs "preloaded but not used" for every
+// visitor who never scrolls that far. `preload` here means "skip the idle wait"
+// (see schedulePrefetch) — early, but still yielding to the critical path.
 
 const emit = defineEmits<{ load: [] }>()
 
@@ -116,7 +136,13 @@ function schedulePrefetch() {
     import('@splinetool/runtime').catch(() => {})
     fetch(props.scene).catch(() => {})
   }
-  if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 3000 })
+  // `preload` scenes skip the idle wait entirely — the whole point is to be
+  // fetching while the visitor is still reading the top of the page, not to
+  // queue behind whatever else the main thread is doing. The data-saver and
+  // zero-width guards above still apply, so a phone that can never show the
+  // scene still downloads nothing.
+  if (props.preload) warm()
+  else if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 3000 })
   else setTimeout(warm, 1500)
 }
 
@@ -250,23 +276,67 @@ function unbindMotionGuard() {
   window.removeEventListener('touchend', onPressEnd, true)
 }
 // ---------------------------------------------------------------------------
-// Wheel over the canvas has two problems to solve at once:
+// Wheel over the canvas has three problems to solve at once:
 //  1. Spline's wheel-to-zoom — blocked by stopPropagation (capture phase, so the
 //     event never descends to Spline's own listener on the canvas).
 //  2. Scroll jank — Spline registers a NON-PASSIVE wheel listener on the canvas,
 //     so the browser forces main-thread ("janky/finicky") scrolling over the
 //     canvas region even when the zoom is blocked. Dropping the canvas out of
 //     hit-testing for the duration of the scroll makes the wheel target the page
-//     instead, letting the browser scroll on the compositor; cursor-follow
-//     resumes ~250ms after the wheel stops. This is a no-op for scenes whose
-//     wrapper is already pointer-events:none (the canvas is never the wheel
-//     target, and we never set its inline pointer-events).
+//     instead; cursor-follow resumes ~250ms after the wheel stops. This is a
+//     no-op for scenes whose wrapper is already pointer-events:none (the canvas
+//     is never the wheel target, and we never set its inline pointer-events).
+//  3. The smooth-scroll layer getting skipped. This one is why scrolling used to
+//     break up around Spline sections. Lenis listens for `wheel` on WINDOW in the
+//     BUBBLE phase, i.e. AFTER the canvas in the propagation path — so the
+//     stopPropagation in (1), fired from the window CAPTURE phase, stopped the
+//     event reaching Lenis too. The page then scrolled natively for that event
+//     while Lenis was mid-glide, and because Lenis ignores a native scroll that
+//     arrives while `isScrolling === 'smooth'`, its target went stale and the
+//     next frame yanked the page back. One native jump plus a snap-back, at the
+//     start of every gesture begun over a scene.
+//
+//     Fixing it means handing the page an equivalent event that Spline cannot
+//     see: cancel the real one (so nothing scrolls natively) and re-dispatch a
+//     copy directly on window, where Lenis picks it up and applies its own
+//     multipliers. The copy targets window rather than the canvas, so it neither
+//     re-enters this guard nor matches any `data-lenis-prevent`.
+//
+//     Only done when the smooth-scroll layer actually owns the wheel. For
+//     reduced-motion users the plugin builds no Lenis at all, and cancelling the
+//     native scroll without a replacement would leave the page unscrollable over
+//     a scene — so there we keep the old passive, stopPropagation-only path.
 let scrollIdleTimer: ReturnType<typeof setTimeout> | null = null
+let ownsWheel = false
+
+function forwardWheelToPage(e: WheelEvent) {
+  window.dispatchEvent(new WheelEvent('wheel', {
+    deltaX: e.deltaX,
+    deltaY: e.deltaY,
+    deltaZ: e.deltaZ,
+    deltaMode: e.deltaMode,
+    clientX: e.clientX,
+    clientY: e.clientY,
+    ctrlKey: e.ctrlKey,
+    shiftKey: e.shiftKey,
+    altKey: e.altKey,
+    metaKey: e.metaKey,
+    // Not bubbling, dispatched on window: `target` is window, so `e.target === el`
+    // below is false and this cannot loop.
+    bubbles: false,
+    cancelable: true,
+  }))
+}
+
 function onWheelGuard(e: WheelEvent) {
   const el = canvas.value
   if (!el) return
   if (e.target === el) {
     e.stopPropagation()
+    if (ownsWheel) {
+      e.preventDefault()
+      forwardWheelToPage(e)
+    }
     el.style.pointerEvents = 'none'
   }
   if (el.style.pointerEvents === 'none') {
@@ -286,10 +356,15 @@ function onGestureGuard(e: Event) {
   if (isOverCanvas(e)) e.stopPropagation()
 }
 function bindScrollPinchGuard() {
-  // Passive: we only stopPropagation (never preventDefault), so the browser is
-  // free to scroll without waiting on this listener — the guard itself never
-  // adds main-thread scroll cost.
-  window.addEventListener('wheel', onWheelGuard, { capture: true, passive: true })
+  // Resolved once: the Lenis plugin runs before any component mounts and the
+  // instance never swaps mid-session.
+  ownsWheel = !!getSmoothScroll()?.options.smoothWheel
+
+  // Non-passive only when we intend to cancel the native scroll and forward to
+  // Lenis. That costs nothing extra there — Lenis already holds a non-passive
+  // wheel listener on window, so wheel handling is main-thread either way. With
+  // no Lenis we stay passive, exactly as before.
+  window.addEventListener('wheel', onWheelGuard, { capture: true, passive: !ownsWheel })
   window.addEventListener('touchmove', onPinchGuard, true)
   window.addEventListener('gesturestart', onGestureGuard, true)
   window.addEventListener('gesturechange', onGestureGuard, true)

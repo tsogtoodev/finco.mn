@@ -19,7 +19,6 @@ import beepWordmark from '~/assets/icons/beep-wordmark-white.svg?url'
 import fincoBizLogo from '~/assets/icons/fincobiz-logo-white.svg?url'
 
 const { t } = useI18n()
-const localePath = useLocalePath()
 
 // Slide copy comes from the `pages` home doc (heroSlides, matched by slide
 // key) so editors manage it in /content; i18n remains the fallback.
@@ -161,10 +160,7 @@ const DESKTOP = '(min-width: 1024px)'
 // pinned for the whole runway before releasing.
 const RUNWAY_VH = 0.8
 
-let rafId = 0
-let scrollAttached = false
 function computeP() {
-  rafId = 0
   if (typeof window === 'undefined') return
   // Settled width: the card shrinks to 90% of the viewport width, no px cap.
   // Computed in JS and fed to CSS as `--hero-settled-w` because a `min()`-with-
@@ -174,23 +170,21 @@ function computeP() {
   const runway = window.innerHeight * RUNWAY_VH
   p.value = runway > 0 ? Math.min(1, Math.max(0, window.scrollY / runway)) : 1
 }
-function onScroll() {
-  if (!rafId) rafId = requestAnimationFrame(computeP)
-}
+// Driven by the smooth-scroll layer so the pinned card scrubs in the same frame
+// as the page rather than one behind it. start()/stop() are idempotent, so the
+// media-query toggle below can call them freely.
+const scrubScroll = useScrollSync(computeP)
+
 function setupScrub() {
   const on = !reduced.value && window.matchMedia(DESKTOP).matches
   if (on === scrub.value) { if (on) computeP(); return }
   scrub.value = on
-  if (on && !scrollAttached) {
-    scrollAttached = true
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll, { passive: true })
+  if (on) {
+    scrubScroll.start()
     computeP()
   }
-  else if (!on && scrollAttached) {
-    scrollAttached = false
-    window.removeEventListener('scroll', onScroll)
-    window.removeEventListener('resize', onScroll)
+  else {
+    scrubScroll.stop()
     p.value = 1
   }
 }
@@ -207,12 +201,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  if (scrollAttached) {
-    window.removeEventListener('scroll', onScroll)
-    window.removeEventListener('resize', onScroll)
-  }
-  if (rafId) cancelAnimationFrame(rafId)
   if (ctaFallback) clearTimeout(ctaFallback)
+  // scrubScroll detaches itself on unmount.
 })
 </script>
 
@@ -255,6 +245,7 @@ onBeforeUnmount(() => {
             alt=""
             width="1440"
             height="737"
+            :preload="i === 0"
             :fetchpriority="i === current ? 'high' : 'auto'"
             class="absolute inset-0 size-full object-cover transition-opacity duration-700 ease-out motion-reduce:transition-none"
             :class="i === current ? 'opacity-100' : 'opacity-0'"
@@ -333,18 +324,19 @@ onBeforeUnmount(() => {
                   :animate="ctaReady ? { opacity: 1, y: 0, filter: 'blur(0px)' } : { opacity: 0, y: -16, filter: 'blur(6px)' }"
                   :transition="{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }"
                 >
-                  <NuxtLink
-                    :to="localePath(slides[current].to)"
-                    class="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium shadow-2xs transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                    :class="isBeepSlide
-                      ? 'bg-lime text-dark focus-visible:outline-lime'
-                      : 'bg-accent text-white focus-visible:outline-accent'"
+                  <!-- BeepWallet's slide swaps the CTA to Beep's lime; the other
+                       three use the site accent. Focus-ring colour is pinned per
+                       slide so the ring reads against the photo rather than
+                       inheriting the label colour. -->
+                  <AppButton
+                    :to="slides[current].to"
+                    :variant="isBeepSlide ? 'lime' : 'accent'"
+                    arrow
+                    class="h-10 w-fit shadow-2xs"
+                    :class="isBeepSlide ? 'focus-visible:outline-lime' : 'focus-visible:outline-accent'"
                   >
                     {{ t('hero.cta') }}
-                    <svg viewBox="0 0 16 16" class="size-4" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                      <path d="M3.33 8h9.34M9 4.33 12.67 8 9 11.67" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                  </NuxtLink>
+                  </AppButton>
                 </Motion>
             </div>
           </div>

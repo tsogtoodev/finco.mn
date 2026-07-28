@@ -23,8 +23,9 @@ https://stackoverflow.com/questions/26271203/locking-screen-orientation-on-mobil
 [X] HomeFincoBiz deerh uldsen card-uudiin zurgiig shinchleh
 
 2026-07-27 TODOS
-[ ] ProductDetailHero noos breadcrumb-g arilgah. Orond ni back button-g uldeegeed ghost style bolgoh.
-[ ] ProductsIntro dotorh text-g 18px-n font size-toi bolgoh.
-[ ] AboutMission-n spline model dooroos taslagdaj bgag zasah.
-[ ] AboutCeoMessage deerh step fractal-g 5% -s 3% ruu oruulah.
+[X] ProductDetailHero noos breadcrumb-g arilgah. Orond ni back button-g uldeegeed ghost style bolgoh.
+[X] ProductsIntro dotorh text-g 18px-n font size-toi bolgoh.
+[X] AboutMission-n spline model dooroos taslagdaj bgag zasah.
+[X] AboutCeoMessage deerh step fractal-g 5% -s 3% ruu oruulah.
 [ ] HomeFincoBiz card content uudiig shine zurgaar avj update hiih.
+[X] ProductDetailHero dotorh stats card uudiin blur figma-tai ijilhen bish bn.

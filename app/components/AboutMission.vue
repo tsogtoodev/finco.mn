@@ -44,14 +44,13 @@ function syncOffset() {
   })
 }
 
-let rafId = 0
-function onScroll() {
-  if (!enabled.value || rafId) return
-  rafId = requestAnimationFrame(() => {
-    rafId = 0
-    syncOffset()
-  })
-}
+// Bound to the smooth-scroll layer rather than the native `scroll` event, so the
+// pinned column moves in the same frame as the page instead of trailing it by one.
+// The pin is desktop + motion-allowed only, hence the `enabled` gate.
+const pinScroll = useScrollSync(() => {
+  if (!enabled.value) return
+  syncOffset()
+})
 
 const revealClass = (i: number) => {
   if (!enabled.value || i === 0) return ''
@@ -86,7 +85,9 @@ onMounted(() => {
   applyPin()
   pinMql.addEventListener('change', applyPin)
   reduceMql.addEventListener('change', applyPin)
-  window.addEventListener('scroll', onScroll, { passive: true })
+  pinScroll.start()
+  // Separate from pinScroll's own resize hook: this one re-measures the block
+  // offsets, which a plain syncOffset does not do.
   window.addEventListener('resize', measure, { passive: true })
   if (typeof ResizeObserver !== 'undefined' && innerEl.value) {
     resizeObserver = new ResizeObserver(measure)
@@ -95,12 +96,11 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  if (rafId) cancelAnimationFrame(rafId)
   pinMql?.removeEventListener('change', applyPin)
   reduceMql?.removeEventListener('change', applyPin)
-  window.removeEventListener('scroll', onScroll)
   window.removeEventListener('resize', measure)
   resizeObserver?.disconnect()
+  // pinScroll detaches itself on unmount.
 })
 </script>
 
@@ -171,6 +171,7 @@ onBeforeUnmount(() => {
               <SplineScene
                 scene="https://prod.spline.design/d6X47aZ7JVftxvE2/scene.splinecode"
                 no-drag
+                preload
                 :zoom="1"
                 class="size-full bg-[#080A12]"
               />

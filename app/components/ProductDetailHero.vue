@@ -53,17 +53,13 @@ function goBack() {
     <div
       class="relative mx-auto w-full max-w-[1248px] px-6 lg:px-0 pb-10 pt-[100px] sm:pb-12 sm:pt-[112px] lg:pb-[49px] lg:pt-[100px]"
     >
-      <!-- Back, ghost style: no fill or border, so the negative margin pulls the
-           label (not its invisible padding box) onto the column's left edge. -->
+      <!-- Back, ghost variant: no fill or border, so the padding box is invisible
+           and the label sits on the column's left edge. -->
       <div class="hero-rise">
-        <button
-          type="button"
-          class="inline-flex h-10 w-fit cursor-pointer items-center gap-2 rounded-[var(--radius)] px-4 text-sm font-medium text-white transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-white/10 active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none"
-          @click="goBack"
-        >
+        <AppButton variant="ghost" class="h-10 w-fit" @click="goBack">
           <Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />
           {{ t('common.back') }}
-        </button>
+        </AppButton>
       </div>
 
       <!-- centred title + subtitle + stats + CTAs. The design tucks this block
@@ -115,19 +111,12 @@ function goBack() {
         </dl>
 
         <div class="hero-rise-glass flex flex-col items-center gap-4 sm:flex-row sm:gap-6" style="animation-delay: 0.32s">
-          <NuxtLink
-            :to="localePath(props.locationTo || '/branches')"
-            class="inline-flex h-10 items-center justify-center gap-2 rounded-[12px] border border-white/20 bg-white/10 px-4 text-sm font-medium text-white backdrop-blur-[20px] transition-colors duration-150 hover:bg-white/20"
-          >
+          <AppButton :to="props.locationTo || '/branches'" variant="glass" class="h-10">
             {{ t('productHero.location') }}
-          </NuxtLink>
-          <NuxtLink
-            :to="localePath(props.applyTo || '/contact')"
-            class="inline-flex h-10 items-center justify-center gap-2 rounded-[12px] border border-[#e6e6e6] bg-white px-4 text-sm font-medium text-[#28303f] transition-colors duration-150 hover:bg-white/90"
-          >
+          </AppButton>
+          <AppButton :to="props.applyTo || '/contact'" variant="light" arrow class="h-10 border border-input">
             {{ t('productHero.apply') }}
-            <Icon name="lucide:arrow-right" class="size-4" aria-hidden="true" />
-          </NuxtLink>
+          </AppButton>
         </div>
       </div>
     </div>

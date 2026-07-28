@@ -35,7 +35,6 @@
     "motion-v": "^2.3.0",
     "nuxt": "^4.4.8",
     "nuxt-auth-utils": "^0.5.29",
-    "nuxt-studio": "^1.7.0",
     "tailwindcss": "^4.3.1",
     "vue": "^3.5.35",
     "vue-router": "^5.1.0"

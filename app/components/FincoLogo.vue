@@ -1,12 +1,8 @@
 <script setup lang="ts">
-// Finco Capital logo (infinity mark + wordmark), exported from Figma node 1:13494 /
-// 1:2606. One component, two treatments: `color` for the solid/light nav,
-// `white` for the transparent overlay nav over a dark hero.
 const props = withDefaults(defineProps<{ variant?: 'color' | 'white' }>(), {
   variant: 'color',
 })
 
-// Back loop + small accent stay teal in both modes; front loop + wordmark flip.
 const front = computed(() => (props.variant === 'white' ? '#ffffff' : '#4c41d8'))
 const word = computed(() => (props.variant === 'white' ? '#ffffff' : '#212947'))
 </script>

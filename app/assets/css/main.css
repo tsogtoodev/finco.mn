@@ -93,38 +93,18 @@ body:has(.anx-overlay) .fab-dock {
 body {
   @apply bg-background text-foreground font-sans antialiased;
 
-  overscroll-behavior: none !important;
+  min-height: 100dvh;
 }
 
-/* Page scrolling is smoothed in JS by Lenis (plugins/smooth-scroll.client.ts),
-   which owns anchor jumps too (`anchors: { offset: -96 }`) — so CSS
-   `scroll-behavior: smooth` is deliberately NOT set here: it would double up
-   with Lenis on any programmatic page scroll. Reduced-motion users get no Lenis
-   instance and therefore plain instant native scrolling.
-
-   scroll-padding-top still clears the ~96px transparent fixed nav for scrolls
-   the browser performs itself (focus, `:target`, Nuxt's restore-position). */
 html {
   scroll-padding-top: 96px;
+  overscroll-behavior: none;
 }
 
-/* Expose the announcement strip's height while it's on screen so heroes can
-   subtract it (`h-[calc(100svh-var(--announcement-h))]`). It leaves the DOM via
-   v-if on dismiss, so :has() re-evaluates and the hero reclaims the space. This
-   plain rule carries NO transition, so the strip's height is reserved instantly
-   on load (no intro animation). The 36px lives here now — the bar's own height is
-   `h-[var(--announcement-h)]`, so keep this in sync with AnnouncementBar's markup. */
 body:has(.announcement-bar) {
   --announcement-h: 36px;
 }
 
-/* Dismiss: the bar keeps its `.announcement-bar` class but gains `.is-collapsing`
-   for the exit (see AnnouncementBar.vue — it stays mounted for the animation, then
-   v-if removes it). This more-specific rule wins and eases --announcement-h to 0,
-   which simultaneously collapses the bar's own height, slides the nav row up to the
-   top, and grows every `calc(100svh - var(--announcement-h))` hero from the top with
-   its bottom pinned — one variable, everything in lockstep, no snap. The transition
-   lives ONLY here so it never plays on initial load. */
 body:has(.announcement-bar.is-collapsing) {
   --announcement-h: 0px;
   transition: --announcement-h 420ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -145,10 +125,6 @@ body:has(.announcement-bar.is-collapsing) {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Hero entrance reveal — staggered fade-up. CSS-driven (not motion-v) so the
-   above-the-fold hero copy is never stranded at opacity:0 on a fresh SSR load;
-   motion-v enter animations don't fire on server-hydrated nodes. Stagger via an
-   inline `animation-delay`. Ends visible regardless of JS; honours reduced motion. */
 @keyframes hero-rise {
   from {
     opacity: 0;
@@ -168,11 +144,6 @@ body:has(.announcement-bar.is-collapsing) {
   }
 }
 
-/* Same entrance, minus the fade — for rows containing backdrop-filter glass.
-   Chromium drops a backdrop-filter for as long as the element OR any ancestor
-   sits at opacity < 1, so `hero-rise` would render the glass as flat colour
-   for the whole 0.7s and snap the blur in at the end. Slide only: the blur is
-   correct from the first frame. */
 @keyframes hero-rise-glass {
   from {
     transform: translateY(24px);
@@ -190,9 +161,6 @@ body:has(.announcement-bar.is-collapsing) {
   }
 }
 
-/* Full-bleed hero photo — load-gated entrance fade + pull-back zoom. Hidden until
-   the img fires @load; HeroBackgroundImage toggles `.is-revealed` on the wrapper.
-   Parent section needs overflow-hidden + a matching fallback bg colour. */
 @keyframes hero-image-reveal {
   from {
     opacity: 0;
