@@ -5,7 +5,7 @@ import type { Collections } from '@nuxt/content'
 definePageMeta({ transparentHeader: true })
 
 const route = useRoute()
-const { locale, t } = useI18n()
+const { locale } = useI18n()
 const slug = computed(() => route.params.slug as string)
 const provider = useCmsProvider()
 
@@ -47,12 +47,6 @@ const { data: related } = await useAsyncData(
   { watch: [locale, slug] },
 )
 
-const audienceCrumb = computed(() =>
-  product.value?.audience === 'business'
-    ? { label: t('nav.business'), to: '/business' }
-    : { label: t('nav.products'), to: '/products' },
-)
-
 useSeoMeta({
   title: () => product.value?.title,
   description: () => product.value?.summary,
@@ -66,7 +60,6 @@ useSeoMeta({
       :title="product.title"
       :subtitle="product.summary"
       :terms="product.loanTerms"
-      :breadcrumb="[{ label: t('common.homeBreadcrumb'), to: '/' }, audienceCrumb, { label: product.title }]"
     />
 
     <section class="bg-white py-[20px]">

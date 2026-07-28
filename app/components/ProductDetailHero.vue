@@ -1,22 +1,10 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-// Product-detail hero — Figma 574:7652 (2026-07 redesign; supersedes 1:13321).
-// Dark photo under a diagonal scrim that deepens to solid black, breadcrumb +
-// outlined "Буцах" button top-left, then a centred title/subtitle, three glassy
-// stat boxes (loan terms) and a dual CTA row.
-//
-// The photo is deliberately NOT blurred here (unlike the products-listing hero) —
-// the scrim plus the frosted stat boxes carry the legibility instead.
-//
-// Only the 60px nav overlays this section: SiteHeader's transparent variant pulls
-// it over the page with `-mb-[60px]`, while the announcement bar keeps its own
-// flow height above us — so the top padding is nav clearance + the design's gap.
 const props = defineProps<{
   image?: string
   title?: string
   subtitle?: string
-  breadcrumb?: { label: string; to?: string }[]
   terms?: NonNullable<Collections['products']['loanTerms']>
   locationTo?: string
   applyTo?: string
@@ -65,31 +53,12 @@ function goBack() {
     <div
       class="relative mx-auto w-full max-w-[1248px] px-6 lg:px-0 pb-10 pt-[100px] sm:pb-12 sm:pt-[112px] lg:pb-[49px] lg:pt-[100px]"
     >
-      <!-- breadcrumb + back -->
-      <div class="hero-rise flex flex-col items-start gap-4 sm:gap-5 lg:gap-[23px]">
-        <nav v-if="props.breadcrumb?.length" aria-label="Breadcrumb">
-          <ol class="flex flex-wrap items-center gap-x-2.5 gap-y-1 leading-7">
-            <template v-for="(c, i) in props.breadcrumb" :key="i">
-              <li>
-                <NuxtLink
-                  v-if="c.to"
-                  :to="localePath(c.to)"
-                  class="text-sm font-extralight text-white/60 transition-colors hover:text-white"
-                >
-                  {{ c.label }}
-                </NuxtLink>
-                <span v-else class="text-base font-medium text-white" aria-current="page">{{ c.label }}</span>
-              </li>
-              <li v-if="i < props.breadcrumb.length - 1" aria-hidden="true" class="text-sm font-extralight text-white">
-                /
-              </li>
-            </template>
-          </ol>
-        </nav>
-
+      <!-- Back, ghost style: no fill or border, so the negative margin pulls the
+           label (not its invisible padding box) onto the column's left edge. -->
+      <div class="hero-rise">
         <button
           type="button"
-          class="inline-flex h-10 w-fit cursor-pointer items-center gap-2 rounded-[var(--radius)] border border-white/20 px-4 text-sm font-medium text-white shadow-[0_4px_4px_rgba(0,0,0,0.25)] transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-white/10 active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none"
+          class="inline-flex h-10 w-fit cursor-pointer items-center gap-2 rounded-[var(--radius)] px-4 text-sm font-medium text-white transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-white/10 active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none"
           @click="goBack"
         >
           <Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />

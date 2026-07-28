@@ -1,15 +1,4 @@
 <script setup lang="ts">
-// Products-listing hero — Figma 574:6802 (2026-07 redesign; supersedes 1:13610).
-// Progressively-blurred lifestyle photo under a diagonal scrim, breadcrumb +
-// outlined "Буцах" button pinned to the left of the 1200px column, then a
-// centred 32/48 headline with the audience toggle beneath it.
-//
-// Only the 60px nav overlays this section — SiteHeader's transparent variant
-// pulls it over the page with `-mb-[60px]`, while the announcement bar keeps its
-// own flow height above us. So the top padding is 60px of nav clearance plus the
-// design's own breathing room, and it stays correct when the bar is dismissed.
-// Photo + headline come from the `pages` collection via the parent; i18n keeps
-// the chrome labels.
 import type { Audience } from '~/composables/useProducts'
 
 const props = defineProps<{ audience: Audience; photo?: string; headline?: string }>()
@@ -57,28 +46,12 @@ function goBack() {
     <div
       class="relative mx-auto w-full max-w-[1248px] px-6 lg:px-0 pb-10 pt-[100px] sm:pb-12 sm:pt-[112px] lg:pb-[54px] lg:pt-[100px]"
     >
-      <!-- breadcrumb + back -->
-      <div class="hero-rise flex flex-col items-start gap-4 sm:gap-5 lg:gap-[23px]">
-        <nav aria-label="Breadcrumb">
-          <ol class="flex flex-wrap items-center gap-x-2.5 gap-y-1 leading-7">
-            <li>
-              <NuxtLink
-                :to="localePath('/')"
-                class="text-sm font-extralight text-white/60 transition-colors hover:text-white"
-              >
-                {{ t('productsPage.breadcrumbHome') }}
-              </NuxtLink>
-            </li>
-            <li aria-hidden="true" class="text-sm font-extralight text-white">/</li>
-            <li class="text-base font-light text-white" aria-current="page">
-              {{ t('productsPage.breadcrumbCurrent') }}
-            </li>
-          </ol>
-        </nav>
-
+      <!-- Back, ghost style: no fill, border or shadow — hover is the only
+           affordance. Matches the product-detail hero. -->
+      <div class="hero-rise">
         <button
           type="button"
-          class="inline-flex h-10 w-fit cursor-pointer items-center gap-2 rounded-[var(--radius)] border border-white/20 px-4 text-sm font-medium text-white shadow-[0_4px_4px_rgba(0,0,0,0.25)] transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-white/10 active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none"
+          class="inline-flex h-10 w-fit cursor-pointer items-center gap-2 rounded-[var(--radius)] px-4 text-sm font-medium text-white transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-white/10 active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none"
           @click="goBack"
         >
           <Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />
