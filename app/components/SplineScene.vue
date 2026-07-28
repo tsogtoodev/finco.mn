@@ -250,8 +250,32 @@ function unbindMotionGuard() {
   window.removeEventListener('touchend', onPressEnd, true)
 }
 // ---------------------------------------------------------------------------
+// Wheel over the canvas has two problems to solve at once:
+//  1. Spline's wheel-to-zoom — blocked by stopPropagation (capture phase, so the
+//     event never descends to Spline's own listener on the canvas).
+//  2. Scroll jank — Spline registers a NON-PASSIVE wheel listener on the canvas,
+//     so the browser forces main-thread ("janky/finicky") scrolling over the
+//     canvas region even when the zoom is blocked. Dropping the canvas out of
+//     hit-testing for the duration of the scroll makes the wheel target the page
+//     instead, letting the browser scroll on the compositor; cursor-follow
+//     resumes ~250ms after the wheel stops. This is a no-op for scenes whose
+//     wrapper is already pointer-events:none (the canvas is never the wheel
+//     target, and we never set its inline pointer-events).
+let scrollIdleTimer: ReturnType<typeof setTimeout> | null = null
 function onWheelGuard(e: WheelEvent) {
-  if (isOverCanvas(e)) e.stopPropagation()
+  const el = canvas.value
+  if (!el) return
+  if (e.target === el) {
+    e.stopPropagation()
+    el.style.pointerEvents = 'none'
+  }
+  if (el.style.pointerEvents === 'none') {
+    if (scrollIdleTimer) clearTimeout(scrollIdleTimer)
+    scrollIdleTimer = setTimeout(() => {
+      if (canvas.value) canvas.value.style.pointerEvents = ''
+      scrollIdleTimer = null
+    }, 250)
+  }
 }
 function onPinchGuard(e: TouchEvent) {
   // Two-finger touch = pinch; single-finger passes through (page scroll).
@@ -262,7 +286,10 @@ function onGestureGuard(e: Event) {
   if (isOverCanvas(e)) e.stopPropagation()
 }
 function bindScrollPinchGuard() {
-  window.addEventListener('wheel', onWheelGuard, true)
+  // Passive: we only stopPropagation (never preventDefault), so the browser is
+  // free to scroll without waiting on this listener — the guard itself never
+  // adds main-thread scroll cost.
+  window.addEventListener('wheel', onWheelGuard, { capture: true, passive: true })
   window.addEventListener('touchmove', onPinchGuard, true)
   window.addEventListener('gesturestart', onGestureGuard, true)
   window.addEventListener('gesturechange', onGestureGuard, true)
@@ -270,6 +297,9 @@ function bindScrollPinchGuard() {
 }
 function unbindScrollPinchGuard() {
   window.removeEventListener('wheel', onWheelGuard, true)
+  // Restore hit-testing if we tore down mid-scroll, and drop the idle timer.
+  if (scrollIdleTimer) { clearTimeout(scrollIdleTimer); scrollIdleTimer = null }
+  if (canvas.value) canvas.value.style.pointerEvents = ''
   window.removeEventListener('touchmove', onPinchGuard, true)
   window.removeEventListener('gesturestart', onGestureGuard, true)
   window.removeEventListener('gesturechange', onGestureGuard, true)
