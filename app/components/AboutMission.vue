@@ -157,9 +157,16 @@ onBeforeUnmount(() => {
         >
         <div
           v-if="isDesktop"
-          class="pointer-events-auto absolute left-[40%] top-[min(8.894vw,171px)] aspect-video w-[min(79.373vw,1524px)] overflow-hidden bg-[#080A12]"
+          class="pointer-events-auto absolute left-[40%] top-[min(8.894vw,171px)] aspect-video overflow-hidden bg-[#080A12]"
+          :style="{
+            '--scene-w': 'min(79.373vw, 1524px, calc((100vh - min(8.894vw, 171px)) * 16 / 9))',
+            width: 'var(--scene-w)',
+          }"
         >
-          <div class="h-[1080px] w-[1920px] mt-[65px] origin-top-left scale-[calc(tan(atan2(min(79.373vw,1524px),1920px)))]">
+          <div
+            class="h-[1080px] w-[1920px] origin-top-left"
+            :style="{ scale: 'calc(tan(atan2(var(--scene-w), 1920px)))' }"
+          >
             <ClientOnly>
               <SplineScene
                 scene="https://prod.spline.design/d6X47aZ7JVftxvE2/scene.splinecode"
@@ -172,11 +179,21 @@ onBeforeUnmount(() => {
               </template>
             </ClientOnly>
           </div>
+
+          <div
+            aria-hidden="true"
+            class="pointer-events-none absolute inset-x-0 bottom-0 h-[48%]"
+            :style="{
+              backgroundImage: `linear-gradient(to top,
+                #080A12 0%,
+                #080A12 26%,
+                rgba(8,10,18,0.82) 46%,
+                rgba(8,10,18,0.45) 68%,
+                rgba(8,10,18,0.15) 86%,
+                rgba(8,10,18,0) 100%)`,
+            }"
+          />
         </div>
-        <div class="pointer-events-none absolute bottom-0 left-0 h-[min(16.094vw,309px)] w-[46.6%] max-w-[894px] bg-gradient-to-b" />
-        <!-- <div class="pointer-events-none absolute bottom-0 left-1/2 h-[min(13.802vw,65px)] w-full max-w-[1910px] -translate-x-1/2 bg-gradient-to-b" /> -->
-        <!-- soft blue glow, lower-left -->
-        <!-- <div class="absolute -bottom-24 -left-24 size-[420px] rounded-full bg-[#214784]/25 blur-[120px]" /> -->
       </div>
     </div>
   </section>
