@@ -54,7 +54,6 @@ useSeoMeta({
       :image="service.heroImage"
       :title="service.title"
       :subtitle="service.summary"
-      :breadcrumb-current="service.breadcrumb || service.title"
     />
 
     <RelatedProductsCarousel :items="related ?? []" base-path="/services" />

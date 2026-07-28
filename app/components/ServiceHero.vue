@@ -1,13 +1,13 @@
 <script setup lang="ts">
 // Service-detail hero (Figma 1:14671). Mirrors ProductsHero: blurred dark
-// lifestyle photo + diagonal scrim, breadcrumb + "Буцах" back button top-left,
-// and a centered headline + subtext.
+// lifestyle photo + diagonal scrim, a ghost "Буцах" back button top-left, and a
+// centered headline + subtext. The breadcrumb was dropped per request, matching
+// the products-listing and product-detail heroes.
 // The global transparent nav overlays the top ~96px, so content gets top clearance.
 const props = defineProps<{
   image?: string
   title?: string
   subtitle?: string
-  breadcrumbCurrent?: string
 }>()
 
 const { t } = useI18n()
@@ -38,31 +38,18 @@ function goBack() {
       style="background: linear-gradient(251.2deg, rgba(0, 0, 0, 0.25) 7%, rgba(0, 0, 0, 0.95) 96%)"
     />
 
-    <!-- max-w-7xl + px-4 matches the header and the carousel/FAQ sections so the breadcrumb
-         aligns with the nav logo and page content. pt clears the ~96px transparent nav. -->
+    <!-- max-w-7xl + px-4 matches the header and the carousel/FAQ sections so the
+         content aligns with the nav logo. pt clears the ~96px transparent nav. -->
     <div class="relative mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pb-16 pt-24 sm:pt-28">
-      <!-- breadcrumb + back -->
-      <div class="hero-rise flex flex-col gap-[23px]">
-        <nav aria-label="Breadcrumb">
-          <ol class="flex items-center gap-2.5">
-            <li>
-              <NuxtLink :to="localePath('/')" class="text-sm font-extralight text-white/60 transition-colors hover:text-white">
-                {{ t('common.homeBreadcrumb') }}
-              </NuxtLink>
-            </li>
-            <li aria-hidden="true" class="text-sm font-extralight text-white">/</li>
-            <li class="text-base font-medium text-white" aria-current="page">
-              {{ props.breadcrumbCurrent || props.title }}
-            </li>
-          </ol>
-        </nav>
-
+      <!-- Back, ghost style: no fill, border or shadow — hover is the only
+           affordance. Matches the products + product-detail heroes. -->
+      <div class="hero-rise">
         <button
           type="button"
-          class="inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius)] border border-white/20 px-4 text-sm font-medium text-white shadow-[0_4px_4px_rgba(0,0,0,0.25)] transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-white/10 active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none cursor-pointer"
+          class="inline-flex h-10 w-fit cursor-pointer items-center gap-2 rounded-[var(--radius)] px-4 text-sm font-medium text-white transition duration-200 ease-[cubic-bezier(0.25,1,0.5,1)] hover:bg-white/10 active:scale-[0.92] active:blur-[1.5px] motion-reduce:transition-none"
           @click="goBack"
         >
-          <Icon name="lucide:arrow-left" class="size-4" />
+          <Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />
           {{ t('common.back') }}
         </button>
       </div>

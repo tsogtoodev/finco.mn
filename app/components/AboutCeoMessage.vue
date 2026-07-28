@@ -9,19 +9,33 @@ const letterRef = ref<{ $el?: HTMLElement } | null>(null)
 const tilted = ref(false)
 let observer: IntersectionObserver | null = null
 
-const FRACTAL_RAMP = `linear-gradient(to right,
-  rgb(188,181,250) 0%,
-  rgb(220,217,249) 22%,
-  rgb(223,220,249) 40%,
-  rgb(166,161,237) 62%,
-  rgb(139,201,228) 82%,
-  rgb(154,217,231) 100%)`
+// Matches Figma (node 775:10214): each band is a vertical indigo→white gradient
+// at a uniform low alpha (see FRACTAL_LAYERS). The per-layer opacity carries the
+// alpha, so the gradient itself is full-opacity indigo → white top→bottom.
+const FRACTAL_RAMP = `linear-gradient(to bottom,
+  rgb(76, 65, 216) 0%,
+  rgb(255, 255, 255) 100%)`
+// Five bands at 0/20/40/60/80% down, each 3% alpha. Figma (775:10214) uses 5%
+// per band (topmost 3%); dialled down to a uniform 3% here per design direction
+// for a subtler stack.
 const FRACTAL_LAYERS = [
-  { t: 0, o: 0.1 },
-  { t: 20, o: 0.16 },
-  { t: 40, o: 0.18 },
-  { t: 60, o: 0.2 },
-  { t: 80, o: 0.22 },
+  { t: 0, o: 0.03 },
+  { t: 20, o: 0.03 },
+  { t: 40, o: 0.03 },
+  { t: 60, o: 0.03 },
+  { t: 80, o: 0.03 },
+] as const
+
+// Colour-glow ellipses behind the steps (Figma 775:10211–10213). Each is a
+// 30%-opacity solid ellipse seen through the band's 80px blur; reproduced here
+// as a blurred solid ellipse. Geometry is Figma's (frame 1920×200) expressed as
+// % of the band — centre (cx,cy), size (w,h) — so the pools sit along the bottom
+// edge and rise into view exactly as designed. The frame clips them (the band's
+// overflow-hidden does the same here).
+const FRACTAL_GLOWS = [
+  { cx: 0, cy: 140.8, w: 44.9, h: 136.5, color: 'rgb(140, 131, 255)' }, // periwinkle, left
+  { cx: 63.2, cy: 140.8, w: 44.9, h: 136.5, color: 'rgb(76, 65, 216)' }, // indigo, centre-right
+  { cx: 88.2, cy: 107.1, w: 37.2, h: 69.2, color: 'rgb(45, 224, 198)' }, // teal, right
 ] as const
 
 const FRACTAL_MIN = 0.35
@@ -95,6 +109,22 @@ onBeforeUnmount(() => {
       :style="{ '--fs': fs, height: 'calc(min(10.417vw, 200px) * var(--fs))', background: 'linear-gradient(180deg, rgba(76, 65, 216, 0.03) 0%, rgba(255, 255, 255, 0.03) 100%)', backdropFilter: 'blur(80px)' }"
     >
       <div style="background: linear-gradient(180deg, rgba(76, 65, 216, 0.03) 0%, rgba(255, 255, 255, 0.03) 100%); backdrop-filter: blur(80px); width: 100%; height: 100%; position: absolute; left: 0; top: 0;"></div>
+      <!-- Colour-glow ellipses (Figma 775:10211–10213), behind the step layers. -->
+      <div
+        v-for="(g, i) in FRACTAL_GLOWS"
+        :key="`glow-${i}`"
+        class="absolute rounded-full"
+        :style="{
+          left: `${g.cx}%`,
+          top: `${g.cy}%`,
+          width: `${g.w}%`,
+          height: `${g.h}%`,
+          transform: 'translate(-50%, -50%)',
+          background: g.color,
+          opacity: 0.3,
+          filter: 'blur(80px)',
+        }"
+      />
       <div
         v-for="(l, i) in FRACTAL_LAYERS"
         :key="i"
