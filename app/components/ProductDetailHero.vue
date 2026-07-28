@@ -93,10 +93,13 @@ function goBack() {
         <!-- Stat boxes break 32px past the column on each side (design: a 1264
              row centred on the 1200 column), so the three 400px cards land
              exactly. Gated at xl, not lg: the break-out only fits once the
-             viewport clears 1264px, otherwise the section clips the edges. -->
+             viewport clears 1264px, otherwise the section clips the edges.
+             blur-[40px] matches Figma's BACKGROUND_BLUR radius 40 1:1 — halving
+             it (the usual layer-blur conversion) leaves the photo readable
+             through the card, which is not what the design shows. -->
         <dl
           v-if="statItems.length"
-          class="hero-rise grid w-full grid-cols-1 gap-4 md:grid-cols-3 lg:gap-8"
+          class="hero-rise-glass grid w-full grid-cols-1 gap-4 md:grid-cols-3 lg:gap-8"
           style="animation-delay: 0.24s"
         >
           <div
@@ -111,7 +114,7 @@ function goBack() {
           </div>
         </dl>
 
-        <div class="hero-rise flex flex-col items-center gap-4 sm:flex-row sm:gap-6" style="animation-delay: 0.32s">
+        <div class="hero-rise-glass flex flex-col items-center gap-4 sm:flex-row sm:gap-6" style="animation-delay: 0.32s">
           <NuxtLink
             :to="localePath(props.locationTo || '/branches')"
             class="inline-flex h-10 items-center justify-center gap-2 rounded-[12px] border border-white/20 bg-white/10 px-4 text-sm font-medium text-white backdrop-blur-[20px] transition-colors duration-150 hover:bg-white/20"

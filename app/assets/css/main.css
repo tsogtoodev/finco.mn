@@ -168,6 +168,28 @@ body:has(.announcement-bar.is-collapsing) {
   }
 }
 
+/* Same entrance, minus the fade — for rows containing backdrop-filter glass.
+   Chromium drops a backdrop-filter for as long as the element OR any ancestor
+   sits at opacity < 1, so `hero-rise` would render the glass as flat colour
+   for the whole 0.7s and snap the blur in at the end. Slide only: the blur is
+   correct from the first frame. */
+@keyframes hero-rise-glass {
+  from {
+    transform: translateY(24px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.hero-rise-glass {
+  animation: hero-rise-glass 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise-glass {
+    animation: none;
+  }
+}
+
 /* Full-bleed hero photo — load-gated entrance fade + pull-back zoom. Hidden until
    the img fires @load; HeroBackgroundImage toggles `.is-revealed` on the wrapper.
    Parent section needs overflow-hidden + a matching fallback bg colour. */
