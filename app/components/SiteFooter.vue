@@ -84,12 +84,21 @@ const logoCutStyle = computed(() => ({
 }))
 
 const MAX_PULL = 240 // px ceiling for the resisted distance
-// Gesture distance needed for a FULL pull, as a multiple of the ceiling.
-// 2 = the pull starts 1:1 with the finger and eases off; higher = stretchier.
-// Unlike the previous exp() curve this one reaches the ceiling EXACTLY at
-// raw = PULL_RANGE × ceiling, so a committed pull always reveals 100% of the
-// logo instead of stalling a few px short on the asymptote.
-const PULL_RANGE = 2.4
+// Apple's rubber-band constant, from the widely reverse-engineered UIScrollView
+// transfer function. 0.55 is the value Apple ships; lower = stiffer pull.
+const RUBBER_C = 0.55
+// Gesture distance that fully reveals the wordmark, as a multiple of the reveal
+// distance itself. Apple's curve only APPROACHES its asymptote, so to make 100%
+// reachable the asymptote is pushed out past the overhang and the output is
+// clamped at the overhang instead — full reveal then lands at a finite pull.
+// Must exceed 1 / RUBBER_C (≈1.82), below which the curve never gets there at all.
+// Higher = longer pull, but also a gentler corner where the clamp bites (at 4 the
+// curve still has ~20% of its initial slope there, so the stop reads as the pull
+// running out rather than hitting a wall).
+const FULL_PULL_RANGE = 4
+// Asymptote as a multiple of the reveal distance, solved from
+// resist(FULL_PULL_RANGE · R) = R:  d = R · kc / (kc − 1).
+const CURVE_D_FACTOR = (FULL_PULL_RANGE * RUBBER_C) / (FULL_PULL_RANGE * RUBBER_C - 1)
 const LOGO_PARALLAX = 0.2 // logo trails the wrapper → subtle depth
 // ζ = damping / (2·√(stiffness·mass)) — 1 is critical, LOWER = bouncier.
 // 14 with this mass → ζ≈0.53: one clear ~14% overshoot past rest (the visible
@@ -116,23 +125,41 @@ let springFrame = 0
 let lastFrameT = 0
 let wheelIdle: ReturnType<typeof setTimeout> | null = null
 
-// Resisted travel: slope 2/PULL_RANGE at the start, easing to zero exactly at
-// the ceiling (classic quadratic rubber band) — so full reveal is reachable.
+// Apple's rubber-band transfer function:
+//
+//   y = (x · c · d) / (d + x · c)
+//
+// x = accumulated raw overscroll input, c = 0.55. Slope is c at the origin (the
+// pull starts out tracking the gesture at just over half speed) and decays
+// hyperbolically toward the asymptote d.
+//
+// d is NOT the reveal distance here — it sits CURVE_D_FACTOR× beyond it, so
+// that the curve crosses the reveal distance at a finite pull
+// (FULL_PULL_RANGE × it) and the wordmark can actually be pulled all the way
+// out. The Math.min is what holds it there: past that point the footer stops
+// dead rather than creeping toward an asymptote it can never reach. That corner
+// is the price of a reachable 100% — see FULL_PULL_RANGE.
 function resist(r: number) {
-  const range = PULL_RANGE * pullCeiling
-  if (range <= 0) return 0
-  const x = Math.min(r / range, 1)
-  return pullCeiling * (1 - (1 - x) * (1 - x))
+  const reveal = pullCeiling
+  if (reveal <= 0) return 0
+  const d = reveal * CURVE_D_FACTOR
+  const xc = Math.max(0, r) * RUBBER_C
+  return Math.min(reveal, (xc * d) / (d + xc))
 }
-// Inverse of resist(): the gesture distance that produces a given offset. Any
-// time a new gesture picks up while an offset is already on screen (mid-spring
-// wheel, re-grab on touch), `raw` MUST be re-derived from the live offset —
-// resuming with the old accumulated raw snaps the footer to the old depth in
-// one frame, which reads as a sudden jump.
+// Inverse of resist(), solved for x: x = y·d / (c·(d − y)). Any time a new
+// gesture picks up while an offset is already on screen (mid-spring wheel,
+// re-grab on touch), `raw` MUST be re-derived from the live offset — resuming
+// with the old accumulated raw snaps the footer to the old depth in one frame,
+// which reads as a sudden jump. Inside the clamped region the map is many-to-one,
+// so clamping y to the reveal distance picks the SMALLEST raw that holds the
+// footer there: a re-grab at full reveal resumes right at the corner instead of
+// inheriting however much dead over-pull the previous gesture piled up.
 function unresist(o: number) {
-  if (pullCeiling <= 0) return 0
-  const x = 1 - Math.sqrt(Math.max(0, 1 - o / pullCeiling))
-  return x * PULL_RANGE * pullCeiling
+  const reveal = pullCeiling
+  if (reveal <= 0) return 0
+  const d = reveal * CURVE_D_FACTOR
+  const y = Math.min(Math.max(0, o), reveal)
+  return (y * d) / (RUBBER_C * (d - y))
 }
 
 function applyTransforms() {
@@ -154,9 +181,11 @@ function applyTransforms() {
   }
 }
 
-// How far the wordmark actually hangs below the footer's clip. Pulling further
-// than this would lift the logo's bottom edge into view and leave a gap under
-// it, so the ceiling is whichever is smaller.
+// How far the wordmark actually hangs below the footer's clip — this is `d` in
+// the rubber-band function. Pulling further than this would lift the logo's
+// bottom edge into view and leave a gap under it, so the ceiling is whichever
+// is smaller. This is the reveal distance the rubber-band curve is fitted to,
+// not the curve's asymptote (which sits further out — see CURVE_D_FACTOR).
 function measure() {
   const root = rootEl.value
   const logo = logoEl.value

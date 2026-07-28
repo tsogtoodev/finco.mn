@@ -5,7 +5,7 @@
 [ ] Mobile optimizations (60%)
 [X] SiteFooter link items uudiin hoorondiin spacing yanzlar
 [X] SiteFooter mobile-r oroh ued logog buten haragduulah
-[ ] SiteFooter desktop-r oroh ued elastic effect logo deer oruulah
+[X] SiteFooter desktop-r oroh ued elastic effect logo deer oruulah
 [X] AboutHero deerh headline, subline text uudiin load hiij bga blur-tei transition-g zasah
 [X] ProductsHero deerh tab uudiin background ungunii transparency-g bagasgah
 [X] ProductsGrid dotorh list figma deer shinchlegdsen, teriig update hiih. Hover hiih ued blur hiihiig martaj bolohgui.
