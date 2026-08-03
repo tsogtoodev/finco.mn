@@ -1,18 +1,4 @@
 <script setup lang="ts">
-// FincoBiz showcase (Figma 1:14224 + the 2026-07 card bodies 782:15408 /
-// 782:15445 / 782:15469): FincoBiz wordmark + intro + accent CTA, then the
-// platform as a live deck of three stacked browser cards. Clicking a peeked
-// card brings it to the front (the others shift back one slot).
-//
-// Every card now carries the designer's own body: a teal heading + supporting
-// line on the left and that card's product screenshot bleeding off the right
-// edge. The screenshots are node exports whose crop is already baked in by the
-// Figma frame, so each is placed at its own width flush to the right — see
-// `art` below. (This replaced one baked full-card raster with masked overlay
-// text, plus two hand-built skeleton UIs.)
-//
-// Copy comes from the `pages` home doc's fincobiz group where fields exist,
-// with i18n as the fallback and the source for the new per-card strings.
 const { t } = useI18n()
 
 const page = await usePageContent('home')
@@ -22,18 +8,10 @@ const copy = computed(() => ({
 
 type CardId = 'eligibility' | 'receivables' | 'request'
 
-// Artwork width as a % of the 1152px design body, each flush to the right edge
-// (Figma clips them there): eligibility 566.6px, receivables 576px, request
-// 514.1px. Heights are the full 397px body, and the exports' aspect ratios
-// match, so `object-cover` can't distort them.
-// `gx`/`gy` place the decorative glass panel (Figma 782:15522 / 15446 / 15542):
-// a 944x674 frame, centred then nudged, so each card catches a different slice of
-// the same artwork. gx is a % of the 1152px body so it tracks the card's width;
-// gy stays px because the body height is fixed at lg.
 const cards = [
-  { id: 'eligibility' as CardId, dot: '#12b76a', art: '49.18%', gx: '27.03%', gy: '-247px' },
-  { id: 'receivables' as CardId, dot: '#4e83fd', art: '50%', gx: '3.47%', gy: '158px' },
-  { id: 'request' as CardId, dot: '#f7b23b', art: '44.63%', gx: '16.67%', gy: '0px' },
+  { id: 'eligibility' as CardId, dot: '#12b76a', bar: '#12b76a', img: 3, art: '61.67%', w: 1421 },
+  { id: 'receivables' as CardId, dot: '#4e83fd', bar: '#4e83fd', img: 1, art: '58.81%', w: 1355 },
+  { id: 'request' as CardId, dot: '#f7b23b', bar: '#f7b23b', img: 2, art: '60.76%', w: 1400 },
 ]
 
 // The request card's heading/body map onto the callout fields editors already
@@ -107,18 +85,11 @@ onBeforeUnmount(stopAuto)
 
       <MotionReveal :delay="0.1" class="relative mt-16">
         <div class="[container-type:inline-size]">
-          <!-- headroom for the two peeked headers above the front card -->
           <div
             class="biz-stack relative pt-[max(8cqw,88px)]"
             @pointerenter="stopAuto"
             @pointerleave="startAuto"
           >
-            <!-- Card height is `h-auto` below lg. The 450px is a desktop crop
-                 height: there the mockup renders taller than the card and is
-                 deliberately clipped, but at a 327px container it is only ~150px
-                 tall, so the fixed height left ~256px of blank white inside the
-                 card. The two skeleton cards are `absolute inset-0` and their
-                 bodies are `flex-1`, so they follow the front card's height. -->
             <div class="relative">
               <article
                 v-for="card in cards"
@@ -143,48 +114,50 @@ onBeforeUnmount(stopAuto)
                   </span>
                 </button>
 
-                <!-- Card body (Figma 782:15408 / 15445 / 15469): copy left,
-                     that card's screenshot bleeding off the right edge. Below lg
-                     the two stack — a 1152px-wide screenshot is unreadable at a
-                     327px card, so it reads as artwork under the copy instead of
-                     shrinking the text to match it. -->
                 <div class="relative flex min-h-0 flex-1 flex-col lg:block">
-                  <!-- Frosted-glass backdrop (Figma "Glass", 14 slats over a blurred
-                       teal bloom). Desktop only: its geometry is a fixed 944x674
-                       frame hung off the body's centre, which means nothing once the
-                       body stacks. -->
                   <div
-                    aria-hidden="true"
-                    class="biz-glass hidden lg:block"
-                    :style="{ '--gx': card.gx, '--gy': card.gy }"
+                    class="relative z-10 flex flex-col gap-4 p-5 lg:absolute lg:left-[4.6875%] lg:top-1/2 lg:h-[300px] lg:w-[34.72%] lg:-translate-y-1/2 lg:justify-between lg:gap-0 lg:p-0"
                   >
-                    <img src="/images/home/fincobiz-glass-glow.svg" alt="" class="biz-glow">
-                    <div class="biz-slats" />
-                  </div>
+                    <div class="flex flex-col gap-3 lg:gap-4">
+                      <div class="flex items-start gap-[18px] lg:gap-[22px]">
+                        <span
+                          aria-hidden="true"
+                          class="w-1 shrink-0 self-stretch rounded-full"
+                          :style="{ background: card.bar }"
+                        />
+                        <h3
+                          class="font-display text-xl font-bold leading-7 text-[#212947] lg:text-[20px] lg:leading-[]"
+                        >
+                          {{ cardCopy(card.id).heading }}
+                        </h3>
+                      </div>
+                      <p
+                        class="text-sm font-extralight leading-[22px] text-black/60 lg:text-[18px] lg:leading-6 lg:tracking-[0.18px]"
+                      >
+                        {{ cardCopy(card.id).body }}
+                      </p>
+                    </div>
 
-                  <div
-                    class="relative z-10 px-5 pb-4 pt-5 lg:absolute lg:left-[5.21%] lg:top-[15.11%] lg:w-[30.85%] lg:p-0"
-                  >
-                    <h3
-                      class="font-display text-lg font-bold leading-6 text-[#2de0c6] lg:text-2xl lg:leading-[30px]"
+                    <AppButton
+                      to="https://biz.finco.mn?utm_source=finco_home&utm_medium=card"
+                      target="_blank"
+                      variant="ghost"
+                      arrow
+                      class="h-10 self-start text-foreground"
+                      :class="depth(card.id) === 0 ? '' : 'pointer-events-none'"
                     >
-                      {{ cardCopy(card.id).heading }}
-                    </h3>
-                    <p
-                      class="mt-2 text-sm font-extralight leading-[22px] text-black/60 lg:mt-3 lg:text-[18px] lg:leading-[28px] lg:tracking-[0.18px]"
-                    >
-                      {{ cardCopy(card.id).body }}
-                    </p>
+                      {{ t('common.learnMore') }}
+                    </AppButton>
                   </div>
 
                   <NuxtImg
-                    :src="`/images/home/fincobiz-card-${card.id}.png`"
+                    :src="`/images/home/fincobiz-${card.img}.png`"
                     alt=""
                     aria-hidden="true"
-                    :width="1152"
+                    :width="card.w"
                     :height="794"
-                    sizes="100vw lg:600px"
-                    class="mt-auto block w-full object-cover lg:absolute lg:inset-y-0 lg:right-0 lg:mt-0 lg:h-full"
+                    sizes="100vw lg:720px"
+                    class="mt-auto block w-full object-cover object-right lg:absolute lg:inset-y-0 lg:right-0 lg:mt-0 lg:h-full -mr-px"
                     :style="{ '--art-w': card.art }"
                   />
                 </div>
@@ -198,12 +171,6 @@ onBeforeUnmount(stopAuto)
 </template>
 
 <style scoped>
-/* Deck geometry: depth d sits d peeks higher and 4% smaller. The origin is
-   top-centre so each deeper card insets by the same amount on the left and the
-   right (scaling about the centre splits the width loss evenly), while `top`
-   keeps the vertical peek stagger anchored. Promotion just changes --depth per
-   card — the transform transition carries the reorder (z-index snaps, but the
-   moving card covers the swap). */
 .biz-stack {
   --peek: max(4cqw, 44px);
 }
@@ -211,9 +178,6 @@ onBeforeUnmount(stopAuto)
 .biz-card {
   transform: translateY(calc(var(--depth) * var(--peek) * -1)) scale(calc(1 - var(--depth) * 0.04));
   transform-origin: top center;
-  /* Layered elevation: a tight contact shadow, a mid drop, and a broad soft
-     pool. The mid layer keeps only a small negative spread so the shadow still
-     reads on the narrow left/right peeks, not just below the front card. */
   box-shadow:
     0 1px 2px rgba(23, 16, 84, 0.05),
     0 10px 22px -8px rgba(23, 16, 84, 0.16),
@@ -223,9 +187,6 @@ onBeforeUnmount(stopAuto)
     box-shadow 0.6s ease,
     filter 0.6s ease;
 }
-
-/* Back cards read as inactive: a whisper darker, full brightness + a nudge on
-   hover as the click affordance. The front card is inert (promote no-ops). */
 .biz-card:not(.is-front) {
   cursor: pointer;
   filter: brightness(0.985);
@@ -238,13 +199,6 @@ onBeforeUnmount(stopAuto)
   cursor: default;
 }
 
-/* Background wash (Figma 568:5696). The Figma layer is a 4096px / 7.8MB raster
-   of a blurred S-curve, of which the frame only ever shows the middle ~36%.
-   Rebuilt here as three radial lobes — same sampled colours, zero bytes, scales
-   to any width, and can actually move. Each lobe drifts on its own slow,
-   deliberately non-matching cycle (26/32/38s) so the wash breathes rather than
-   pulsing in visible lockstep. Positions place the violet crest centre-high with
-   the periwinkle and magenta lobes low-left and low-right, tracing the S. */
 .biz-blob {
   position: absolute;
   border-radius: 50%;
@@ -293,55 +247,10 @@ onBeforeUnmount(stopAuto)
   to { transform: translate3d(-4%, -3%, 0) scale(1.08); }
 }
 
-/* ── Frosted-glass backdrop ────────────────────────────────────────────────
-   Figma layers a blurred teal bloom under 14 contiguous vertical slats, each
-   carrying the same left-facing white sheen and a 90px backdrop blur. The slats
-   are edge-to-edge with no gaps, so one repeating-linear-gradient reproduces all
-   14 — with the period as a % it also keeps producing exactly 14 as the card
-   narrows. The final stop is 0.05 rather than 0.008 because Figma's last stop
-   sits at 123.64%, i.e. past the slat's own edge, so the ramp is still mid-fall
-   when it gets cut off. */
-.biz-glass {
-  position: absolute;
-  left: calc(50% + var(--gx));
-  top: var(--gy);
-  width: 81.944%; /* 944 / 1152 */
-  height: 674px;
-  transform: translateX(-50%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Rotated 180deg and rendered at its natural size, centred on Figma's slot —
-   the export's own dimensions carry the gaussian blur, so scaling it would
-   change the bloom's softness. */
-.biz-glow {
-  position: absolute;
-  left: 12.962%; /* 122.36 / 944 */
-  top: 26.85px;
-  width: 71.026%; /* 670.484 / 944 */
-  height: 470.108px;
-  transform: rotate(180deg);
-}
-
-.biz-slats {
-  position: absolute;
-  inset: 0 0.99%;
-  backdrop-filter: blur(90px);
-  -webkit-backdrop-filter: blur(90px);
-  background-image: repeating-linear-gradient(
-    270deg,
-    rgba(255, 255, 255, 0.008) 0%,
-    rgba(255, 255, 255, 0.008) 1.4286%,
-    rgba(255, 255, 255, 0.093) 5.4113%,
-    rgba(255, 255, 255, 0.05) 7.143%
-  );
-}
-
 /* Per-card artwork width (set inline as --art-w); only applies once the body
    switches to the side-by-side desktop layout. */
 @media (min-width: 1024px) {
-  .biz-card img:not(.biz-glow) {
+  .biz-card img {
     width: var(--art-w);
   }
 }
