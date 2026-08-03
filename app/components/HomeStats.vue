@@ -16,6 +16,20 @@ const stats = computed(
 
 <template>
   <section class="relative isolate overflow-hidden bg-[#0a0a1a] px-6 py-6 lg:py-32">
+    <div class="absolute left-1/2 top-1/2 hidden h-full w-full -translate-x-1/2 -translate-y-1/2 sm:block">
+      <svg xmlns="http://www.w3.org/2000/svg" width="1895" height="602" viewBox="0 0 1895 602" fill="none" style="backdrop-filter: blur(95.55px);">
+        <g filter="url(#filter0_f_993_23263)">
+          <path d="M191.1 328.815L1074.97 191.1L1703.1 328.815V410.46L1074.97 295.093L191.1 410.46L191.1 328.815Z" fill="#4A39D0"/>
+        </g>
+        <defs>
+          <filter id="filter0_f_993_23263" x="-0.000396729" y="9.15527e-05" width="1894.2" height="601.56" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+            <feGaussianBlur stdDeviation="95.55" result="effect1_foregroundBlur_993_23263"/>
+          </filter>
+        </defs>
+      </svg>
+    </div>
     <div class="pointer-events-none absolute left-1/2 top-2/3 hidden h-full min-h-[51vw] w-full -translate-x-1/2 -translate-y-[calc(50%+100px)] scale-120 sm:block">
       <ClientOnly>
         <SplineScene scene="https://prod.spline.design/2MYVnmuRqu28b88y/scene.splinecode" no-drag />
