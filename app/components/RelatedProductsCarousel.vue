@@ -26,7 +26,7 @@ const products = computed(() =>
   <section v-if="items?.length" class="py-16 sm:py-20 bg-[#F7F7F7]">
     <div class="mx-auto max-w-7xl px-4">
       <MotionReveal>
-        <h2 class="font-display text-2xl font-regular tracking-tight text-foreground sm:text-3xl md:text-4xl">
+        <h2 class="font-display text-2xl font-regular tracking-tight text-foreground sm:text-[32px]">
           {{ heading || t('related.heading') }}
         </h2>
       </MotionReveal>

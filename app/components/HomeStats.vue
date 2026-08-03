@@ -12,6 +12,10 @@ const stats = computed(
       { value: 26000, suffix: '+', label: t('home.stats.users.label') },
     ],
 )
+
+// Per-column gradient for the numbers (Figma). Positional, not editorial — the
+// CMS `stats` entries carry copy only, so this can't live in the content layer.
+const MASKS = ['mask-1', 'mask-2', 'mask-3']
 </script>
 
 <template>
@@ -19,7 +23,7 @@ const stats = computed(
     <div class="absolute left-1/2 top-1/2 hidden h-full w-full -translate-x-1/2 -translate-y-1/2 sm:block">
       <svg xmlns="http://www.w3.org/2000/svg" width="1895" height="602" viewBox="0 0 1895 602" fill="none" style="backdrop-filter: blur(95.55px);">
         <g filter="url(#filter0_f_993_23263)">
-          <path d="M191.1 328.815L1074.97 191.1L1703.1 328.815V410.46L1074.97 295.093L191.1 410.46L191.1 328.815Z" fill="#4A39D0"/>
+          <path d="M191.1 328.815L1074.97 191.1L1703.1 328.815V410.46L1074.97 295.093L191.1 410.46L191.1 328.815Z" fill="rgba(74, 57, 208, 0.3)"/>
         </g>
         <defs>
           <filter id="filter0_f_993_23263" x="-0.000396729" y="9.15527e-05" width="1894.2" height="601.56" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
@@ -74,7 +78,7 @@ const stats = computed(
             :class="i === 1 ? 'h-[156px]' : 'h-[126px]'"
             style="transform: scaleY(-1)"
           />
-          <p class="relative font-display text-5xl font-semibold text-white leading-tight mt-6">
+          <p class="relative font-display text-5xl font-semibold text-white leading-tight mt-6" :class="MASKS[i % MASKS.length]">
             <span v-if="s.prefix">{{ s.prefix }}</span><StatCounter :value="s.value" /><span
               v-if="s.suffix"
               :class="s.prefix ? 'text-2xl' : ''"
@@ -86,3 +90,29 @@ const stats = computed(
     </div>
   </section>
 </template>
+
+<style scoped>
+.mask-1,
+.mask-2,
+.mask-3 {
+  position: relative;
+}
+.mask-1::after,
+.mask-2::after,
+.mask-3::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: darken;
+  pointer-events: none;
+}
+.mask-1::after {
+  background: linear-gradient(90deg, #DBB9FF 0%, #6A92FF 100%);
+}
+.mask-2::after {
+  background: linear-gradient(90deg, #998CFF 0%, #EAC2FF 100%);
+}
+.mask-3::after {
+  background: linear-gradient(90deg, #E7E3FF 0%, #D628ED 100%);
+}
+</style>

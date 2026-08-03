@@ -273,7 +273,7 @@ onBeforeUnmount(() => {
                 :aria-labelledby="`hero-tab-${slides[current].key}`"
                 class="flex max-w-[640px] flex-col gap-8 lg:gap-10"
               >
-                <div class="flex flex-col gap-2 lg:gap-2">
+                <div class="flex flex-col gap-2 lg:gap-4">
                   <!-- Wordmark (designed slide) or eyebrow label -->
                   <img
                     v-if="'logo' in slides[current] && slides[current].logo"
@@ -286,12 +286,12 @@ onBeforeUnmount(() => {
                   >
                   <BlurText
                     v-else
-                    :text="''"
+                    :text="slideCopy(slides[current].key).tab"
                     as="span"
                     animate-by="words"
                     :delay="25"
                     :start-delay="0.03"
-                    class="font-display text-lg font-semibold tracking-tight text-white/95 sm:text-xl mb-4"
+                    class="font-display text-lg font-semibold tracking-tight text-white/95 sm:text-[24px] mb-4"
                     @animation-complete="onTextReveal"
                   />
 
@@ -311,7 +311,7 @@ onBeforeUnmount(() => {
                     animate-by="words"
                     :delay="20"
                     :start-delay="0.15"
-                    class="max-w-[620px] text-base font-light leading-7 text-white/80 sm:text-lg lg:text-[18px] lg:leading-[24px]"
+                    class="max-w-[620px] text-base font-extralight leading-7 text-white/80 sm:text-lg lg:text-[18px] lg:leading-[24px]"
                     @animation-complete="onTextReveal"
                   />
                 </div>
