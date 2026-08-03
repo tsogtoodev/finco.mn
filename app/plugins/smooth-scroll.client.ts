@@ -41,23 +41,10 @@ export default defineNuxtPlugin((nuxtApp) => {
     lerp: LERP,
     wheelMultiplier: WHEEL,
     touchMultiplier: TOUCH,
-    // Vertical only — horizontal wheel/trackpad gestures fall through to the
-    // native scrollers (ProductCarousel and the other overflow-x rails).
     gestureOrientation: 'vertical',
-    // Nested scrollers opt OUT explicitly via `data-lenis-prevent` rather than
-    // being auto-detected. lenis.dev runs with detection off too, and the
-    // tradeoff favours it: auto-detection walks the composed path of every wheel
-    // event, and the site only has three inner scrollers to annotate (AppDialog's
-    // body, SiteHeader's mobile nav, AboutCeoMessage's letter). The cost of
-    // forgetting one is that it scrolls the page instead of itself.
     allowNestedScroll: false,
-    // Lenis runs its own requestAnimationFrame loop.
     autoRaf: true,
-    // In-page #hash links animate with the same weight. The negative offset is
-    // the fixed-nav clearance that `scroll-padding-top` provides natively.
     anchors: { offset: -96 },
-    // Clicking an internal link kills leftover momentum so the incoming page
-    // doesn't inherit a glide.
     stopInertiaOnNavigate: true,
   })
 
@@ -66,16 +53,6 @@ export default defineNuxtPlugin((nuxtApp) => {
   // Dev-only console handle for tuning the feel live: `__lenis.options.lerp = 0.1`.
   if (import.meta.dev) (window as unknown as { __lenis?: Lenis }).__lenis = lenis
 
-  // Route changes: Nuxt scrolls the new page to the top itself, but it does that
-  // natively and only after the page transition finishes. Lenis IGNORES a native
-  // scroll that arrives while it is mid-glide (`isScrolling === 'smooth'`), so
-  // without this the internal target would still hold the old page's offset and
-  // the first wheel notch would yank the page back down.
-  //
-  // `reset()` drops the leftover glide and sets isScrolling back to false, which
-  // is precisely the state in which Lenis DOES adopt a native scroll — so Nuxt's
-  // later jump-to-top syncs cleanly. `stopInertiaOnNavigate` already does this
-  // for plain link clicks; this covers navigateTo() and back/forward too.
   const router = useRouter()
   router.afterEach(() => lenis.reset())
 
