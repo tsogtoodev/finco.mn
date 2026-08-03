@@ -483,7 +483,7 @@ const barHidden = computed(
       <!-- desktop mega-menu panel: content-sized, centered below the bar.
            Centering lives on this static wrapper (flex) — the animated child
            can't carry translate classes since .mega-pop animates transform. -->
-      <div class="pointer-events-none absolute inset-x-4 top-full z-50 hidden lg:flex lg:justify-center">
+      <div class="pointer-events-none absolute inset-x-4 top-full z-50 hidden lg:flex lg:justify-center mr-30">
         <!-- The bar↔card gap is PADDING (pt-2), not margin, so it belongs to this
              pointer-events-auto box: moving trigger → gap → card stays hovered,
              leaving no dead zone that would flicker the panel closed. -->

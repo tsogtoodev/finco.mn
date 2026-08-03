@@ -37,7 +37,7 @@ const columns = computed<MenuLink[][]>(() => {
        resizing frame in SiteHeader so `.t-resize` can clip + tween it; here we
        only lay out the promo + link columns. -->
   <div class="flex gap-3 p-6">
-    <NavPromoCard v-bind="promo" />
+    <!-- <NavPromoCard v-bind="promo" /> -->
 
     <!-- fixed 440px columns per Figma; min-w-0 lets them shrink (text wraps)
          when the viewport caps the panel below its natural width -->
@@ -51,7 +51,7 @@ const columns = computed<MenuLink[][]>(() => {
         :key="link.to + link.title"
         :to="link.to"
         :title="link.title"
-        :desc="link.desc"
+        :desc="undefined"
       />
     </div>
   </div>
