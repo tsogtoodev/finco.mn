@@ -108,18 +108,18 @@ onBeforeUnmount(() => {
   <section
     ref="trackEl"
     class="relative bg-[#000] text-white"
-    :style="enabled && travel ? { height: `calc(100vh + ${travel}px)` } : undefined"
+    :style="enabled && travel ? { height: `calc(100dvh + ${travel}px)` } : undefined"
   >
     <div
       class="relative isolate flex flex-col justify-center overflow-hidden bg-[#080A12]"
-      :class="enabled ? 'sticky top-0 h-screen' : 'py-24 sm:py-28'"
+      :class="enabled ? 'sticky top-0 h-[100dvh]' : 'py-24 sm:py-28'"
     >
       <div class="relative mx-auto w-full max-w-7xl px-4">
-        <div :class="enabled ? 'h-[100vh] overflow-hidden py-24' : ''">
+        <div :class="enabled ? 'h-[100dvh] overflow-hidden py-24' : ''">
           <div
             ref="innerEl"
             class="relative flex max-w-[578px] flex-col"
-            :class="enabled ? 'gap-[70vh] will-change-transform' : 'gap-20 lg:gap-32'"
+            :class="enabled ? 'gap-[70dvh] will-change-transform' : 'gap-20 lg:gap-32'"
             :style="enabled ? { transform: `translateY(${-offset}px)` } : undefined"
           >
             <div v-for="(b, i) in blocks" :key="i" class="flex flex-col gap-[16px]">
@@ -149,23 +149,24 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10">
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-0 -z-10"
+        :style="{ '--scene-w': 'min(79.373vw, 1524px, calc((100dvh - min(8.894vw, 20px)) * 16 / 9))' }"
+      >
         <img
           :src="fractalGlow"
           alt=""
-          class="absolute left-0 top-0 h-full w-[59%] max-w-[849px] object-fill"
+          class="absolute left-0 top-0 h-full w-[45%] max-w-[750px] object-cover object-left [mask-image:linear-gradient(to_right,#000_45%,transparent_100%)]"
+          :style="isDesktop ? { width: 'calc(100% - var(--scene-w))' } : undefined"
         >
         <div
           v-if="isDesktop"
-          class="pointer-events-auto absolute left-[40%] top-[min(8.894vw,171px)] aspect-video overflow-hidden bg-[#080A12]"
-          :style="{
-            '--scene-w': 'min(79.373vw, 1524px, calc((100vh - min(8.894vw, 171px)) * 16 / 9))',
-            width: 'var(--scene-w)',
-          }"
+          class="pointer-events-auto absolute bottom-0 -right-[10rem] aspect-video overflow-hidden bg-[#080A12] h-[100dvh]"
+          :style="{ width: 'var(--scene-w)' }"
         >
           <div
-            class="h-[1080px] w-[1920px] origin-top-left"
-            :style="{ scale: 'calc(tan(atan2(var(--scene-w), 1920px)))' }"
+            class="h-[1080px] w-[1920px]"
           >
             <ClientOnly>
               <SplineScene
@@ -181,9 +182,24 @@ onBeforeUnmount(() => {
             </ClientOnly>
           </div>
 
+          <!-- Top-right gradient for the scene -->
+          <!-- <div
+            aria-hidden="true"
+            class="pointer-events-none absolute right-0 top-0 h-[45%] w-[45%]"
+            :style="{
+              backgroundImage: `linear-gradient(to bottom left,
+                #080A12 0%,
+                #080A12 26%,
+                rgba(8,10,18,0.82) 46%,
+                rgba(8,10,18,0.45) 68%,
+                rgba(8,10,18,0.15) 86%,
+                rgba(8,10,18,0) 100%)`,
+            }"
+          /> -->
+          <!-- Bottom gradient for the scene -->
           <div
             aria-hidden="true"
-            class="pointer-events-none absolute inset-x-0 bottom-0 h-[48%]"
+            class="pointer-events-none absolute inset-x-0 bottom-0 h-[28%]"
             :style="{
               backgroundImage: `linear-gradient(to top,
                 #080A12 0%,
