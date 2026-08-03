@@ -22,15 +22,19 @@ const { data: news } = await useAsyncData(
 
 useSeoMeta({ title: () => t('nav.news') })
 
-// Top three latest are the featured cards; the rest feed the paginated list.
+// Top three latest are the featured cards. The paginated list below is the FULL
+// feed, newest first — it must not be `news.slice(3)`: a freshly published post
+// is always among the three newest, so excluding them hid every new article
+// from "Шинээр нэмэгдсэн". Featured is a highlight of the list, not a slice out
+// of it, so the overlap is intentional.
 const featured = computed(() => news.value?.slice(0, 3) ?? [])
-const rest = computed(() => news.value?.slice(3) ?? [])
+const listAll = computed(() => news.value ?? [])
 
 const PAGE_SIZE = 5 // rows per page (Figma shows five)
 const page = ref(1)
-const totalPages = computed(() => Math.max(1, Math.ceil(rest.value.length / PAGE_SIZE)))
+const totalPages = computed(() => Math.max(1, Math.ceil(listAll.value.length / PAGE_SIZE)))
 const pageItems = computed(() =>
-  rest.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE),
+  listAll.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE),
 )
 watch(news, () => { page.value = 1 })
 
@@ -151,7 +155,7 @@ function fmtDate(d?: string) {
     </section>
 
     <!-- Recently added -->
-    <section v-if="rest.length" ref="listEl" class="scroll-mt-24 px-6 pb-20 pt-14 sm:pb-30 sm:pt-20">
+    <section v-if="listAll.length" ref="listEl" class="scroll-mt-24 px-6 pb-20 pt-14 sm:pb-30 sm:pt-20">
       <div class="mx-auto flex w-full max-w-[1200px] flex-col">
         <h2 class="font-display text-2xl font-medium tracking-[0.01em] text-[#323232] sm:text-[32px]">
           {{ t('newsPage.recent') }}
