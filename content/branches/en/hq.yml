@@ -5,7 +5,7 @@ hours: Mon-Fri 09:00-18:00
 phone: "8063-8484"
 address: Olympic Street, Minister Tower 7-707, 1st khoroo, Sukhbaatar District
 caption: Minister Tower, 7th floor
-photo: /images/branches/minister-tower.jpg
+photo: /images/branches/hq.jpg
 mapImage: /images/branches/map-base.jpg
 pin: { x: 0.5, y: 0.54 }
 coords: { lat: 47.918, lng: 106.917 }

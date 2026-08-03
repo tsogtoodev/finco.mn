@@ -373,6 +373,8 @@
   },
   "branchesPage": {
     "openInMaps": "Open in Google Maps",
+    "findOnMap": "Find on map",
+    "carouselLabel": "Branches carousel",
     "mapLabel": "Location of {name} on the map",
     "photoAlt": "Photo of the {name} building",
     "selectAria": "Select {name}"

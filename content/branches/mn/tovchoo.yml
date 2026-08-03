@@ -1,12 +1,12 @@
 locale: mn
 slug: tovchoo
 name: 22-ын товчооны салбар
-hours: Даваа-Баасан 09:00-18:00 цаг
+hours: Мягмар-Бямба 10:00-18:00 цаг
 phone: "8063-8484"
-address: СХД, 22-ын товчоо, Их наймаа, 1 давхар
-caption: 22-ын товчооны салбар
-photo: /images/branches/minister-tower.jpg
+address: СХД, 32-р хороо, Автоком төв, А блок, 3-302 тоот.
+caption: Автоком төв, А блок
+photo: /images/branches/tovchoo.jpg
 mapImage: /images/branches/map-base.jpg
 pin: { x: 0.7, y: 0.58 }
 coords: { lat: 47.9, lng: 106.83 }
-order: 4
+order: 2

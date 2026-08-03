@@ -3,10 +3,10 @@ slug: sakura
 name: Сакура салбар
 hours: Даваа-Баасан 09:00-18:00 цаг
 phone: "8063-8484"
-address: БЗД, 13-р хороо, Сакура хотхон, 1 давхар
-caption: Сакура салбар
-photo: /images/branches/minister-tower.jpg
+address: БЗД, 26-р хороо, Сакура Тауэр, 8 давхар 811 тоот
+caption: Сакура Тауэр, 8 давхар
+photo: /images/branches/sakura.jpg
 mapImage: /images/branches/map-base.jpg
 pin: { x: 0.63, y: 0.4 }
 coords: { lat: 47.9165, lng: 106.9405 }
-order: 2
+order: 3

@@ -35,8 +35,10 @@ useSeoMeta({
       map-texture="/images/branches/map-base.jpg"
     />
 
-    <section class="mx-auto max-w-7xl px-4 pb-20 pt-4 sm:pt-8">
-      <BranchExplorer v-if="branches?.length" :branches="branches" />
+    <section v-if="branches?.length" class="pb-[120px] pt-[96px]">
+      <div :style="{ '--carousel-edge': 'max(1.5rem, calc((100vw - 1200px) / 2))' }">
+        <BranchesCarousel :branches="branches" />
+      </div>
     </section>
   </div>
 </template>

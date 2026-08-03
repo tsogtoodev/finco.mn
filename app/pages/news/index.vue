@@ -136,7 +136,7 @@ function fmtDate(d?: string) {
     </section>
 
     <!-- Featured -->
-    <section v-if="featured.length" ref="featuredEl" class="bg-[#fbfbfb] px-6 py-14 sm:py-20">
+    <section v-if="featured.length" ref="featuredEl" class="news-featured px-6 py-14 sm:py-20">
       <div class="mx-auto flex w-full max-w-[1200px] flex-col gap-8 sm:gap-12">
         <h2 class="font-display text-2xl font-medium tracking-[0.01em] text-black/80 sm:text-[32px]">
           {{ t('newsPage.featured') }}
@@ -241,3 +241,9 @@ function fmtDate(d?: string) {
     <p v-if="!news?.length" class="py-24 text-center text-muted-foreground">—</p>
   </div>
 </template>
+
+<style scoped>
+.news-featured {
+  background: rgba(45, 224, 198, 0.05);
+}
+</style>

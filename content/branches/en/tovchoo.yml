@@ -1,12 +1,12 @@
 locale: en
 slug: tovchoo
 name: 22 Tovchoo Branch
-hours: Mon-Fri 09:00-18:00
+hours: Tue-Sat 10:00-18:00
 phone: "8063-8484"
-address: 22 Tovchoo, Ikh Naimaa, Songinokhairkhan District, 1st floor
-caption: 22 Tovchoo Branch
-photo: /images/branches/minister-tower.jpg
+address: Autocom Center, Block A, 3-302, 32nd khoroo, Songinokhairkhan District
+caption: Autocom Center, Block A
+photo: /images/branches/tovchoo.jpg
 mapImage: /images/branches/map-base.jpg
 pin: { x: 0.7, y: 0.58 }
 coords: { lat: 47.9, lng: 106.83 }
-order: 4
+order: 2

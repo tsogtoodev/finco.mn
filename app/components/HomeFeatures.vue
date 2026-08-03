@@ -31,7 +31,39 @@ const cards = computed(() => {
         </p>
       </MotionReveal>
 
-      <div class="mt-16 grid gap-6 lg:grid-cols-[453.33fr_722.67fr] lg:grid-rows-2">
+      <div class="mt-16 grid gap-6 lg:grid-cols-3">
+        <MotionReveal :delay="0.1">
+          <TiltedCard
+            :image-src="'/images/home/finco-features-1.png'"
+            alt-text=""
+            image-size="140px"
+            :title="cards[0]?.title"
+            :body="cards[0]?.body"
+          />
+        </MotionReveal>
+
+        <MotionReveal :delay="0.22">
+          <TiltedCard
+            :image-src="'/images/home/finco-features-2.png'"
+            alt-text=""
+            image-size="120px"
+            :title="cards[1]?.title"
+            :body="cards[1]?.body"
+          />
+        </MotionReveal>
+
+        <MotionReveal :delay="0.33">
+          <TiltedCard
+            :image-src="'/images/home/finco-features-3.png'"
+            alt-text=""
+            image-size="120px"
+            :title="cards[2]?.title"
+            :body="cards[2]?.body"
+          />
+        </MotionReveal>
+      </div>
+
+      <div v-if="false" class="mt-16 grid gap-6 lg:grid-cols-[453.33fr_722.67fr] lg:grid-rows-2">
         <MotionReveal :delay="0.1" class="lg:row-span-2">
           <article class="feature-card h-full min-h-[320px] lg:min-h-[533px]">
             <img src="/images/home/features-card-1.png" alt="" aria-hidden="true" class="feature-bg">

@@ -373,6 +373,8 @@
   },
   "branchesPage": {
     "openInMaps": "Google Maps дээр нээх",
+    "findOnMap": "Газрын зургаас хайх",
+    "carouselLabel": "Салбаруудын карусель",
     "mapLabel": "{name}-ийн байршил газрын зураг дээр",
     "photoAlt": "{name}-ийн барилгын зураг",
     "selectAria": "{name}-ийг сонгох"

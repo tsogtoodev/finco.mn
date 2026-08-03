@@ -3,10 +3,10 @@ slug: sakura
 name: Sakura Branch
 hours: Mon-Fri 09:00-18:00
 phone: "8063-8484"
-address: Sakura Town, 13th khoroo, Bayanzurkh District, 1st floor
-caption: Sakura Branch
-photo: /images/branches/minister-tower.jpg
+address: "Sakura Tower, 8th floor #811, 26th khoroo, Bayanzurkh District"
+caption: Sakura Tower, 8th floor
+photo: /images/branches/sakura.jpg
 mapImage: /images/branches/map-base.jpg
 pin: { x: 0.63, y: 0.4 }
 coords: { lat: 47.9165, lng: 106.9405 }
-order: 2
+order: 3
