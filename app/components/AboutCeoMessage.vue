@@ -33,9 +33,9 @@ const FRACTAL_LAYERS = [
 // edge and rise into view exactly as designed. The frame clips them (the band's
 // overflow-hidden does the same here).
 const FRACTAL_GLOWS = [
-  { cx: 0, cy: 140.8, w: 44.9, h: 136.5, color: 'rgb(140, 131, 255)' }, // periwinkle, left
-  { cx: 63.2, cy: 140.8, w: 44.9, h: 136.5, color: 'rgb(76, 65, 216)' }, // indigo, centre-right
-  { cx: 88.2, cy: 107.1, w: 37.2, h: 69.2, color: 'rgb(45, 224, 198)' }, // teal, right
+  { cx: 0, cy: 140, w: 44.9, h: 136.5, color: 'rgb(140, 131, 255)' }, // periwinkle, left
+  { cx: 63.2, cy: 160, w: 44.9, h: 136.5, color: 'rgb(76, 65, 216)' }, // indigo, centre-right
+  { cx: 88.2, cy: 140, w: 37.2, h: 69.2, color: 'rgb(45, 224, 198)' }, // teal, right
 ] as const
 
 const FRACTAL_MIN = 0.35
@@ -98,9 +98,9 @@ onBeforeUnmount(() => {
       ref="bandEl"
       aria-hidden="true"
       class="pointer-events-none relative z-0 w-full overflow-hidden"
-      :style="{ '--fs': fs, height: 'calc(min(10.417vw, 200px) * var(--fs))', background: 'linear-gradient(180deg, rgba(76, 65, 216, 0.03) 0%, rgba(255, 255, 255, 0.03) 100%)', backdropFilter: 'blur(80px)' }"
+      :style="{ '--fs': fs, height: 'calc(min(10.417vw, 200px) * var(--fs))', background: 'rgb(239, 238, 253)', backdropFilter: 'blur(80px)' }"
     >
-      <div style="background: linear-gradient(180deg, rgba(76, 65, 216, 0.03) 0%, rgba(255, 255, 255, 0.03) 100%); backdrop-filter: blur(80px); width: 100%; height: 100%; position: absolute; left: 0; top: 0;"></div>
+      <!-- <div style="background: linear-gradient(180deg, rgba(76, 65, 216, 0.03) 0%, rgba(255, 255, 255, 0.03) 100%); backdrop-filter: blur(80px); width: 100%; height: 100%; position: absolute; left: 0; top: 0;"></div> -->
       <!-- Colour-glow ellipses (Figma 775:10211–10213), behind the step layers. -->
       <div
         v-for="(g, i) in FRACTAL_GLOWS"

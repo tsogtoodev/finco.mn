@@ -26,11 +26,11 @@ defineProps<{ member: BoardMember }>()
          stacked, so no layout shift). The row's photo keeps it tall enough for
          the timeline to reveal in place without pushing into the next row.
          See the scoped styles for the touch fallback. -->
-    <div class="bio relative text-sm font-light leading-6 text-[rgba(0,0,0,0.6)] sm:text-base md:max-w-[720px] md:pt-1">
+    <div class="bio relative flex flex-col justify-center text-sm font-light leading-6 text-[rgba(0,0,0,0.6)] sm:text-base md:max-w-[720px] md:self-stretch">
       <p class="bio-main">
         {{ member.bio }}
       </p>
-      <p v-if="member.bioHover" class="bio-alt md:pt-1">
+      <p v-if="member.bioHover" class="bio-alt">
         {{ member.bioHover }}
       </p>
     </div>
@@ -50,7 +50,9 @@ defineProps<{ member: BoardMember }>()
 .bio-alt {
   position: absolute;
   inset-inline: 0;
-  top: 0;
+  /* Centered like .bio-main so the cross-fade swaps in place. */
+  top: 50%;
+  translate: 0 -50%;
   opacity: 0;
   white-space: pre-line;
 }
@@ -71,6 +73,7 @@ defineProps<{ member: BoardMember }>()
 @media (hover: none) {
   .bio-alt {
     position: static;
+    translate: none;
     margin-top: 0.75rem;
     opacity: 1;
   }

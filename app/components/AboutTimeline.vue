@@ -29,10 +29,10 @@ const rows = computed(() => {
   <section class="relative overflow-hidden bg-[#fbfbfb]">
     <div class="mx-auto max-w-7xl px-4 pt-8 sm:pt-16">
       <MotionReveal class="max-w-5xl">
-        <h2 class="font-display text-3xl font-medium text-[#141414] sm:text-4xl">
+        <h2 class="font-display text-3xl font-medium text-[#141414] sm:text-[36px] leading-normal">
           {{ headingLead }}<span class="text-[#4c41d8]">{{ headingAccent }}</span>
         </h2>
-        <p class="mt-6 max-w-5xl text-lg font-extralight leading-[26px] text-[rgba(0,0,0,0.6)] sm:text-[18px]">
+        <p class="mt-[12px] max-w-5xl text-lg font-extralight leading-[24px] text-[rgba(0,0,0,0.6)] sm:text-[18px]">
           {{ subheading }}
         </p>
       </MotionReveal>
@@ -54,8 +54,8 @@ const rows = computed(() => {
           :transition="{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }"
         >
           <div v-for="(m, ci) in row" :key="ci">
-            <div class="font-display text-xl font-medium text-[#141414] sm:text-[28px]">{{ m.year }}</div>
-            <p class="mt-4 text-sm font-light leading-[24px] text-[rgba(0,0,0,0.7)] sm:text-[16px]">
+            <div class="font-display text-xl font-medium text-[#141414] sm:text-[24px]">{{ m.year }}</div>
+            <p class="mt-[12px] text-sm font-extralight leading-[24px] text-[rgba(0,0,0,0.7)] sm:text-[16px]">
               {{ m.body }}
             </p>
           </div>
