@@ -17,7 +17,7 @@ defineProps<{ member: BoardMember }>()
         class="h-36 w-[120px] shrink-0 rounded-[var(--radius)] object-cover"
       />
       <div class="flex flex-col gap-2.5">
-        <h3 class="text-xl font-semibold uppercase leading-tight text-black sm:text-2xl">{{ member.name }}</h3>
+        <h3 class="text-xl font-semibold uppercase leading-tight text-black sm:text-[20px]">{{ member.name }}</h3>
         <p class="text-base font-light text-[rgba(0,0,0,0.6)] sm:text-lg">{{ member.role }}</p>
       </div>
     </div>
