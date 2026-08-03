@@ -311,7 +311,7 @@ onBeforeUnmount(() => {
                     animate-by="words"
                     :delay="20"
                     :start-delay="0.15"
-                    class="max-w-[620px] text-base font-light leading-7 text-white/90 sm:text-lg lg:text-[18px] lg:leading-[24px]"
+                    class="max-w-[620px] text-base font-light leading-7 text-white/80 sm:text-lg lg:text-[18px] lg:leading-[24px]"
                     @animation-complete="onTextReveal"
                   />
                 </div>
