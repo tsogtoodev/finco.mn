@@ -48,7 +48,7 @@ const FADE_TO = [
         :start-delay="0.1"
         :animation-from="FADE_FROM"
         :animation-to="FADE_TO"
-        class="mx-auto mt-8 max-w-[1200px] justify-center text-sm font-thin leading-6 tracking-[0.2px] text-white/60 sm:mt-10 sm:text-lg sm:leading-7"
+        class="mx-auto mt-8 max-w-[1200px] justify-center text-sm font-thin leading-6 tracking-[0.2px] text-white/60 sm:mt-10 sm:text-[16px] sm:leading-[24px]"
       />
     </div>
   </section>
