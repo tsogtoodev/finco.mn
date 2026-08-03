@@ -89,7 +89,7 @@ const fieldClass
   <form
     v-else
     novalidate
-    class="rounded-[var(--radius)] border border-input bg-white p-6 ring-1 ring-black/5 sm:p-8"
+    class="rounded-[var(--radius)] border border-input bg-white p-6 sm:p-8"
     @submit.prevent="submit"
   >
     <h2 class="font-display text-2xl font-medium text-foreground">
@@ -184,7 +184,7 @@ const fieldClass
 
     <p v-if="serverError" role="alert" class="mt-4 text-sm text-red-600">{{ serverError }}</p>
 
-    <AppButton type="submit" :disabled="pending" block size="lg" arrow class="mt-6">
+    <AppButton type="submit" variant="accent" :disabled="pending" block size="lg" arrow class="mt-6">
       {{ pending ? t('contactPage.form.submitting') : t('contactPage.form.submit') }}
     </AppButton>
   </form>

@@ -37,7 +37,7 @@ const rows = computed(() => [
 </script>
 
 <template>
-  <div class="rounded-[var(--radius)] border border-input bg-secondary p-6 ring-1 ring-black/5 sm:p-8">
+  <div class="rounded-[var(--radius)] border border-input bg-white p-6 sm:p-8">
     <h2 class="font-display text-2xl font-medium text-foreground">
       {{ t('contactPage.info.heading') }}
     </h2>
@@ -47,7 +47,7 @@ const rows = computed(() => [
 
     <ul class="mt-8 space-y-6">
       <li v-for="r in rows" :key="r.label" class="flex items-start gap-4">
-        <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-2xs ring-1 ring-black/5">
+        <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-white text-primary">
           <Icon :name="r.icon" class="size-5" />
         </span>
         <div class="min-w-0">

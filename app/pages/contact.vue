@@ -35,8 +35,8 @@ useSeoMeta({
          on the title and subtitle, 1200px column, no breadcrumb. The back button
          sits above the centered block rather than in it, so the title stays
          optically centred on the column. -->
-    <section class="px-6 lg:px-0 py-14 sm:py-20">
-      <div class="mx-auto w-full max-w-[1200px]">
+    <section class="px-6 lg:px-0 py-14">
+      <div class="relative mx-auto flex w-full max-w-7xl flex-1 flex-col px-6 py-0">
         <div class="hero-rise">
           <AppButton variant="ghost" class="h-10 w-fit" @click="goBack">
             <Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />
@@ -64,26 +64,28 @@ useSeoMeta({
       </div>
     </section>
 
-    <section class="mx-auto max-w-7xl px-4 py-16 sm:py-20">
-      <div class="grid items-start gap-8 lg:grid-cols-2">
-        <MotionReveal>
-          <ContactInfo />
-        </MotionReveal>
-        <MotionReveal :delay="0.1">
-          <ContactForm />
+    <section class="mx-auto px-4 py-16 sm:py-[80px] bg-[#fbfbfb]">
+      <div class="mx-auto w-full max-w-7xl px-4">
+        <div class="grid items-start gap-8 lg:grid-cols-2">
+          <MotionReveal>
+            <ContactInfo />
+          </MotionReveal>
+          <MotionReveal :delay="0.1">
+            <ContactForm />
+          </MotionReveal>
+        </div>
+  
+        <MotionReveal :delay="0.15" class="mt-8">
+          <MapEmbed
+            class="h-64 sm:h-80 lg:h-[420px]"
+            :map-image="office.mapImage"
+            :pin="office.pin"
+            :lat="office.lat"
+            :lng="office.lng"
+            :aria-label="t('contactPage.mapLabel')"
+          />
         </MotionReveal>
       </div>
-
-      <MotionReveal :delay="0.15" class="mt-8">
-        <MapEmbed
-          class="h-64 sm:h-80 lg:h-[420px]"
-          :map-image="office.mapImage"
-          :pin="office.pin"
-          :lat="office.lat"
-          :lng="office.lng"
-          :aria-label="t('contactPage.mapLabel')"
-        />
-      </MotionReveal>
     </section>
   </div>
 </template>
