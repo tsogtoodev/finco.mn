@@ -28,41 +28,15 @@ function goBack() {
 
 <template>
   <section
-    class="relative overflow-hidden"
-    :class="dark ? 'bg-dark text-white' : 'bg-secondary text-foreground'"
+    class="relative overflow-hidden bg-[#F6F5FD] text-foreground"
   >
-    <div v-if="dark" class="pointer-events-none absolute inset-0 opacity-60">
-      <div class="absolute -left-20 top-0 size-80 rounded-full bg-primary/40 blur-[100px]" />
-      <div class="absolute -right-10 bottom-0 size-72 rounded-full bg-accent/30 blur-[100px]" />
-    </div>
-
-    <!-- dark heroes sit under the transparent overlay nav (60px); add top clearance -->
     <div
-      class="relative mx-auto max-w-7xl px-4"
-      :class="dark ? 'pb-16 pt-28 sm:pb-20 sm:pt-32' : 'py-16 sm:py-20'"
+      class="relative mx-auto max-w-7xl px-4 py-[80px] flex flex-row items-center justify-between"
     >
-      <nav
-        v-if="breadcrumb?.length"
-        class="mb-5 flex items-center gap-2 text-sm"
-        :class="[dark ? 'text-white/60' : 'text-muted-foreground', centered && 'justify-center']"
-      >
-        <template v-for="(c, i) in breadcrumb" :key="i">
-          <NuxtLink v-if="c.to" :to="localePath(c.to)" class="hover:text-primary">{{ c.label }}</NuxtLink>
-          <span v-else>{{ c.label }}</span>
-          <Icon v-if="i < breadcrumb.length - 1" name="lucide:chevron-right" class="size-4" />
-        </template>
-      </nav>
-
-      <button
-        v-if="back"
-        type="button"
-        class="mb-8 inline-flex h-10 w-fit items-center gap-2 rounded-[var(--radius)] bg-secondary px-4 text-sm font-medium text-[#171717] transition-colors hover:bg-white"
-        :class="centered && 'mx-auto'"
-        @click="goBack"
-      >
-        <Icon name="lucide:arrow-left" class="size-4" />
+      <AppButton variant="ghost" class="h-10 w-fit" @click="goBack">
+        <Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />
         {{ t('common.back') }}
-      </button>
+      </AppButton>
 
       <div :class="centered && 'text-center'">
         <BlurText
@@ -80,7 +54,7 @@ function goBack() {
           animate-by="words"
           :delay="60"
           :start-delay="0.08"
-          class="mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl"
+          class="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-[32px]"
           :class="centered ? 'mx-auto max-w-[700px] justify-center' : 'max-w-3xl'"
         />
         <BlurText
@@ -95,6 +69,8 @@ function goBack() {
         />
         <slot />
       </div>
+
+      <div></div>
     </div>
   </section>
 </template>

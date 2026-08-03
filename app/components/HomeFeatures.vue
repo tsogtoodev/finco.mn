@@ -22,8 +22,8 @@ const cards = computed(() => {
 <template>
   <section class="bg-[#fcfcff] py-[60px] lg:pb-[120px]">
     <div class="mx-auto w-full max-w-[1200px] px-6">
-      <MotionReveal class="flex flex-col items-center gap-5 text-center">
-        <h2 class="font-display text-3xl font-medium leading-tight text-[#141414] sm:text-4xl">
+      <MotionReveal class="flex flex-col items-center gap-y-[16px] text-center">
+        <h2 class="font-display text-3xl font-medium leading-tight text-[#141414] sm:text-[32px]">
           {{ heading }}<span class="text-accent">{{ headingAccent }}</span>
         </h2>
         <p class="max-w-[702px] text-lg font-extralight leading-7 tracking-[0.01em] text-black/60">
@@ -63,7 +63,7 @@ const cards = computed(() => {
         </MotionReveal>
       </div>
 
-      <div v-if="false" class="mt-16 grid gap-6 lg:grid-cols-[453.33fr_722.67fr] lg:grid-rows-2">
+      <!-- <div class="mt-16 grid gap-6 lg:grid-cols-[453.33fr_722.67fr] lg:grid-rows-2">
         <MotionReveal :delay="0.1" class="lg:row-span-2">
           <article class="feature-card h-full min-h-[320px] lg:min-h-[533px]">
             <img src="/images/home/features-card-1.png" alt="" aria-hidden="true" class="feature-bg">
@@ -108,7 +108,7 @@ const cards = computed(() => {
             </div>
           </article>
         </MotionReveal>
-      </div>
+      </div> -->
     </div>
   </section>
 </template>
