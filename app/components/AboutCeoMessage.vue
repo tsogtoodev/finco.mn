@@ -172,7 +172,7 @@ onMounted(() => {
           <p class="mt-6 text-sm font-medium text-[#4c41d8]">{{ ceo.tagline }}</p>
           <div class="mt-auto flex items-center justify-end gap-4 pt-6">
             <span class="text-sm text-[rgba(0,0,0,0.6)]">{{ ceo.signatureLabel }}</span>
-            <img :src="signature" alt="" class="h-12 w-auto opacity-90">
+            <!-- <img :src="signature" alt="" class="h-12 w-auto opacity-90"> -->
             <span class="text-base font-semibold text-[#141414]">{{ ceo.signatureName }}</span>
           </div>
         </MotionReveal>

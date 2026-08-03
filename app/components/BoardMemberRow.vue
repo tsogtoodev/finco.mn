@@ -30,7 +30,7 @@ defineProps<{ member: BoardMember }>()
       <p class="bio-main">
         {{ member.bio }}
       </p>
-      <p v-if="member.bioHover" class="bio-alt">
+      <p v-if="member.bioHover" class="bio-alt text-[14px] leading-[24px]">
         {{ member.bioHover }}
       </p>
     </div>
