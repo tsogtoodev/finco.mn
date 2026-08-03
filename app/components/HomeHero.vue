@@ -286,7 +286,7 @@ onBeforeUnmount(() => {
                   >
                   <BlurText
                     v-else
-                    :text="slideCopy(slides[current].key).tab"
+                    :text="''"
                     as="span"
                     animate-by="words"
                     :delay="25"
