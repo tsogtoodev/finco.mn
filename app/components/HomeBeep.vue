@@ -242,7 +242,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
   border-radius: 2.7778cqw; /* 40px */
   /* Diagonal fill: #0f2c23 at the bottom-left corner → #000 at the top-right. */
-  background: linear-gradient(to top right, #0f2c23 0%, #000 100%);
+  background: linear-gradient(to top right, #000 0%, #0f2c23 100%);
 }
 
 /* Pills raster — left 520.76 top 109.11 w 1021.191 h 287.436 */
