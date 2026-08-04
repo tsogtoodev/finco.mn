@@ -35,9 +35,23 @@ function promote(id: CardId) {
 
 // Auto-advance: every 5s bring the back card forward so the deck cycles on its
 // own. Any manual click restarts the timer; pointer hover pauses it so users can
-// read the peeked card, and it stops entirely off-screen / on unmount.
+// read the peeked card.
+//
+// It also only runs while the deck is on screen in a foregrounded tab — matching
+// the three real carousels (HomeProducts / HomeNews / Branches), which have had
+// both gates all along. This one had neither, despite the comment here claiming
+// it "stops entirely off-screen": there was no observer, so the deck kept
+// re-ordering (and re-rendering three transformed cards) every 5s for the whole
+// page lifetime, wherever the visitor was and whether or not the tab was even
+// in front.
 const AUTO_MS = 5000
 let timer: ReturnType<typeof setInterval> | null = null
+let autoObserver: IntersectionObserver | null = null
+let hovering = false
+let onScreen = false
+
+const rootEl = ref<HTMLElement | null>(null)
+
 function advance() {
   const back = order.value[order.value.length - 1]
   if (back) promote(back)
@@ -50,18 +64,52 @@ function stopAuto() {
 }
 function startAuto() {
   stopAuto()
+  if (!onScreen || hovering || document.hidden) return
   timer = setInterval(advance, AUTO_MS)
+}
+function onEnter() {
+  hovering = true
+  stopAuto()
+}
+function onLeave() {
+  hovering = false
+  startAuto()
+}
+function onVisibility() {
+  if (document.hidden) stopAuto()
+  else startAuto()
 }
 function onPromote(id: CardId) {
   promote(id)
   startAuto()
 }
-onMounted(startAuto)
-onBeforeUnmount(stopAuto)
+
+onMounted(() => {
+  document.addEventListener('visibilitychange', onVisibility)
+  if (!('IntersectionObserver' in window)) {
+    // No IO to gate on — fall back to always-on rather than never-on.
+    onScreen = true
+    startAuto()
+    return
+  }
+  autoObserver = new IntersectionObserver((entries) => {
+    onScreen = entries[entries.length - 1]?.isIntersecting ?? false
+    if (onScreen) startAuto()
+    else stopAuto()
+  }, { threshold: 0.2 })
+  if (rootEl.value) autoObserver.observe(rootEl.value)
+})
+
+onBeforeUnmount(() => {
+  autoObserver?.disconnect()
+  autoObserver = null
+  stopAuto()
+  document.removeEventListener('visibilitychange', onVisibility)
+})
 </script>
 
 <template>
-  <section class="relative overflow-hidden bg-white py-24 lg:py-28">
+  <section ref="rootEl" class="relative overflow-hidden bg-white py-24 lg:py-28">
     <!-- Background wash (Figma 568:5696) — a soft lavender → violet → magenta
          S-curve. See the .biz-blob rules below for why it's CSS, not the raster. -->
     <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
@@ -87,8 +135,8 @@ onBeforeUnmount(stopAuto)
         <div class="[container-type:inline-size]">
           <div
             class="biz-stack relative pt-[max(8cqw,88px)]"
-            @pointerenter="stopAuto"
-            @pointerleave="startAuto"
+            @pointerenter="onEnter"
+            @pointerleave="onLeave"
           >
             <div class="relative">
               <article
