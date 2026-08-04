@@ -44,6 +44,14 @@ function promote(id: CardId) {
 // re-ordering (and re-rendering three transformed cards) every 5s for the whole
 // page lifetime, wherever the visitor was and whether or not the tab was even
 // in front.
+//
+// Skipped for prefers-reduced-motion, same as those three. The stylesheet below
+// already cuts `.biz-card`'s transition to 0.01ms for that preference, but nothing
+// stopped the timer driving it — so a reduced-motion visitor got the deck HARD
+// CUTTING to a new order every 5s instead of sliding, which is the unprompted
+// movement the preference exists to prevent, just delivered as a jump. The 0.01ms
+// rule deliberately stays: a card promoted by an actual CLICK should respond
+// instantly, and that motion is user-initiated.
 const AUTO_MS = 5000
 let timer: ReturnType<typeof setInterval> | null = null
 let autoObserver: IntersectionObserver | null = null
@@ -65,6 +73,7 @@ function stopAuto() {
 function startAuto() {
   stopAuto()
   if (!onScreen || hovering || document.hidden) return
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   timer = setInterval(advance, AUTO_MS)
 }
 function onEnter() {
