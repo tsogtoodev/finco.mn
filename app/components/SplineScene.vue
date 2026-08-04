@@ -9,6 +9,14 @@
 // The listeners self-remove after the scene loads.
 import { onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import { getSmoothScroll } from '~/utils/smoothScroll'
+import {
+  SPLINE_MAX_FPS,
+  SPLINE_MAX_PIXEL_RATIO,
+  type SplineParticipant,
+  rebalanceSplineScenes,
+  registerSplineScene,
+  unregisterSplineScene,
+} from '~/utils/splineQuality'
 
 const props = withDefaults(
   defineProps<{
@@ -16,6 +24,26 @@ const props = withDefaults(
     scene: string
     /** Pre-load margin (px) around the viewport before the canvas is visible. */
     rootMargin?: number
+    /**
+     * Ceiling on the drawing-buffer scale for THIS scene, as a multiple of CSS
+     * pixels. Defaults to the site-wide cap in `utils/splineQuality`. Go below 1
+     * for scenes that are blurred, clipped, or already CSS-upscaled — the About
+     * mission canvas is a fixed 1920x1080 box that gets clipped to roughly half
+     * that, so at 0.75 it renders 1.17MP instead of 8.29MP for the same picture.
+     */
+    maxPixelRatio?: number
+    /**
+     * Frame-rate ceiling for this scene's render loop. Defaults to the site-wide
+     * cap. Set 0 to leave the loop unthrottled.
+     */
+    maxFps?: number
+    /**
+     * Drop the runtime's global `pointermove` listener once loaded. That listener
+     * raycasts the scene graph on every mouse move (189 objects on the values
+     * cluster), so it costs real CPU for a cursor-follow effect that purely
+     * decorative scenes don't have. Leave off for anything that reacts to hover.
+     */
+    noHover?: boolean
     /**
      * Suppress click-drag interaction — camera orbit / object dragging — by
      * swallowing move events that occur *while a press is held on the canvas*.
@@ -46,12 +74,22 @@ const props = withDefaults(
      */
     preload?: boolean
   }>(),
-  { rootMargin: 200, noDrag: false, revealDelay: 0, zoom: 1, preload: false },
+  {
+    rootMargin: 200,
+    noDrag: false,
+    revealDelay: 0,
+    zoom: 1,
+    preload: false,
+    maxPixelRatio: SPLINE_MAX_PIXEL_RATIO,
+    maxFps: SPLINE_MAX_FPS,
+    noHover: false,
+  },
 )
 
 // The `preconnect`/`dns-prefetch` for the Spline CDN lives in nuxt.config's
-// app.head, not here: every usage of this component is inside <ClientOnly>, so a
-// useHead in this setup never runs during SSR and the hint would arrive only
+// app.head, not here: this component only ever renders on the client (call sites
+// gate it behind `useSplineEnabled()`, which is false through SSR and hydration),
+// so a useHead in this setup never runs during SSR and the hint would arrive only
 // after hydration — too late to save the DNS + TLS round trips it exists for.
 //
 // Deliberately no `<link rel="preload" as="fetch">` for the scene itself either.
@@ -98,6 +136,9 @@ async function loadScene() {
     app.value = new Application(canvas.value)
     await app.value.load(props.scene)
     if (props.zoom !== 1) app.value.setZoom(props.zoom)
+    applyPixelRatio()
+    relaxRuntimeScrollListeners()
+    if (props.noHover) detachHoverRaycast()
     loaded.value = true
     // Delay the fade-in without delaying the load/render itself.
     if (props.revealDelay > 0) revealTimer = setTimeout(() => { revealed.value = true }, props.revealDelay)
@@ -158,6 +199,18 @@ function schedulePrefetch() {
 // a foregrounded tab renders. If IO is unavailable the scene just keeps
 // rendering — i.e. the prior behaviour, never worse.
 //
+// On top of that, two cost ceilings (see utils/splineQuality for the measured
+// numbers behind them):
+//   • only the MOST VISIBLE scene renders. Being on screen is no longer enough,
+//     because both / and /about keep two scenes on screen at once, and on / the
+//     stats section is sticky so it stayed on screen — and rendering — for the
+//     whole products scroll. The IO now reports a RATIO to a module-level
+//     coordinator, which picks the winner.
+//   • the loop is throttled to SPLINE_MAX_FPS. Skipping a frame is safe for
+//     animation timing: the runtime derives dt from its own `_lastTime`, which it
+//     only advances when render() is actually called, so a 30fps loop simply sees
+//     ~33ms deltas and plays at the correct speed.
+//
 // Gating detaches ONLY the render loop (renderer.setAnimationLoop(null) → rAF
 // off, 0 GPU, last frame stays on the canvas). It must NOT use the public
 // app.stop()/play() pair: stop() is a destructive teardown — it deactivates the
@@ -169,22 +222,123 @@ function schedulePrefetch() {
 // until a full page reload. Resetting _lastTime before re-attaching the loop
 // makes resume seamless: animations continue mid-flight from where they paused.
 let io: IntersectionObserver | null = null
-let onScreen = true
-let renderActive = true
+// null, not false: the runtime attaches its OWN unthrottled loop during load, so
+// the first setRenderLoop call must always apply — either to swap in the
+// throttled callback or to detach the loop entirely.
+let renderActive: boolean | null = null
 
 // Private runtime internals (verified against @splinetool/runtime 1.12.98).
 // `render` is a bound arrow field on Application — exactly what the runtime's
 // own play() passes to setAnimationLoop.
 type RuntimeInternals = {
-  _renderer?: { setAnimationLoop: (fn: ((t: number) => void) | null) => void }
+  _renderer?: {
+    setAnimationLoop: (fn: ((t: number) => void) | null) => void
+    setPixelRatio?: (v: number) => void
+    getPixelRatio?: () => number
+  }
   _lastTime?: number
   render?: (t: number) => void
+  /**
+   * The runtime's own resize. Passing `true` takes its FORCE path — it sets the
+   * size 1px smaller and then back, which is the only way to make a new pixel
+   * ratio reach the drawing buffer (see applyPixelRatio).
+   */
+  _resize?: (force?: boolean) => void
+  /** Handler behind the runtime's non-passive `document` scroll listener. */
+  _onScroll?: EventListener
+  _eventManager?: { onScroll?: EventListener; onMouseMove?: EventListener }
 }
 
-function syncRender() {
+/**
+ * Cap the drawing-buffer scale.
+ *
+ * `setPixelRatio` on its own is NOT enough to shrink the canvas backbuffer: the
+ * runtime wraps three's `setSize` with an early return when the CSS size is
+ * unchanged, and three's `setPixelRatio` resizes by calling exactly that. It
+ * still pays off — the internal post-processing render targets do shrink, and
+ * those are where the cost is (12 of the About mission scene's 13 full-screen
+ * passes are internal; capping the ratio alone measured 5.7x faster). To get the
+ * backbuffer as well we follow with `_resize(true)`, the runtime's own force
+ * path. Deliberately NOT the public `setSize()`: that flips `_viewportMode` to
+ * manual, which stops the frame view tracking the viewport and re-frames the
+ * scene's camera.
+ */
+function applyPixelRatio() {
   const a = app.value
   if (!a) return
-  const active = onScreen && !document.hidden
+  const g = a as unknown as RuntimeInternals
+  const r = g._renderer
+  if (!r?.setPixelRatio) return
+  const target = Math.min(window.devicePixelRatio || 1, Math.max(0.25, props.maxPixelRatio))
+  if (r.getPixelRatio && Math.abs(r.getPixelRatio() - target) < 0.001) return
+  r.setPixelRatio(target)
+  g._resize?.(true)
+}
+
+/**
+ * Make the runtime's scroll listeners passive.
+ *
+ * Every Application registers `document.addEventListener('scroll', _onScroll)`
+ * with no options — so NON-passive — and the handler calls
+ * `canvas.getBoundingClientRect()`. With Lenis driving real scroll every frame
+ * that is a forced layout per scene per frame, plus the browser can't treat the
+ * scroll as passive. Scenes with baked scroll interactions add a second one on
+ * window via the event manager.
+ *
+ * Re-registering the SAME handler as passive changes nothing behavioural —
+ * `scroll` isn't cancelable, so nothing was relying on preventDefault — and
+ * `dispose()`/`disconnect()` still remove them, because removeEventListener
+ * matches on capture only.
+ */
+function relaxRuntimeScrollListeners() {
+  const g = app.value as unknown as RuntimeInternals | null
+  if (!g) return
+  const docHandler = g._onScroll
+  if (typeof docHandler === 'function') {
+    document.removeEventListener('scroll', docHandler)
+    document.addEventListener('scroll', docHandler, { passive: true })
+  }
+  const emHandler = g._eventManager?.onScroll
+  if (typeof emHandler === 'function') {
+    window.removeEventListener('scroll', emHandler)
+    window.addEventListener('scroll', emHandler, { passive: true })
+  }
+}
+
+/**
+ * Drop the runtime's global pointermove raycast for scenes with no hover
+ * behaviour. The listener is registered on both window and document depending on
+ * the scene, so we remove from both — a miss is a harmless no-op.
+ */
+function detachHoverRaycast() {
+  const handler = (app.value as unknown as RuntimeInternals | null)?._eventManager?.onMouseMove
+  if (typeof handler !== 'function') return
+  window.removeEventListener('pointermove', handler)
+  document.removeEventListener('pointermove', handler)
+}
+
+// --- coordinator participation ---
+const participant: SplineParticipant = {
+  ratio: 0,
+  setRendering: (on: boolean) => setRenderLoop(on),
+}
+
+/** Throttled wrapper around the runtime's render, installed as the rAF callback. */
+let lastFrameAt = 0
+function throttledFrame(t: number) {
+  const g = app.value as unknown as RuntimeInternals | null
+  if (!g?.render) return
+  const interval = props.maxFps > 0 ? 1000 / props.maxFps : 0
+  // -1ms of slack: rAF timestamps land a hair under the interval on a 60Hz
+  // display, which would otherwise halve the target rate instead of hitting it.
+  if (interval && lastFrameAt && t - lastFrameAt < interval - 1) return
+  lastFrameAt = t
+  g.render(t)
+}
+
+function setRenderLoop(active: boolean) {
+  const a = app.value
+  if (!a) return
   if (active === renderActive) return
   renderActive = active
   const g = a as unknown as RuntimeInternals
@@ -193,7 +347,8 @@ function syncRender() {
       // Falsy _lastTime → the runtime skips the dt computation on the first
       // resumed frame instead of seeing the whole offscreen gap as one delta.
       g._lastTime = 0
-      g._renderer.setAnimationLoop(g.render)
+      lastFrameAt = 0
+      g._renderer.setAnimationLoop(throttledFrame)
     }
     else {
       g._renderer.setAnimationLoop(null)
@@ -211,23 +366,31 @@ function startRenderGating() {
   // Bail if the component unmounted during the async load (app already disposed),
   // so we don't attach listeners that onBeforeUnmount has already torn down.
   if (!app.value) return
-  document.addEventListener('visibilitychange', syncRender)
+  registerSplineScene(participant)
   if (typeof IntersectionObserver !== 'undefined' && canvas.value) {
-    // 200px margin keeps a scene rendering just before it scrolls into view, so
-    // it's already animating by the time it's seen.
+    // Report a ratio rather than a boolean so the coordinator can pick the most
+    // visible scene. rootMargin is 0 here (the 200px pre-warm lives on the LOAD
+    // trigger above): a scene that is merely near the viewport should not be
+    // taking the render slot from one that is actually on screen.
     io = new IntersectionObserver((entries) => {
-      onScreen = entries[entries.length - 1]?.isIntersecting ?? true
-      syncRender()
-    }, { rootMargin: '200px' })
+      const last = entries[entries.length - 1]
+      if (!last) return
+      participant.ratio = last.isIntersecting ? Math.max(last.intersectionRatio, 0.0001) : 0
+      rebalanceSplineScenes()
+    }, { threshold: [0, 0.05, 0.25, 0.5, 0.75, 1] })
     io.observe(canvas.value)
   }
-  syncRender()
+  else {
+    // No IO — assume visible so the scene still animates.
+    participant.ratio = 1
+    rebalanceSplineScenes()
+  }
 }
 
 function stopRenderGating() {
-  document.removeEventListener('visibilitychange', syncRender)
   io?.disconnect()
   io = null
+  unregisterSplineScene(participant)
 }
 // ---------------------------------------------------------------------------
 

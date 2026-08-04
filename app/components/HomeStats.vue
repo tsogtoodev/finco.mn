@@ -3,6 +3,9 @@ const { t } = useI18n()
 
 const page = await usePageContent('home')
 
+// Live wave on capable devices, the matching raster everywhere else.
+const splineEnabled = useSplineEnabled()
+
 const heading = computed(() => page.value?.statsHeading ?? t('home.stats.heading'))
 const stats = computed(
   () =>
@@ -20,32 +23,39 @@ const MASKS = ['mask-1', 'mask-2', 'mask-3']
 
 <template>
   <section class="relative isolate overflow-hidden bg-[#0a0a1a] px-6 py-6 lg:py-32">
-    <div class="absolute left-1/2 top-1/2 hidden h-full w-full -translate-x-1/2 -translate-y-1/2 sm:block">
-      <svg xmlns="http://www.w3.org/2000/svg" width="1895" height="602" viewBox="0 0 1895 602" fill="none" style="backdrop-filter: blur(95.55px);">
-        <g filter="url(#filter0_f_993_23263)">
-          <path d="M191.1 328.815L1074.97 191.1L1703.1 328.815V410.46L1074.97 295.093L191.1 410.46L191.1 328.815Z" fill="rgba(74, 57, 208, 0.3)"/>
-        </g>
-        <defs>
-          <filter id="filter0_f_993_23263" x="-0.000396729" y="9.15527e-05" width="1894.2" height="601.56" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-            <feGaussianBlur stdDeviation="95.55" result="effect1_foregroundBlur_993_23263"/>
-          </filter>
-        </defs>
-      </svg>
-    </div>
+    <!-- Purple glow band (Figma 993:23263). Figma exports this as a shallow
+         chevron path under `feGaussianBlur stdDeviation="95.55"`, and the export
+         also carried `backdrop-filter: blur(95.55px)` on the <svg> itself.
+         Measured, that was the single most expensive piece of CSS on the site: a
+         95px blur is ~4x the cost of a 24px one, it ran over a 1894x601 region,
+         the backdrop-filter forced a backdrop snapshot and re-blur on every
+         composite, and all of it lived inside this section — which index.vue pins
+         `sticky top-0`, so it re-composited for the entire products scroll while a
+         live WebGL canvas rendered underneath.
+         At that blur radius the chevron resolves to a diffuse elliptical glow, so
+         a gradient IS the shape. Same picture, no filter, no snapshot. -->
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute left-1/2 top-1/2 hidden h-full w-full -translate-x-1/2 -translate-y-1/2 sm:block [background:radial-gradient(ellipse_58%_17%_at_50%_38%,rgba(74,57,208,0.30)_0%,rgba(74,57,208,0.14)_45%,transparent_78%)]"
+    />
     <div class="pointer-events-none absolute left-1/2 top-2/3 hidden h-full min-h-[51vw] w-full -translate-x-1/2 -translate-y-[calc(50%+100px)] scale-120 sm:block">
-      <ClientOnly>
-        <SplineScene scene="https://prod.spline.design/2MYVnmuRqu28b88y/scene.splinecode" no-drag />
-        <template #fallback>
-          <NuxtImg
-            src="/images/home/stats-wave.png"
-            alt=""
-            aria-hidden="true"
-            class="size-full object-cover"
-          />
-        </template>
-      </ClientOnly>
+      <!-- The wrapper already applies `scale-120`, so the canvas is CSS-upscaled
+           regardless; 0.75x drops the drawing buffer to ~44% of its pixels for the
+           same soft wave. Heaviest scene on the site for triangles (431k/frame). -->
+      <SplineScene
+        v-if="splineEnabled"
+        scene="https://prod.spline.design/2MYVnmuRqu28b88y/scene.splinecode"
+        no-drag
+        no-hover
+        :max-pixel-ratio="0.75"
+      />
+      <NuxtImg
+        v-else
+        src="/images/home/stats-wave.png"
+        alt=""
+        aria-hidden="true"
+        class="size-full object-cover"
+      />
     </div>
     <NuxtImg
       src="/images/home/stats-wave.png"
@@ -53,8 +63,10 @@ const MASKS = ['mask-1', 'mask-2', 'mask-3']
       aria-hidden="true"
       class="pointer-events-none absolute inset-0 size-full object-cover sm:hidden"
     />
-    <div class="pointer-events-none absolute inset-y-0 left-0 w-[28%] backdrop-blur-[4px] [mask-image:linear-gradient(to_right,black,transparent)] [-webkit-mask-image:linear-gradient(to_right,black,transparent)]" />
-    <div class="pointer-events-none absolute inset-y-0 right-0 w-[28%] backdrop-blur-[4px] [mask-image:linear-gradient(to_left,black,transparent)] [-webkit-mask-image:linear-gradient(to_left,black,transparent)]" />
+    <!-- Edge softening. The masked `backdrop-blur-[4px]` pair that used to sit here
+         cost two extra composited layers, each with its own backdrop snapshot, on
+         every frame of the sticky scroll — to soften the edges of a scene the
+         opaque gradients below already fade to the panel colour. Gradients alone. -->
     <div class="pointer-events-none absolute inset-y-0 left-0 w-[28%] bg-gradient-to-r from-[#0a0a1a] to-transparent" />
     <div class="pointer-events-none absolute inset-y-0 right-0 w-[28%] bg-gradient-to-l from-[#0a0a1a] to-transparent" />
 

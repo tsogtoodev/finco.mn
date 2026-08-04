@@ -124,8 +124,18 @@ onBeforeUnmount(() => {
              "image 2058" outside the clip frame so the model's head bleeds
              above the card's top edge. Inside the card the clip's solid
              background covers this copy, so only the overflow shows. -->
+        <!-- NuxtImg, not <img>: as a raw <img> this bypassed Cloudflare Image
+             Transformations entirely and shipped the source 2208x2208 RGBA PNG —
+             1.9MB on the wire, ~19.5MB decoded, the largest resource on the home
+             page by 3.5x. It renders inside a ~46% column of a 1440 card, so the
+             widest it is ever painted is ~940px. -->
         <div class="beep-person beep-person--bleed" aria-hidden="true">
-          <img src="/images/home/beep-lifestyle.png" alt="" class="beep-person-img">
+          <NuxtImg
+            src="/images/home/beep-lifestyle.png"
+            alt=""
+            sizes="sm:420px md:640px lg:940px"
+            class="beep-person-img"
+          />
         </div>
         <div class="beep-clip">
           <!-- Pill cluster (baked raster, bleeds off the right edge) -->
@@ -134,13 +144,31 @@ onBeforeUnmount(() => {
           <!-- Lime halftone field -->
           <div class="beep-dots-wrap">
             <div class="beep-dots-rot">
-              <img src="/images/home/beep-halftone.svg" alt="" aria-hidden="true" class="beep-dots-img">
+              <!-- Stays a raw <img>: the Cloudflare provider bypasses SVG anyway,
+                   and this one is 372KB of path data (113KB gzipped) that would
+                   lose its crispness as a raster. Decoding it off the main thread
+                   is the only cheap win available here. -->
+              <img
+                src="/images/home/beep-halftone.svg"
+                alt=""
+                aria-hidden="true"
+                decoding="async"
+                loading="lazy"
+                class="beep-dots-img"
+              >
             </div>
           </div>
 
-          <!-- Lifestyle photo -->
+          <!-- Lifestyle photo (same source + sizes as the bleed copy above, so the
+               two share one cached CDN variant rather than fetching twice) -->
           <div class="beep-person">
-            <img src="/images/home/beep-lifestyle.png" alt="" aria-hidden="true" class="beep-person-img">
+            <NuxtImg
+              src="/images/home/beep-lifestyle.png"
+              alt=""
+              aria-hidden="true"
+              sizes="sm:420px md:640px lg:940px"
+              class="beep-person-img"
+            />
           </div>
 
           <!-- Bottom fade -->

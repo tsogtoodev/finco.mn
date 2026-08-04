@@ -22,6 +22,9 @@ defineProps<{
 
 const active = ref(0)
 
+// Live cluster on capable devices, the matching raster everywhere else.
+const splineEnabled = useSplineEnabled()
+
 // Marker rows are evenly spaced down the 568px spine (132.1px between centres),
 // independent of the cards' heights — matches Figma's fixed grid.
 const markerTop = (i: number) => `${i * 132.1}px`
@@ -67,25 +70,35 @@ const routeD = computed(() => {
           class="absolute z-0 hidden -translate-x-[60%] -translate-y-1/2 lg:block"
           style="--cluster-size: clamp(1267px, 93.75vw, 1800px); left: max(250px, calc(600px - 18.229vw)); top: calc(50% - 40px); width: var(--cluster-size); height: var(--cluster-size)"
         >
-          <ClientOnly>
-            <div
-              class="h-[1024px] w-[1024px] origin-top-left"
-              style="scale: calc(tan(atan2(var(--cluster-size), 1024px)))"
-            >
-              <SplineScene scene="https://prod.spline.design/n2ZpeSHKKA8Olc1E/scene.splinecode?timestamp=1754266000" :zoom="1" class="size-full" />
-            </div>
-            <template #fallback>
-              <!-- Same render as the scene, at 2/3 of the raster's Figma size and
-                   offset from the anchor (571:6516: centre 143px left / 41px up,
-                   both × 2/3) so it matches the scaled-down live scene. -->
-              <img
-                :src="cluster"
-                alt=""
-                class="absolute left-1/2 top-1/2 w-[1483px] max-w-none mix-blend-multiply"
-                style="transform: translate(calc(-50% - 95px), calc(-50% - 27px))"
-              >
-            </template>
-          </ClientOnly>
+          <!-- The 1024 canvas is already CSS-upscaled to --cluster-size (1267px+),
+               so it was rendering 2048x2048 of buffer to display blurry anyway;
+               0.75x drops that to 768x768 for the same picture. This is also the
+               heaviest scene on the site for DRAW CALLS (189 objects -> 503 calls
+               per frame), which only merging meshes in the Spline editor can fix. -->
+          <div
+            v-if="splineEnabled"
+            class="h-[1024px] w-[1024px] origin-top-left"
+            style="scale: calc(tan(atan2(var(--cluster-size), 1024px)))"
+          >
+            <SplineScene
+              scene="https://prod.spline.design/n2ZpeSHKKA8Olc1E/scene.splinecode?timestamp=1754266000"
+              :zoom="1"
+              :max-pixel-ratio="0.75"
+              no-hover
+              class="size-full"
+            />
+          </div>
+          <!-- Same render as the scene, at 2/3 of the raster's Figma size and
+               offset from the anchor (571:6516: centre 143px left / 41px up,
+               both × 2/3) so it matches the scaled-down live scene. Sits OUTSIDE
+               the scaled box above — the scale transform would resize it too. -->
+          <img
+            v-else
+            :src="cluster"
+            alt=""
+            class="absolute left-1/2 top-1/2 w-[1483px] max-w-none mix-blend-multiply"
+            style="transform: translate(calc(-50% - 95px), calc(-50% - 27px))"
+          >
         </div>
 
         <div class="pointer-events-none relative hidden items-center gap-8 lg:flex">

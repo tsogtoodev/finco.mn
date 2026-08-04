@@ -28,6 +28,11 @@ const props = withDefaults(
   },
 )
 
+// Live pin on capable devices, the static teardrop everywhere else. This scene had
+// no responsive gate at all, so phones on /branches and /contact were downloading
+// the runtime and opening a WebGL context for a decorative marker.
+const splineEnabled = useSplineEnabled()
+
 const mapsUrl = computed(() =>
   props.lat != null && props.lng != null
     ? `https://www.google.com/maps?q=${props.lat},${props.lng}`
@@ -63,9 +68,31 @@ const pinStyle = computed(() => ({
 
     <!-- animated Spline pin (anchored by its tip at pin x/y) -->
     <div class="map-pin" :style="pinStyle">
-      <ClientOnly>
-        <SplineScene :scene="pinScene" class="pin-scene" />
-      </ClientOnly>
+      <SplineScene v-if="splineEnabled" :scene="pinScene" class="pin-scene" no-hover />
+      <!-- SSR / pre-hydration / low-end marker. This is the teardrop the header
+           comment always promised: the ClientOnly here had no #fallback, so until
+           the runtime finished loading — and on any device that skips the scene —
+           the map had no marker at all. `.pin-fallback` was already styled for it. -->
+      <svg
+        v-else
+        class="pin-fallback"
+        viewBox="0 0 132 168"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <path
+          d="M66 4C31.8 4 4 31.8 4 66c0 42.4 51.6 91 60.1 98.8a2.8 2.8 0 0 0 3.8 0C76.4 157 128 108.4 128 66 128 31.8 100.2 4 66 4Z"
+          fill="url(#pin-body)"
+        />
+        <circle cx="66" cy="64" r="24" fill="#fff" fill-opacity="0.92" />
+        <defs>
+          <linearGradient id="pin-body" x1="66" y1="4" x2="66" y2="166" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#6b4fff" />
+            <stop offset="1" stop-color="#4c41d8" />
+          </linearGradient>
+        </defs>
+      </svg>
     </div>
   </component>
 </template>
