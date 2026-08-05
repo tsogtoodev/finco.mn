@@ -44,7 +44,7 @@ const MASKS = ['mask-1', 'mask-2', 'mask-3']
            same soft wave. Heaviest scene on the site for triangles (431k/frame). -->
       <SplineScene
         v-if="splineEnabled"
-        scene="https://prod.spline.design/2MYVnmuRqu28b88y/scene.splinecode"
+        scene="https://prod.spline.design/2MYVnmuRqu28b88y/scene.splinecode?timestamp=1754266000"
         no-drag
         no-hover
         :max-pixel-ratio="0.75"

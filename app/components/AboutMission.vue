@@ -178,7 +178,7 @@ onBeforeUnmount(() => {
           >
             <SplineScene
               v-if="splineEnabled"
-              scene="https://prod.spline.design/d6X47aZ7JVftxvE2/scene.splinecode"
+              scene="https://prod.spline.design/d6X47aZ7JVftxvE2/scene.splinecode?timestamp=1754266000"
               no-drag
               preload
               :zoom="1"

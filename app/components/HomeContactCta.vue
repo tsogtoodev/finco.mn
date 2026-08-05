@@ -31,7 +31,7 @@ const splineEnabled = useSplineEnabled()
            pixels — only merging meshes in the Spline editor moves that. -->
       <SplineScene
         v-if="splineEnabled"
-        scene="https://prod.spline.design/rAfqlL9pnx29yw5P/scene.splinecode"
+        scene="https://prod.spline.design/rAfqlL9pnx29yw5P/scene.splinecode?timestamp=1754266000"
         no-drag
         preload
         :zoom="2"
