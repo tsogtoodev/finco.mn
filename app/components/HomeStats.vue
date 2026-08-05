@@ -48,6 +48,7 @@ const MASKS = ['mask-1', 'mask-2', 'mask-3']
         no-drag
         no-hover
         :max-pixel-ratio="0.75"
+        occluded-by="#home-products"
       />
       <NuxtImg
         v-else

@@ -66,6 +66,31 @@ const props = withDefaults(
      */
     zoom?: number
     /**
+     * CSS selector for an OPAQUE element that can scroll over and completely
+     * cover this canvas — i.e. a scene that stays geometrically in the viewport
+     * while being invisible.
+     *
+     * IntersectionObserver is purely geometric: it knows nothing about z-index
+     * or occlusion. A `sticky` scene therefore keeps reporting a full ratio (and
+     * keeps the render slot) for as long as it is pinned, even with an opaque
+     * panel scrolled across it. That is the home stats wave: it is pinned for
+     * the whole products scroll and renders 431k triangles a frame behind a
+     * solid white section. Naming the covering element here lets the scene drop
+     * its ratio to 0 the moment it is fully hidden.
+     *
+     * This is written for the PINNED case specifically: the selector marks where
+     * the scrolling content that buries the scene BEGINS, and the scene counts as
+     * hidden once that element's top edge has passed above the canvas's visible
+     * band (while spanning it horizontally). Deliberately not "the cover fully
+     * contains the canvas" — that only holds briefly. The products panel is
+     * 1037px against a 900px viewport, so a few hundred pixels later its own
+     * bottom edge is back inside the band and the next opaque section is doing
+     * the covering; a containment test flickers back to "visible" there, which is
+     * exactly wrong. Measured on /: containment reported hidden at one scroll
+     * offset out of thirteen across the pin.
+     */
+    occludedBy?: string
+    /**
      * Treat this scene as important: `preconnect` to the Spline CDN from the
      * SSR'd head, and warm the runtime + `.splinecode` immediately on mount
      * rather than waiting for browser idle. For the scenes a visitor reliably
@@ -323,6 +348,87 @@ const participant: SplineParticipant = {
   setRendering: (on: boolean) => setRenderLoop(on),
 }
 
+// The two inputs behind the reported ratio: how much of the canvas is inside the
+// viewport (IO) and whether `occludedBy` is currently covering all of that.
+let ioRatio = 0
+let occluded = false
+
+function syncParticipantRatio() {
+  const next = occluded ? 0 : ioRatio
+  if (next === participant.ratio) return
+  participant.ratio = next
+  rebalanceSplineScenes()
+}
+
+// --- occlusion tracking (opt-in via `occludedBy`) ---------------------------
+// Only armed while the canvas is actually in the viewport, so a scene that IO
+// has already zeroed costs nothing. One rAF-coalesced pair of
+// getBoundingClientRect reads per scroll frame — a forced layout we otherwise
+// work to avoid, but it buys back a full render of the heaviest scene on the
+// site, so it is comfortably the right trade.
+let occlusionBound = false
+let occlusionFrame: number | null = null
+
+function measureOcclusion() {
+  occlusionFrame = null
+  const el = canvas.value
+  const cover = props.occludedBy ? document.querySelector(props.occludedBy) : null
+  if (!el || !cover) {
+    occluded = false
+    syncParticipantRatio()
+    return
+  }
+  const c = el.getBoundingClientRect()
+  const r = cover.getBoundingClientRect()
+  // Compare against the VISIBLE part of the canvas: these wrappers are routinely
+  // taller than the viewport (the stats wave is `min-h-[51vw] scale-120`), and
+  // the off-screen remainder is not what we are asking about.
+  const top = Math.max(c.top, 0)
+  const bottom = Math.min(c.bottom, window.innerHeight)
+  const left = Math.max(c.left, 0)
+  const right = Math.min(c.right, window.innerWidth)
+  occluded = bottom > top
+    && right > left
+    && r.left <= left && r.right >= right
+    && r.top <= top
+  syncParticipantRatio()
+}
+
+function onOcclusionScroll() {
+  if (occlusionFrame !== null) return
+  occlusionFrame = requestAnimationFrame(measureOcclusion)
+}
+
+function bindOcclusion() {
+  if (occlusionBound) return
+  occlusionBound = true
+  window.addEventListener('scroll', onOcclusionScroll, { passive: true })
+  window.addEventListener('resize', onOcclusionScroll, { passive: true })
+}
+
+function unbindOcclusion() {
+  if (!occlusionBound) return
+  occlusionBound = false
+  window.removeEventListener('scroll', onOcclusionScroll)
+  window.removeEventListener('resize', onOcclusionScroll)
+  if (occlusionFrame !== null) {
+    cancelAnimationFrame(occlusionFrame)
+    occlusionFrame = null
+  }
+}
+
+/** Re-arm (or stand down) occlusion tracking after the IO ratio changes. */
+function refreshOcclusion() {
+  if (!props.occludedBy || ioRatio === 0) {
+    unbindOcclusion()
+    occluded = false
+    syncParticipantRatio()
+    return
+  }
+  bindOcclusion()
+  measureOcclusion()
+}
+
 /** Throttled wrapper around the runtime's render, installed as the rAF callback. */
 let lastFrameAt = 0
 function throttledFrame(t: number) {
@@ -375,21 +481,22 @@ function startRenderGating() {
     io = new IntersectionObserver((entries) => {
       const last = entries[entries.length - 1]
       if (!last) return
-      participant.ratio = last.isIntersecting ? Math.max(last.intersectionRatio, 0.0001) : 0
-      rebalanceSplineScenes()
+      ioRatio = last.isIntersecting ? Math.max(last.intersectionRatio, 0.0001) : 0
+      refreshOcclusion()
     }, { threshold: [0, 0.05, 0.25, 0.5, 0.75, 1] })
     io.observe(canvas.value)
   }
   else {
     // No IO — assume visible so the scene still animates.
-    participant.ratio = 1
-    rebalanceSplineScenes()
+    ioRatio = 1
+    refreshOcclusion()
   }
 }
 
 function stopRenderGating() {
   io?.disconnect()
   io = null
+  unbindOcclusion()
   unregisterSplineScene(participant)
 }
 // ---------------------------------------------------------------------------

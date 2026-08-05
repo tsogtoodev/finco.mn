@@ -49,7 +49,10 @@ const subtextStart = computed(
 </script>
 
 <template>
-  <section class="bg-[#fdfffe] py-24 lg:py-32">
+  <!-- `id` is load-bearing: index.vue pins HomeStats `sticky top-0` and scrolls
+       this opaque panel over it, so the stats Spline scene reads this element to
+       know when it is completely hidden and can stop rendering. -->
+  <section id="home-products" class="bg-[#fdfffe] py-24 lg:py-32">
     <div class="mx-auto w-full max-w-[1200px] px-6">
       <div class="flex flex-col items-center gap-3 text-center">
         <h2 class="flex w-full flex-wrap items-baseline justify-center gap-x-[0.28em] font-display text-3xl font-bold leading-tight text-[#231f20] sm:text-4xl">
