@@ -118,7 +118,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section ref="rootEl" class="relative overflow-hidden bg-white py-24 lg:py-28">
+  <section ref="rootEl" class="relative overflow-hidden bg-white py-24 lg:py-28 lg:pb-[80px]">
     <!-- Background wash (Figma 568:5696) — a soft lavender → violet → magenta
          S-curve. See the .biz-blob rules below for why it's CSS, not the raster. -->
     <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">

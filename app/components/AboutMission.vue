@@ -134,14 +134,14 @@ onBeforeUnmount(() => {
                 {{ b.badge }}
               </span>
               <h2
-                class="font-display text-[28px] font-normal leading-[36px] tracking-[0.4px] max-w-[415px]"
+                class="font-display text-[28px] font-bold leading-[36px] tracking-[0px] max-w-[415px]"
                 :class="revealClass(i)"
                 :style="revealStyle(i, 1)"
               >
                 {{ b.heading }}
               </h2>
               <p
-                class="text-[18px] font-extralight leading-[24px] tracking-[0.2px] text-white/80"
+                class="text-[16px] font-extralight leading-[24px] tracking-[0.px] text-white/60"
                 :class="revealClass(i)"
                 :style="revealStyle(i, 2)"
               >
