@@ -15,7 +15,7 @@ useSeoMeta({
 <template>
   <div v-if="c">
     <AboutHero :headline="c.hero.headline" :intro="c.hero.intro" :photo="c.hero.photo" />
-    <AboutMission :blocks="c.mission.blocks" />
+    <AboutMissionV2 :blocks="c.mission.blocks" />
     <AboutValues
       :heading-lead="c.values.headingLead"
       :heading-accent="c.values.headingAccent"
