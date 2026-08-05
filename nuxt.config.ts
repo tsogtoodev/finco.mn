@@ -257,6 +257,20 @@ export default defineNuxtConfig({
     // besides. More specific rules win, so this overrides the globs above.
     '/mn/careers/exam': { cache: false },
     '/en/careers/exam': { cache: false },
+
+    // Background video. Workers Static Assets already serves these from the edge
+    // (verified in production: cf-cache-status HIT), but with no rule here they
+    // fall back to its `max-age=0, must-revalidate` default, so every page view
+    // spends a round trip revalidating an 11.9MB file that has not changed.
+    //
+    // No `immutable`, and not a year: these filenames are NOT content-hashed, so
+    // a re-export under the same name would be invisible to anyone holding a
+    // cached copy. 30 days covers repeat visits while a hard reload still
+    // revalidates (and gets a cheap 304). If this ever needs a year + immutable,
+    // hash the filename first.
+    '/videos/**': {
+      headers: { 'cache-control': 'public, max-age=2592000' },
+    },
   },
 
   // NuxtHub — enables the raw Cloudflare D1 binding (`DB`) that @nuxt/content

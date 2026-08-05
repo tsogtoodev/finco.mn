@@ -84,6 +84,7 @@ const routeD = computed(() => {
               scene="https://prod.spline.design/n2ZpeSHKKA8Olc1E/scene.splinecode?timestamp=1754266000"
               :zoom="1"
               no-hover
+              defer-until-lcp
               class="size-full"
             />
           </div>

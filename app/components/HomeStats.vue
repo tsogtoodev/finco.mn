@@ -74,12 +74,21 @@ function schedule() {
 // and bring it back — the cut lands while there is nothing to see.
 
 /** Fade length each way. Long enough to hide the cut, short enough not to read as a pulse. */
-const FADE_MS = 350
+const FADE_MS = 550
 /** Restore this long after the predicted wrap, so an early timer can't reveal the last frame. */
 const WRAP_GUARD_MS = 60
 
 const faded = ref(false)
+// Incremented once per wrap. <StatCounter> watches it and re-runs its count-up,
+// so the numbers re-reveal on the same beat as the loop instead of animating
+// once and then sitting still under a moving background.
+const cycle = ref(0)
 let fadeTimer: ReturnType<typeof setTimeout> | null = null
+// True while inside the tail dip. COMING OUT of the dip is the wrap, and that
+// transition is what bumps `cycle` — not any particular timer. `timeupdate`
+// clears the pending timer every ~250ms, so an increment that lived inside a
+// timer callback was dropped whenever a tick landed in the guard window.
+let dipped = false
 
 // Re-armed on every `timeupdate` (~4/s) rather than trusted once: the media
 // clock and setTimeout drift apart, and re-deriving the deadline from
@@ -93,12 +102,15 @@ function armFade() {
   const remaining = (el.duration - el.currentTime) * 1000
   if (remaining <= FADE_MS) {
     faded.value = true
-    fadeTimer = setTimeout(() => {
-      faded.value = false
-      armFade()
-    }, remaining + WRAP_GUARD_MS)
+    dipped = true
+    // Wake just past the wrap in case `timeupdate` is slow coming back.
+    fadeTimer = setTimeout(armFade, remaining + WRAP_GUARD_MS)
   }
   else {
+    if (dipped) {
+      dipped = false
+      cycle.value++
+    }
     faded.value = false
     fadeTimer = setTimeout(armFade, remaining - FADE_MS)
   }
@@ -109,11 +121,48 @@ function armFade() {
 function cancelFade() {
   if (fadeTimer !== null) clearTimeout(fadeTimer)
   fadeTimer = null
+  dipped = false
   faded.value = false
 }
 
+// --- depth blur --------------------------------------------------------------
+// index.vue pins this section `lg:motion-safe:sticky top-0` and scrolls
+// #home-products up over it. Blur it in step with that coverage so it recedes
+// behind the incoming section instead of sitting sharp underneath it.
+
+/** Blur at full coverage. */
+const MAX_BLUR_PX = 20
+
+const sectionEl = useTemplateRef<HTMLElement>('sectionEl')
+const coverage = ref(0)
+
+function measureCoverage() {
+  const el = sectionEl.value
+  const cover = document.querySelector('#home-products')?.getBoundingClientRect()
+  if (!el || !cover) {
+    coverage.value = 0
+    return
+  }
+  // Against the on-screen slice of the section, so the ratio stays meaningful
+  // while it is pinned and the products section eats into it from the bottom.
+  const r = el.getBoundingClientRect()
+  const top = Math.max(r.top, 0)
+  const bottom = Math.min(r.bottom, window.innerHeight)
+  const visible = bottom - top
+  // Below `lg`, and for reduced motion, nothing is sticky: the products section
+  // starts exactly at this one's bottom edge, so this lands on 0 by itself.
+  coverage.value = visible > 0 ? Math.min(Math.max((bottom - cover.top) / visible, 0), 1) : 0
+}
+
+// Bound to the smooth-scroll layer, not the native event: with Lenis driving,
+// a native `scroll` handler lands a frame late and the blur visibly trails the
+// section sliding over it.
+const coverageScroll = useScrollSync(measureCoverage)
+
 onMounted(async () => {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  coverageScroll.start()
+  measureCoverage()
   videoEnabled.value = true
   await nextTick()
   // Vue renders `muted` as an attribute, which Safari ignores when deciding
@@ -162,7 +211,15 @@ const MASKS = ['mask-1', 'mask-2', 'mask-3']
 </script>
 
 <template>
-  <section class="relative isolate overflow-hidden bg-[#0a0a1a] px-6 py-6 lg:py-32">
+  <!-- `filter` only while it is actually being covered: a full-viewport blur is
+       expensive to composite, and at rest it would buy nothing. The sticky
+       wrapper in index.vue carries the same background, so the soft edge the
+       filter puts on this section lands on an identical colour. -->
+  <section
+    ref="sectionEl"
+    class="relative isolate overflow-hidden bg-[#0a0a1a] px-6 py-6 lg:py-32"
+    :style="coverage > 0 ? { filter: `blur(${(coverage * MAX_BLUR_PX).toFixed(2)}px)` } : undefined"
+  >
     <!-- Purple glow band (Figma 993:23263). Figma exports this as a shallow
          chevron path under `feGaussianBlur stdDeviation="95.55"`, and the export
          also carried `backdrop-filter: blur(95.55px)` on the <svg> itself.
@@ -239,7 +296,7 @@ const MASKS = ['mask-1', 'mask-2', 'mask-3']
             style="transform: scaleY(-1)"
           />
           <p class="relative font-display text-5xl font-semibold text-white leading-tight mt-6" :class="MASKS[i % MASKS.length]">
-            <span v-if="s.prefix">{{ s.prefix }}</span><StatCounter :value="s.value" /><span
+            <span v-if="s.prefix">{{ s.prefix }}</span><StatCounter :value="s.value" :replay="cycle" /><span
               v-if="s.suffix"
               :class="s.prefix ? 'text-2xl' : ''"
             >{{ s.suffix }}</span>

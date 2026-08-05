@@ -14,11 +14,11 @@ const FRACTAL_RAMP = `linear-gradient(to bottom,
 // per band (topmost 3%); dialled down to a uniform 3% here per design direction
 // for a subtler stack.
 const FRACTAL_LAYERS = [
-  { t: 0, o: 0.03 },
-  { t: 20, o: 0.03 },
-  { t: 40, o: 0.03 },
-  { t: 60, o: 0.03 },
-  { t: 80, o: 0.03 },
+  { t: 0, o: 0.02 },
+  { t: 20, o: 0.02 },
+  { t: 40, o: 0.02 },
+  { t: 60, o: 0.02 },
+  { t: 80, o: 0.02 },
 ] as const
 
 // Colour-glow ellipses behind the steps (Figma 775:10211–10213). Each is a

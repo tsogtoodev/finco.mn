@@ -34,6 +34,7 @@ const splineEnabled = useSplineEnabled()
         scene="https://prod.spline.design/rAfqlL9pnx29yw5P/scene.splinecode?timestamp=1754266000"
         no-drag
         preload
+        defer-until-lcp
         :zoom="2"
       />
       <NuxtImg

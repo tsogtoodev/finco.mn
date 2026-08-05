@@ -54,8 +54,8 @@ importers:
         specifier: ^1.8.5
         version: 1.8.7
       '@tsogtoodev/particle-glock':
-        specifier: ^0.2.0
-        version: 0.2.0(vue@3.5.40(typescript@5.9.3))
+        specifier: ^0.2.1
+        version: 0.2.1(vue@3.5.40(typescript@5.9.3))
       '@tsogtoodev/prelo':
         specifier: ^0.1.2
         version: 0.1.2(magic-string@1.1.0)(magicast@0.5.3)(oxc-parser@0.140.0)(rolldown@1.2.0)(unplugin@3.3.0(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)))(vue@3.5.40(typescript@5.9.3))
@@ -3369,8 +3369,8 @@ packages:
   '@takumi-rs/wasm@1.8.7':
     resolution: {integrity: sha512-LVBBMcYdvA0a+w1DRCwjYhFPTFVWd+oYW7kY8jMeBYEX+l0HF8PHbjWCOMDbW8iA80489UGx4fG2frLE+MKcMg==}
 
-  '@tsogtoodev/particle-glock@0.2.0':
-    resolution: {integrity: sha512-wUjttBNyE1hYncADt4yiHO2dzExd5GtSeHVPsYYlEYNyToZv4vBiZ7inBMy7FqggTdNAnSJnfmsOUFiGy6yYOw==}
+  '@tsogtoodev/particle-glock@0.2.1':
+    resolution: {integrity: sha512-BsoF0/Tx+uVV4g9sLykCy2KG9up+cIFDERAa1oVTe4JM/K4ad4/5Ozcgai3J28vK5jmiObiqPBZ2MUPEn3pQcw==}
     engines: {node: '>=18'}
     peerDependencies:
       vue: ^3.3.0
@@ -10747,7 +10747,7 @@ snapshots:
       - react
       - react-dom
 
-  '@tsogtoodev/particle-glock@0.2.0(vue@3.5.40(typescript@5.9.3))':
+  '@tsogtoodev/particle-glock@0.2.1(vue@3.5.40(typescript@5.9.3))':
     dependencies:
       vue: 3.5.40(typescript@5.9.3)
 

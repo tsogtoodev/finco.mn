@@ -117,7 +117,7 @@ onBeforeUnmount(() => {
       class="relative isolate flex flex-col justify-center overflow-hidden bg-[#080A12]"
       :class="enabled ? 'sticky top-0 h-[100dvh]' : 'py-24 sm:py-28'"
     >
-      <div class="relative mx-auto w-full max-w-7xl px-4">
+      <div class="pointer-events-none relative mx-auto w-full max-w-7xl px-4">
         <div :class="enabled ? 'h-[100dvh] overflow-hidden py-24' : ''">
           <div
             ref="innerEl"
@@ -125,7 +125,7 @@ onBeforeUnmount(() => {
             :class="enabled ? 'gap-[70dvh] will-change-transform' : 'gap-20 lg:gap-32'"
             :style="enabled ? { transform: `translateY(${-offset}px)` } : undefined"
           >
-            <div v-for="(b, i) in blocks" :key="i" class="flex flex-col gap-[16px]">
+            <div v-for="(b, i) in blocks" :key="i" class="pointer-events-auto flex flex-col gap-[16px]">
               <span
                 class="inline-flex w-fit items-center rounded-[24px] bg-white/20 px-4 py-1.5 text-[16px] font-normal leading-[20px] text-white"
                 :class="revealClass(i)"
@@ -165,24 +165,20 @@ onBeforeUnmount(() => {
         >
         <div
           v-if="isDesktop"
-          class="pointer-events-auto absolute bottom-0 -right-[10rem] aspect-video overflow-hidden bg-[#080A12] h-[100dvh]"
+          class="pointer-events-auto absolute bottom-0 right-0 aspect-video overflow-hidden bg-[#080A12] h-[100dvh]"
           :style="{ width: 'var(--scene-w)' }"
         >
-          <!-- The 1920x1080 box is fixed on purpose: resizing the canvas re-frames
-               the scene's camera, so the framing is held constant and the parent
-               clips it. That means roughly half these pixels are never seen, which
-               is why the scene renders at 0.75x — 1440x810 of drawing buffer for
-               the same picture, against 3840x2160 before (8.29MP -> 1.17MP). -->
           <div
             class="h-[1080px] w-[1920px]"
           >
             <SplineScene
               v-if="splineEnabled"
-              scene="https://prod.spline.design/d6X47aZ7JVftxvE2/scene.splinecode?timestamp=1754266000"
-              no-drag
+              scene="https://prod.spline.design/5QI6kS8kPdn7j7Y3/scene.splinecode?timestamp=1754266000"
               preload
+              defer-until-lcp
               :zoom="1"
-              class="size-full bg-[#080A12]"
+              class="bg-[#080A12]"
+              style="width: 100dvw; height: 100dvh; object-fit: cover;"
             />
             <img v-else :src="torus" alt="" class="size-full object-cover">
           </div>
@@ -202,7 +198,7 @@ onBeforeUnmount(() => {
             }"
           /> -->
           <!-- Bottom gradient for the scene -->
-          <div
+          <!-- <div
             aria-hidden="true"
             class="pointer-events-none absolute inset-x-0 bottom-0 h-[28%]"
             :style="{
@@ -214,7 +210,7 @@ onBeforeUnmount(() => {
                 rgba(8,10,18,0.15) 86%,
                 rgba(8,10,18,0) 100%)`,
             }"
-          />
+          /> -->
         </div>
       </div>
     </div>

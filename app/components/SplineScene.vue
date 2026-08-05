@@ -8,6 +8,7 @@
 // some embedded/headless renderers, and a rect check is reliable everywhere.
 // The listeners self-remove after the scene loads.
 import { onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
+import { afterLcp } from '~/utils/afterLcp'
 import { getSmoothScroll } from '~/utils/smoothScroll'
 import {
   SPLINE_MAX_FPS,
@@ -98,6 +99,23 @@ const props = withDefaults(
      * between scrolling to the section and the scene appearing.
      */
     preload?: boolean
+    /**
+     * Hold BOTH the network warm-up and the load itself until the page's LCP has
+     * settled (see `utils/afterLcp`). For a scene that is on screen — or within
+     * `rootMargin` — at scroll top, `loadScene` otherwise runs during the load
+     * window, and `Application.load()` is one uninterruptible main-thread task:
+     * 0.5 s for the About mission scene, 2.3 s for the one it replaced, measured
+     * on production with the bytes already cached. That freeze pushes the LCP
+     * element's paint out by its own length and locks input for the same stretch.
+     *
+     * Set on the scenes a visitor meets in the first viewport or just below it.
+     * Below-the-fold scenes that only load after a real scroll (the map pin) get
+     * nothing from it — by then the load window is over.
+     *
+     * Composes with `preload`: the gate decides WHEN warming may start, `preload`
+     * decides whether it then waits for browser idle on top.
+     */
+    deferUntilLcp?: boolean
   }>(),
   {
     rootMargin: 200,
@@ -108,6 +126,7 @@ const props = withDefaults(
     maxPixelRatio: SPLINE_MAX_PIXEL_RATIO,
     maxFps: SPLINE_MAX_FPS,
     noHover: false,
+    deferUntilLcp: false,
   },
 )
 
@@ -154,12 +173,26 @@ function onScroll() {
   }
 }
 
+// Set synchronously the moment a load is committed to. `app.value` can no longer
+// serve as that flag on its own: with `deferUntilLcp` the function can sit at an
+// await for seconds before it exists, which is long enough for a second trigger
+// to walk straight past the guard and build a second WebGL context.
+let loadStarted = false
+let unmounted = false
+
 async function loadScene() {
-  if (app.value || !canvas.value) return
+  if (loadStarted || !canvas.value) return
+  loadStarted = true
   try {
+    if (props.deferUntilLcp) await afterLcp()
+    // Unmounted (or torn down) while the gate was closed.
+    if (unmounted || !canvas.value) return
     const { Application } = await import('@splinetool/runtime')
+    if (unmounted || !canvas.value) return
     app.value = new Application(canvas.value)
     await app.value.load(props.scene)
+    // Unmounted mid-load: onBeforeUnmount has already disposed and nulled it.
+    if (unmounted || !app.value) return
     if (props.zoom !== 1) app.value.setZoom(props.zoom)
     applyPixelRatio()
     relaxRuntimeScrollListeners()
@@ -182,15 +215,15 @@ async function loadScene() {
 // scene's .splinecode into the HTTP cache ahead of the scroll trigger. `loadScene`
 // then reuses both. Skipped on data-saver / 2G so we don't spend metered bandwidth
 // a bouncing visitor never uses.
-function schedulePrefetch() {
-  if (app.value || typeof window === 'undefined') return
+async function schedulePrefetch() {
+  if (loadStarted || typeof window === 'undefined') return
   const conn = (navigator as Navigator & {
     connection?: { saveData?: boolean; effectiveType?: string }
   }).connection
   if (conn?.saveData || /(?:^|-)2g$/.test(conn?.effectiveType ?? '')) return
 
   const warm = () => {
-    if (app.value) return
+    if (loadStarted || unmounted) return
     // A CSS-hidden wrapper (`hidden sm:block`, `hidden lg:block`) still MOUNTS
     // this component. The render path already copes — `inView()` guards on
     // `r.width > 0` — but the prefetch had no such guard, so a phone downloaded
@@ -201,6 +234,14 @@ function schedulePrefetch() {
     if (!canvas.value || canvas.value.getBoundingClientRect().width === 0) return
     import('@splinetool/runtime').catch(() => {})
     fetch(props.scene).catch(() => {})
+  }
+  // The warm-up is gated too, not just the load. Pulling the runtime chunk means
+  // COMPILING it — a ~200ms main-thread task on its own — and the 1MB+ of scene
+  // bytes competes for bandwidth with the LCP image, which on these pages is the
+  // hero photo sitting right above the scene.
+  if (props.deferUntilLcp) {
+    await afterLcp()
+    if (unmounted) return
   }
   // `preload` scenes skip the idle wait entirely — the whole point is to be
   // fetching while the visitor is still reading the top of the page, not to
@@ -665,6 +706,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  unmounted = true
   if (revealTimer) clearTimeout(revealTimer)
   teardownScroll()
   stopRenderGating()
