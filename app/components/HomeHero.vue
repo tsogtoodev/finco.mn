@@ -398,7 +398,7 @@ onBeforeUnmount(() => {
                auto-advance (its progress bar's animationend calls `next`), but
                there are no tabs to select and, per the desktop-scoped pause
                rules in <style>, hovering/touching never pauses it. -->
-          <div class="mx-auto w-full max-w-[1200px] px-6 pb-10 lg:hidden" aria-hidden="true">
+          <div class="mx-auto w-full max-w-[800px] lg:max-w-[1000px] xl:max-w-[1200px] px-6 pb-10 lg:hidden" aria-hidden="true">
             <span class="relative block h-0.5 w-[40vw] overflow-hidden bg-white/20">
               <span
                 :key="`m-prog-${current}-${reduced}`"

@@ -235,10 +235,10 @@ onBeforeUnmount(() => {
 .biz-card {
   transform: translateY(calc(var(--depth) * var(--peek) * -1)) scale(calc(1 - var(--depth) * 0.04));
   transform-origin: top center;
-  box-shadow:
+  /* box-shadow:
     0 1px 2px rgba(23, 16, 84, 0.05),
     0 10px 22px -8px rgba(23, 16, 84, 0.16),
-    0 34px 64px -26px rgba(23, 16, 84, 0.28);
+    0 34px 64px -26px rgba(23, 16, 84, 0.28); */
   transition:
     transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.6s ease,
