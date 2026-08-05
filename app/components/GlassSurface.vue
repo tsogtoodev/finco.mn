@@ -1,6 +1,6 @@
 <template>
   <div ref="containerRef" :class="[glassSurfaceClasses, focusVisibleClasses, className]" :style="containerStyles">
-    <svg class="w-full h-full pointer-events-none absolute inset-0 opacity-0 -z-10" xmlns="http://www.w3.org/2000/svg">
+    <svg v-if="svgFilter" class="w-full h-full pointer-events-none absolute inset-0 opacity-0 -z-10" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <filter :id="filterId" color-interpolation-filters="sRGB" x="0%" y="0%" width="100%" height="100%">
           <feImage ref="feImageRef" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map" />
@@ -92,6 +92,21 @@ interface GlassSurfaceProps {
     | 'plus-lighter';
   className?: string;
   style?: CSSProperties;
+  /**
+   * Use the SVG chromatic-displacement filter for the refraction, rather than a
+   * plain `backdrop-filter: blur()`.
+   *
+   * Off by default, and that is a deliberate performance decision. The filter is
+   * `feImage` → 3x `feDisplacementMap` → 3x `feColorMatrix` → 2x `feBlend` →
+   * `feGaussianBlur`, applied as a `backdrop-filter`. SVG filters have no GPU
+   * fast path there in Chrome, and the only consumer (FloatingActions) is
+   * `position: fixed` on EVERY page — so its backdrop changes on every scroll
+   * frame and the whole chain re-ran on the CPU, site-wide, forever. The plain
+   * blur branch below is visually very close at a fraction of the cost.
+   *
+   * Turn it on for a surface that is genuinely static and worth the refraction.
+   */
+  svgFilter?: boolean;
 }
 
 const props = withDefaults(defineProps<GlassSurfaceProps>(), {
@@ -113,7 +128,8 @@ const props = withDefaults(defineProps<GlassSurfaceProps>(), {
   yChannel: 'G',
   mixBlendMode: 'difference',
   className: '',
-  style: () => ({})
+  style: () => ({}),
+  svgFilter: false
 });
 
 const isDarkMode = ref(false);
@@ -216,7 +232,8 @@ const containerStyles = computed(() => {
     '--glass-saturation': props.saturation
   };
 
-  const svgSupported = supportsSVGFilters();
+  // `svgFilter` gates the expensive branch — see the prop's docs.
+  const svgSupported = props.svgFilter && supportsSVGFilters();
   const backdropFilterSupported = supportsBackdropFilter();
 
   if (svgSupported) {
@@ -349,23 +366,31 @@ watch(
     () => props.mixBlendMode
   ],
   () => {
+    if (!props.svgFilter) return;
     updateDisplacementMap();
     updateFilterElements();
   }
 );
 
 watch([() => props.width, () => props.height], () => {
+  if (!props.svgFilter) return;
   setTimeout(updateDisplacementMap, 0);
 });
 
 onMounted(() => {
   const cleanup = updateDarkMode();
 
-  nextTick(() => {
-    updateDisplacementMap();
-    updateFilterElements();
-    setupResizeObserver();
-  });
+  // All of this exists only to feed the SVG filter: it builds a data-URI
+  // displacement map, writes filter primitive attributes, and keeps a
+  // ResizeObserver alive to rebuild the map. Pointless work when the filter
+  // isn't rendered.
+  if (props.svgFilter) {
+    nextTick(() => {
+      updateDisplacementMap();
+      updateFilterElements();
+      setupResizeObserver();
+    });
+  }
 
   onUnmounted(() => {
     if (cleanup) cleanup();

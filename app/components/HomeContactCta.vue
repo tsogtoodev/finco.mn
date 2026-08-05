@@ -5,6 +5,9 @@
 const { t } = useI18n()
 
 const feedbackOpen = ref(false)
+
+// Live card scene on capable devices, the matching raster everywhere else.
+const splineEnabled = useSplineEnabled()
 </script>
 
 <template>
@@ -23,17 +26,23 @@ const feedbackOpen = ref(false)
       class="absolute right-0 top-1/2 hidden h-[100%] w-[80%] max-w-[1040px] -translate-y-1/2 cursor-pointer lg:block"
       @click="feedbackOpen = true"
     >
-      <ClientOnly>
-        <SplineScene scene="https://prod.spline.design/rAfqlL9pnx29yw5P/scene.splinecode" no-drag preload :zoom="2" />
-        <template #fallback>
-          <NuxtImg
-            src="/images/home/contact-cards.png"
-            alt=""
-            sizes="820px"
-            class="pointer-events-none absolute inset-0 top-1/2 size-full -translate-y-1/2 object-contain"
-          />
-        </template>
-      </ClientOnly>
+      <!-- Left at 1x: unlike the other scenes this one is a crisp card graphic, so
+           the edges matter. Its cost is draw calls (413/frame from 26 objects), not
+           pixels — only merging meshes in the Spline editor moves that. -->
+      <SplineScene
+        v-if="splineEnabled"
+        scene="https://prod.spline.design/rAfqlL9pnx29yw5P/scene.splinecode?timestamp=1754266000"
+        no-drag
+        preload
+        :zoom="2"
+      />
+      <NuxtImg
+        v-else
+        src="/images/home/contact-cards.png"
+        alt=""
+        sizes="820px"
+        class="pointer-events-none absolute inset-0 top-1/2 size-full -translate-y-1/2 object-contain"
+      />
     </div>
 
     <!-- Blend scrim: fades the panel colour over the scene's left edge so the

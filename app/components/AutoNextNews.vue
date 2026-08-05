@@ -103,6 +103,27 @@ watch(inEndZone, (inZone) => {
   }, EXIT_MS)
 })
 
+// The 100ms tick is cheap, but there is no reason for it to keep firing in a
+// backgrounded tab just to return early — so the interval itself is torn down on
+// `visibilitychange` and rebuilt on the way back. The `document.hidden` check
+// stays in `tick` as the guarantee that matters: it is what stops the countdown
+// completing (and NAVIGATING to the next article) while nobody is looking.
+function startTicking() {
+  stopTicking()
+  if (document.hidden) return
+  timer = setInterval(tick, TICK_MS)
+}
+function stopTicking() {
+  if (timer) {
+    clearInterval(timer)
+    timer = null
+  }
+}
+function onVisibility() {
+  if (document.hidden) stopTicking()
+  else startTicking()
+}
+
 function tick() {
   // pause while scrolled back up, tab hidden, or dismissed
   if (!show.value || closing.value || !inEndZone.value || document.hidden || reduced.value) return
@@ -149,13 +170,15 @@ onMounted(() => {
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('resize', onScroll, { passive: true })
   onScroll()
-  timer = setInterval(tick, TICK_MS)
+  document.addEventListener('visibilitychange', onVisibility)
+  startTicking()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)
   window.removeEventListener('resize', onScroll)
-  if (timer) clearInterval(timer)
+  document.removeEventListener('visibilitychange', onVisibility)
+  stopTicking()
   if (closeTimer) clearTimeout(closeTimer)
   if (hideTimer) clearTimeout(hideTimer)
   if (openTimer) clearTimeout(openTimer)

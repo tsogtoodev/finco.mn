@@ -79,15 +79,20 @@ export default defineNuxtConfig({
 
   // Geologica is a variable font (Thin 100 → Black 900). @nuxt/fonts otherwise
   // auto-fetches only weight 400, so font-light/medium/semibold/bold rendered as
-  // faux-bolded 400 and looked off vs Figma. Fetch the full weight family so each
-  // utility maps to a real cut. Subsets are left to the module defaults (latin +
-  // cyrillic etc.) — cyrillic matters for the Mongolian (default) locale.
+  // faux-bolded 400 and looked off vs Figma. Subsets are left to the module
+  // defaults (latin + cyrillic etc.) — cyrillic matters for the Mongolian
+  // (default) locale.
+  //
+  // A RANGE ('100 900'), not nine discrete weights: the discrete list asks for
+  // nine separate @font-face cuts per subset — up to 36 files across latin,
+  // latin-ext, cyrillic and cyrillic-ext — where one variable file per subset
+  // covers the whole axis. Same rendering, a fraction of the requests.
   fonts: {
     families: [
       {
         name: 'Geologica',
         provider: 'google',
-        weights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
+        weights: ['100 900'],
         styles: ['normal'],
       },
     ],

@@ -8,6 +8,9 @@ defineProps<{ blocks: BadgeBlock[] }>()
 const trackEl = ref<HTMLElement | null>(null)
 const innerEl = ref<HTMLElement | null>(null)
 
+// Live scene on capable devices, the static torus raster everywhere else.
+const splineEnabled = useSplineEnabled()
+
 const enabled = ref(false) // mounted + motion allowed → pinned layout
 const travel = ref(0) // px the column travels across the pin
 const offset = ref(0)
@@ -165,21 +168,24 @@ onBeforeUnmount(() => {
           class="pointer-events-auto absolute bottom-0 -right-[10rem] aspect-video overflow-hidden bg-[#080A12] h-[100dvh]"
           :style="{ width: 'var(--scene-w)' }"
         >
+          <!-- The 1920x1080 box is fixed on purpose: resizing the canvas re-frames
+               the scene's camera, so the framing is held constant and the parent
+               clips it. That means roughly half these pixels are never seen, which
+               is why the scene renders at 0.75x — 1440x810 of drawing buffer for
+               the same picture, against 3840x2160 before (8.29MP -> 1.17MP). -->
           <div
             class="h-[1080px] w-[1920px]"
           >
-            <ClientOnly>
-              <SplineScene
-                scene="https://prod.spline.design/d6X47aZ7JVftxvE2/scene.splinecode"
-                no-drag
-                preload
-                :zoom="1"
-                class="size-full bg-[#080A12]"
-              />
-              <template #fallback>
-                <img :src="torus" alt="" class="size-full object-cover">
-              </template>
-            </ClientOnly>
+            <SplineScene
+              v-if="splineEnabled"
+              scene="https://prod.spline.design/d6X47aZ7JVftxvE2/scene.splinecode?timestamp=1754266000"
+              no-drag
+              preload
+              :zoom="1"
+              :max-pixel-ratio="0.75"
+              class="size-full bg-[#080A12]"
+            />
+            <img v-else :src="torus" alt="" class="size-full object-cover">
           </div>
 
           <!-- Top-right gradient for the scene -->
