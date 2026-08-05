@@ -83,7 +83,6 @@ const routeD = computed(() => {
             <SplineScene
               scene="https://prod.spline.design/n2ZpeSHKKA8Olc1E/scene.splinecode?timestamp=1754266000"
               :zoom="1"
-              :max-pixel-ratio="0.75"
               no-hover
               class="size-full"
             />

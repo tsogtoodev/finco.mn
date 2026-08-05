@@ -26,10 +26,10 @@ const props = withDefaults(
     rootMargin?: number
     /**
      * Ceiling on the drawing-buffer scale for THIS scene, as a multiple of CSS
-     * pixels. Defaults to the site-wide cap in `utils/splineQuality`. Go below 1
-     * for scenes that are blurred, clipped, or already CSS-upscaled — the About
-     * mission canvas is a fixed 1920x1080 box that gets clipped to roughly half
-     * that, so at 0.75 it renders 1.17MP instead of 8.29MP for the same picture.
+     * pixels. Defaults to the site-wide cap in `utils/splineQuality`. Lower it
+     * for scenes that are blurred, clipped, or already CSS-upscaled and whose
+     * cost shows up in a profile — pixel work scales with the square of this
+     * number, so 0.75 renders 1.17MP where 1.5 renders 4.67MP.
      */
     maxPixelRatio?: number
     /**

@@ -33,8 +33,22 @@ export default defineEventHandler(async (event) => {
       if (!collection || !CMS_COLLECTIONS[collection]) return true // unknown/absent -> purge all cms keys
       return k.startsWith(`nitro:functions:cms:${collection}:`)
     })
-    await Promise.all(targets.map((k) => storage.removeItem(k)))
-    return { purged: targets.length, collection: collection ?? 'all' }
+
+    // Purging the DATA cache is not enough once pages are cached as HTML
+    // (nuxt.config routeRules): a rendered page embeds the copy it was built
+    // from, so a stale page entry would keep serving the old text for up to
+    // its own TTL even though the CMS entry behind it is gone.
+    //
+    // Deliberately purge ALL page entries rather than just the edited item's
+    // routes. A single product edit legitimately changes many pages — it is in
+    // the mega menu and the footer catalog on EVERY page, plus the home
+    // carousel, the listing grid and any related-products rail — so mapping an
+    // item to "its" URLs would miss most of them. Publishes are rare and a
+    // re-render is one request, so the blunt version is both cheaper to reason
+    // about and more correct.
+    const pageKeys = await storage.getKeys('nitro:routes:')
+    await Promise.all([...targets, ...pageKeys].map((k) => storage.removeItem(k)))
+    return { purged: targets.length, pages: pageKeys.length, collection: collection ?? 'all' }
   } catch (err) {
     console.warn('[cms/revalidate] purge failed, TTL fallback applies:', (err as Error).message)
     return { purged: -1, collection: collection ?? 'all', warning: 'purge failed; TTL fallback applies' }

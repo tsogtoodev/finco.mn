@@ -3,8 +3,148 @@ const { t } = useI18n()
 
 const page = await usePageContent('home')
 
-// Live wave on capable devices, the matching raster everywhere else.
-const splineEnabled = useSplineEnabled()
+// The wave behind this section used to be a live Spline scene — the heaviest on
+// the site (431k triangles/frame) inside a `sticky top-0` section, so it kept
+// rendering for the whole products scroll. It is now a pre-rendered 30fps loop
+// of that same scene: same picture, no WebGL context, no per-frame geometry.
+//
+// Starts false so SSR and hydration both render the raster (same contract as
+// `useSplineEnabled`), then flips on mount for everyone except reduced-motion
+// visitors — ambient background motion is exactly what that preference is about,
+// and they also avoid the download.
+const videoEl = useTemplateRef<HTMLVideoElement>('videoEl')
+const videoEnabled = ref(false)
+
+// Playback is driven from here rather than by the `autoplay` attribute — the
+// attribute starts the loop as soon as data arrives, whatever this gate decided.
+// It matters because the file is large and the section is on screen far longer
+// than it is visible: index.vue pins it `sticky top-0` and scrolls
+// #home-products over the top of it.
+let frame: number | null = null
+
+/** Start buffering this far before the wave scrolls in; the poster covers the gap. */
+const PREROLL_PX = 600
+
+function shouldPlay(el: HTMLVideoElement) {
+  if (document.hidden) return false
+  const r = el.getBoundingClientRect()
+  if (!r.width || !r.height) return false // `hidden sm:block` wrapper on mobile
+  if (r.bottom < -PREROLL_PX || r.top > window.innerHeight + PREROLL_PX) return false
+
+  // Occlusion, against the VISIBLE slice only: this wrapper is `min-h-[51vw]
+  // scale-120`, routinely taller than the viewport, and the off-screen remainder
+  // isn't the question.
+  const top = Math.max(r.top, 0)
+  const bottom = Math.min(r.bottom, window.innerHeight)
+  const left = Math.max(r.left, 0)
+  const right = Math.min(r.right, window.innerWidth)
+  const cover = document.querySelector('#home-products')?.getBoundingClientRect()
+  if (bottom > top && right > left && cover
+    && cover.top <= top && cover.left <= left && cover.right >= right) return false
+  return true
+}
+
+function sync() {
+  // Safe to call directly as well as from the scheduled frame.
+  if (frame !== null) {
+    cancelAnimationFrame(frame)
+    frame = null
+  }
+  const el = videoEl.value
+  if (!el) return
+  if (shouldPlay(el)) {
+    // A rejected autoplay is not an error worth surfacing — the poster stands in.
+    if (el.paused) void el.play().catch(() => {})
+  }
+  else if (!el.paused) {
+    el.pause()
+  }
+}
+
+// Scroll and resize coalesce into one rect read per frame. Visibility does NOT:
+// rAF is paused in a backgrounded tab, so a scheduled sync would never run and
+// the video would keep decoding behind the user's other tabs.
+function schedule() {
+  if (frame === null) frame = requestAnimationFrame(sync)
+}
+
+// --- loop seam ---------------------------------------------------------------
+// The clip's last frame and its first frame don't match, so the wrap reads as a
+// hard cut. Dip the opacity to 0 over the tail, let the wrap happen behind that,
+// and bring it back — the cut lands while there is nothing to see.
+
+/** Fade length each way. Long enough to hide the cut, short enough not to read as a pulse. */
+const FADE_MS = 350
+/** Restore this long after the predicted wrap, so an early timer can't reveal the last frame. */
+const WRAP_GUARD_MS = 60
+
+const faded = ref(false)
+let fadeTimer: ReturnType<typeof setTimeout> | null = null
+
+// Re-armed on every `timeupdate` (~4/s) rather than trusted once: the media
+// clock and setTimeout drift apart, and re-deriving the deadline from
+// currentTime each tick keeps the dip pinned to the actual seam.
+function armFade() {
+  const el = videoEl.value
+  if (fadeTimer !== null) clearTimeout(fadeTimer)
+  fadeTimer = null
+  if (!el || el.paused || !Number.isFinite(el.duration)) return
+
+  const remaining = (el.duration - el.currentTime) * 1000
+  if (remaining <= FADE_MS) {
+    faded.value = true
+    fadeTimer = setTimeout(() => {
+      faded.value = false
+      armFade()
+    }, remaining + WRAP_GUARD_MS)
+  }
+  else {
+    faded.value = false
+    fadeTimer = setTimeout(armFade, remaining - FADE_MS)
+  }
+}
+
+// Pausing mid-dip would strand the wave invisible (the gate pauses it whenever
+// it scrolls off or gets covered), so drop the fade with the playback.
+function cancelFade() {
+  if (fadeTimer !== null) clearTimeout(fadeTimer)
+  fadeTimer = null
+  faded.value = false
+}
+
+onMounted(async () => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  videoEnabled.value = true
+  await nextTick()
+  // Vue renders `muted` as an attribute, which Safari ignores when deciding
+  // whether an unmuted-by-default play() counts as autoplay; set the property
+  // too, before the first play() attempt.
+  const el = videoEl.value
+  if (el) {
+    el.muted = true
+    el.addEventListener('timeupdate', armFade)
+    el.addEventListener('play', armFade)
+    el.addEventListener('pause', cancelFade)
+  }
+  addEventListener('scroll', schedule, { passive: true })
+  addEventListener('resize', schedule, { passive: true })
+  document.addEventListener('visibilitychange', sync)
+  sync()
+})
+
+onBeforeUnmount(() => {
+  if (frame !== null) cancelAnimationFrame(frame)
+  cancelFade()
+  const el = videoEl.value
+  if (el) {
+    el.removeEventListener('timeupdate', armFade)
+    el.removeEventListener('play', armFade)
+    el.removeEventListener('pause', cancelFade)
+  }
+  removeEventListener('scroll', schedule)
+  removeEventListener('resize', schedule)
+  document.removeEventListener('visibilitychange', sync)
+})
 
 const heading = computed(() => page.value?.statsHeading ?? t('home.stats.heading'))
 const stats = computed(
@@ -38,17 +178,24 @@ const MASKS = ['mask-1', 'mask-2', 'mask-3']
       aria-hidden="true"
       class="pointer-events-none absolute left-1/2 top-1/2 hidden h-full w-full -translate-x-1/2 -translate-y-1/2 sm:block [background:radial-gradient(ellipse_58%_17%_at_50%_38%,rgba(74,57,208,0.30)_0%,rgba(74,57,208,0.14)_45%,transparent_78%)]"
     />
-    <div class="pointer-events-none absolute left-1/2 top-2/3 hidden h-full min-h-[51vw] w-full -translate-x-1/2 -translate-y-[calc(50%+100px)] scale-120 sm:block">
-      <!-- The wrapper already applies `scale-120`, so the canvas is CSS-upscaled
-           regardless; 0.75x drops the drawing buffer to ~44% of its pixels for the
-           same soft wave. Heaviest scene on the site for triangles (431k/frame). -->
-      <SplineScene
-        v-if="splineEnabled"
-        scene="https://prod.spline.design/2MYVnmuRqu28b88y/scene.splinecode?timestamp=1754266000"
-        no-drag
-        no-hover
-        :max-pixel-ratio="0.75"
-        occluded-by="#home-products"
+    <div class="pointer-events-none absolute left-1/2 top-4/7 hidden h-full min-h-[51vw] w-full -translate-x-1/2 -translate-y-[calc(50%+100px)] scale-120 sm:block">
+      <!-- Poster is the same raster the `v-else` branch shows, so a browser that
+           can't decode the WebM (or blocks autoplay) still lands on the designed
+           picture rather than a hole.
+           The opacity dip covers the loop seam — see `armFade`. -->
+      <video
+        v-if="videoEnabled"
+        ref="videoEl"
+        src="/videos/HomeStats-30fps.webm"
+        poster="/images/home/stats-wave.png"
+        aria-hidden="true"
+        class="size-full object-cover"
+        :style="{ opacity: faded ? 0 : 1, transition: `opacity ${FADE_MS}ms linear` }"
+        loop
+        muted
+        playsinline
+        disablepictureinpicture
+        preload="none"
       />
       <NuxtImg
         v-else

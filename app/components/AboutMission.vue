@@ -182,7 +182,6 @@ onBeforeUnmount(() => {
               no-drag
               preload
               :zoom="1"
-              :max-pixel-ratio="0.75"
               class="size-full bg-[#080A12]"
             />
             <img v-else :src="torus" alt="" class="size-full object-cover">

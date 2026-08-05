@@ -18,11 +18,13 @@
  * The Spline runtime derives its pixel ratio from the scene's publish settings
  * (`_getPixelRatio`: `0 → window.devicePixelRatio`, `1 → 1`, `2 → 2`) and those
  * default to `0`. So every scene rendered at 2x on retina and 1.25–1.5x on a
- * scaled Windows laptop — for soft, out-of-focus decoration. Capping at 1 was
- * measured at 5.7x faster per frame on the About mission scene; individual call
- * sites go below 1 where the scene is blurred and/or already CSS-upscaled.
+ * scaled Windows laptop. Capping at 1 was measured at 5.7x faster per frame on
+ * the About mission scene, but read visibly soft on retina, so the cap sits at
+ * 1.5 — the sharpness knob, and the expensive one: pixel cost scales with the
+ * SQUARE of this number (1.5 is 2.25x the fill of 1, 2 would be 4x). Individual
+ * call sites can still pass a lower `max-pixel-ratio`.
  */
-export const SPLINE_MAX_PIXEL_RATIO = 1
+export const SPLINE_MAX_PIXEL_RATIO = 1.5
 
 /**
  * Frame-rate ceiling for a scene's render loop. None of these scenes are
@@ -30,7 +32,7 @@ export const SPLINE_MAX_PIXEL_RATIO = 1
  * every number in the measurements above and is close to invisible. This is the
  * first dial to raise if a scene reads as choppy.
  */
-export const SPLINE_MAX_FPS = 30
+export const SPLINE_MAX_FPS = 45
 
 /**
  * How many scenes may render simultaneously. Both `/` and `/about` mount two,

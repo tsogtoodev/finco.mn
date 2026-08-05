@@ -165,7 +165,7 @@ onBeforeUnmount(() => {
         >
         <div
           v-if="isDesktop"
-          class="pointer-events-auto absolute bottom-0 -right-[10rem] aspect-video overflow-hidden bg-[#080A12] h-[100dvh]"
+          class="pointer-events-auto absolute bottom-0 right-0 aspect-video overflow-hidden bg-[#080A12] h-[100dvh]"
           :style="{ width: 'var(--scene-w)' }"
         >
           <!-- The 1920x1080 box is fixed on purpose: resizing the canvas re-frames
@@ -182,8 +182,8 @@ onBeforeUnmount(() => {
               no-drag
               preload
               :zoom="1"
-              :max-pixel-ratio="0.75"
-              class="size-full bg-[#080A12]"
+              class="bg-[#080A12]"
+              style="width: 100dvw; height: 100dvh; object-fit: cover;"
             />
             <img v-else :src="torus" alt="" class="size-full object-cover">
           </div>
@@ -203,7 +203,7 @@ onBeforeUnmount(() => {
             }"
           /> -->
           <!-- Bottom gradient for the scene -->
-          <div
+          <!-- <div
             aria-hidden="true"
             class="pointer-events-none absolute inset-x-0 bottom-0 h-[28%]"
             :style="{
@@ -215,7 +215,7 @@ onBeforeUnmount(() => {
                 rgba(8,10,18,0.15) 86%,
                 rgba(8,10,18,0) 100%)`,
             }"
-          />
+          /> -->
         </div>
       </div>
     </div>

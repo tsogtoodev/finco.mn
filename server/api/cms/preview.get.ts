@@ -58,5 +58,16 @@ export default defineEventHandler(async (event) => {
 
   setResponseHeader(event, 'Cache-Control', 'private, no-store')
   setResponseHeader(event, 'X-Robots-Tag', 'noindex, nofollow')
-  return sendRedirect(event, ROUTES[collection]!(String(item[cfg.param]), locale), 302)
+
+  // Cache-bust the destination. Pages are cached as HTML for 300s (nuxt.config
+  // routeRules), and that cache does NOT honour the `no-store` this handler and
+  // cms-preview-headers set: nitro overwrites `Cache-Control` with its own
+  // `max-age` and stores the entry regardless. Without a unique URL an editor
+  // would keep seeing a snapshot of their draft for up to five minutes after
+  // saving. The nonce puts every bootstrap on its own cache key — Directus
+  // re-opens this endpoint each time it refreshes the preview iframe, so each
+  // refresh renders fresh. `varies: ['cookie']` already keeps these entries off
+  // the shared published key; this keeps them off each OTHER.
+  const target = ROUTES[collection]!(String(item[cfg.param]), locale)
+  return sendRedirect(event, `${target}?__preview=${Date.now().toString(36)}`, 302)
 })

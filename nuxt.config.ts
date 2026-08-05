@@ -1,5 +1,46 @@
 import tailwindcss from '@tailwindcss/vite'
 
+// Page-HTML cache policy, applied to every locale-prefixed route below.
+//
+// WHY: Workers observability showed 29 `exceededCpu` invocations (503s) in one
+// hour, 28 of them bots — Chrome-Lighthouse from CMH and Claude-SearchBot from
+// TPE. Those colos see none of the site's organic traffic, so a crawler lands on
+// a cold isolate, and the render is killed almost immediately (cpu 10ms /
+// wall 13ms) while warm renders in ULN happily spend 130–496ms of CPU. Serving
+// stored HTML costs a fraction of a render, which is what gets a cold isolate
+// under the ceiling.
+//
+// The store is the KV namespace behind `hub.cache`, which is GLOBAL: a page
+// rendered for one visitor in Ulaanbaatar serves the crawler that reaches
+// Columbus five minutes later. That cross-colo sharing is the whole mechanism —
+// a per-isolate memory cache would do nothing for the traffic that is failing.
+const PAGE_CACHE = {
+  cache: {
+    maxAge: 300,
+    // NO swr, for the same reason as the CMS data cache (see
+    // server/api/cms/[collection].get.ts): on Workers the background
+    // revalidation is killed when the isolate suspends, so an swr entry can
+    // serve stale forever. A blocking re-render every 5 minutes is bounded.
+    swr: false,
+    // Cookies must be part of the cache key. Two reasons, both correctness
+    // rather than tuning:
+    //  • a cached handler is invoked with a request proxy carrying ONLY the
+    //    varied headers, so without this a live-preview session would be
+    //    invisible to the CMS endpoint and previews would silently render
+    //    published content.
+    //  • SSR responses carry `set-cookie` (finco_locale,
+    //    finco_announcement_dismissed) and nitro caches response headers
+    //    verbatim, so a shared entry would replay one visitor's cookies onto
+    //    everyone — re-raising a dismissed announcement, for instance.
+    // Fragmentation is small today: locale is already implied by the URL, so
+    // the real variants are "no cookies" (all crawlers — the case this exists
+    // for), dismissed-or-not, and the rare preview session. ADDING ANY
+    // PER-VISITOR COOKIE (analytics, A/B, session) SILENTLY DESTROYS THIS —
+    // every visitor would then get a private entry and cache-miss every page.
+    varies: ['cookie'],
+  },
+}
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   app: {
@@ -196,6 +237,26 @@ export default defineNuxtConfig({
   // form 'cloudflare_module' aliases to the legacy Workers Sites/KV preset.
   nitro: {
     preset: 'cloudflare-module',
+  },
+
+  // Every public page is locale-prefixed (i18n `strategy: 'prefix'`), so these
+  // four patterns cover the whole site. The bare `/` is deliberately absent:
+  // server/middleware/geo-locale.ts turns it into a per-visitor 302 (cookie,
+  // then CF-IPCountry), and caching that would pin one visitor's locale onto
+  // everyone. It is a redirect, not a render, so it was never the expensive path.
+  //
+  // Publishing does not wait out the 300s: the Directus revalidate webhook
+  // purges these entries alongside the CMS ones (server/api/cms/revalidate.post.ts).
+  routeRules: {
+    '/mn': PAGE_CACHE,
+    '/en': PAGE_CACHE,
+    // `/xx/**` does not match the bare `/xx` in the radix matcher, hence both.
+    '/mn/**': PAGE_CACHE,
+    '/en/**': PAGE_CACHE,
+    // The exam login is a credential form behind its own auth flow, and noindex
+    // besides. More specific rules win, so this overrides the globs above.
+    '/mn/careers/exam': { cache: false },
+    '/en/careers/exam': { cache: false },
   },
 
   // NuxtHub — enables the raw Cloudflare D1 binding (`DB`) that @nuxt/content
