@@ -262,7 +262,7 @@ onBeforeUnmount(() => {
         <!-- Slide copy. The keyed wrapper remounts on slide change so the copy
              always matches the active tab/bg (no exit-lag) and the stagger replays. -->
         <div class="absolute inset-0 flex items-center">
-          <div class="mx-auto w-full max-w-[1200px] px-6 lg:px-[2%] xl:px-0">
+          <div class="mx-auto w-full max-w-[1200px] px-6 lg:px-[2%]">
             <!-- Slide copy staggers in via `.hero-rise` (SSR-safe CSS, reduced-motion
                  aware). The wrapper is keyed by slide so it remounts on every change,
                  replaying the stagger for the new copy. -->
@@ -349,7 +349,7 @@ onBeforeUnmount(() => {
           <ul
             role="tablist"
             :aria-label="t('hero.carouselLabel')"
-            class="mx-auto hidden w-full max-w-[800px] lg:max-w-[1000px] xl:max-w-[1200px] gap-4 overflow-x-auto px-[2%] pb-6 lg:flex lg:justify-between lg:gap-0 lg:px-[2%] xl:px-0 lg:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            class="mx-auto hidden w-full max-w-[800px] lg:max-w-[1000px] xl:max-w-[1200px] gap-4 overflow-x-auto px-[2%] pb-6 lg:flex lg:justify-between lg:gap-0 lg:px-[2%] lg:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             <li
               v-for="(s, i) in slides"
