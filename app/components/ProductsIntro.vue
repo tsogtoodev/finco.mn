@@ -26,7 +26,7 @@ const TINT: Record<Audience, string> = {
       class="pointer-events-none absolute inset-0 -z-10 size-full select-none"
     />
 
-    <MotionReveal class="w-full">
+    <MotionReveal :y="16" class="w-full">
       <p
         class="mx-auto max-w-[1200px] text-center text-xl font-extralight leading-8 tracking-[0.01em] text-black/60 sm:text-[18px] sm:leading-[24px]"
       >
