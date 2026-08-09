@@ -183,6 +183,9 @@ let unmounted = false
 async function loadScene() {
   if (loadStarted || !canvas.value) return
   loadStarted = true
+  // A load can start from the prefetch path too (preload scenes), leaving the
+  // proximity listeners doing rect reads per scroll for nothing.
+  teardownScroll()
   try {
     if (props.deferUntilLcp) await afterLcp()
     // Unmounted (or torn down) while the gate was closed.
@@ -232,6 +235,16 @@ async function schedulePrefetch() {
     // width, so genuine ahead-of-scroll prefetch is unaffected. Checked here
     // rather than at schedule time so it reflects layout at the idle callback.
     if (!canvas.value || canvas.value.getBoundingClientRect().width === 0) return
+    // `preload` scenes build the full Application here, not just the HTTP cache:
+    // Application.load() is one uninterruptible main-thread task (see
+    // deferUntilLcp above), and a cache-only warm-up left that task to fire from
+    // the scroll trigger ~200px before the section — a visible hitch mid-scroll.
+    // Built early it runs while the visitor reads the top of the page, and
+    // render gating keeps the offscreen scene's loop detached until it's seen.
+    if (props.preload) {
+      loadScene()
+      return
+    }
     import('@splinetool/runtime').catch(() => {})
     fetch(props.scene).catch(() => {})
   }
