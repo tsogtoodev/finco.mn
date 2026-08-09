@@ -42,14 +42,6 @@ onBeforeUnmount(() => clearTimeout(collapseTimer))
   >
     <div class="relative mx-auto flex h-9 max-w-7xl items-center justify-center gap-3 px-12">
       <p class="flex min-w-0 items-center gap-1.5 text-sm">
-        <svg
-          viewBox="0 0 24 24"
-          class="size-3.5 shrink-0 text-teal"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" />
-        </svg>
         <span class="truncate text-white/75">{{ t('announcement.text') }}</span>
       </p>
 
@@ -70,9 +62,6 @@ onBeforeUnmount(() => clearTimeout(collapseTimer))
         </svg>
       </NuxtLink>
 
-      <!-- size-10 hit area around a size-6 glyph: this is the only way to reclaim
-           the 36px strip, and at size-6 it was a 24×24 target. The negative margin
-           keeps the glyph on its original optical position. -->
       <button
         type="button"
         class="absolute right-4 -mr-2 flex size-10 items-center justify-center text-white/70 transition-colors hover:text-white"

@@ -362,11 +362,6 @@ const barHidden = computed(
     ]"
     @keydown.esc="escClose"
   >
-    <!-- White surface: instead of cross-fading background-color in place (which
-         mid-fade reads as a muddy translucent slab bleaching the hero image), a
-         fully-opaque white sheet slides down behind the bar content — the same
-         motion language as the bar's own hide/reveal. Clipped by its own wrapper
-         (the header can't be overflow-hidden: the mega-menu panel hangs below). -->
     <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
       <div
         class="absolute inset-0 bg-white transition-transform duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
@@ -374,16 +369,12 @@ const barHidden = computed(
       />
     </div>
 
-    <!-- top-down scrim keeps the white nav legible over the hero before it solidifies -->
     <div
       aria-hidden="true"
       class="pointer-events-none absolute inset-x-0 top-0 h-[120px] bg-gradient-to-b from-black/35 to-transparent transition-opacity duration-300"
       :class="showScrim ? 'opacity-100' : 'opacity-0'"
     />
 
-    <!-- dimming scrim behind an open mega-menu panel; click anywhere to close.
-         Starts at the bar's bottom edge (top-full) so the nav + announcement bar
-         above it stay crisp — matching Figma, the dim/blur only affects the page. -->
     <div
       v-if="openMenu"
       class="absolute inset-x-0 top-full z-40 hidden h-screen bg-black/10 backdrop-blur-[2.5px] lg:block"
@@ -392,10 +383,6 @@ const barHidden = computed(
       @click="closeNow"
     />
 
-    <!-- Promo strip rides at the top of this sticky, scroll-revealing header (so
-         it hides on scroll-down and returns on scroll-up until dismissed). Its
-         own 36px height + the transparent `-mb-[60px]` keep the hero offset the
-         same as when it was a separate strip. -->
     <AnnouncementBar />
 
     <div
