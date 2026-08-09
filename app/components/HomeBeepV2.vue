@@ -53,29 +53,66 @@ const wordTransition = (i: number) => ({
 // `filter: blur(0px)` / `translateY(0)` on every word, each holding a
 // compositing layer that degrades text antialiasing — clear them once done.
 const textSettled = ref(false)
+
+// ── One-shot video ───────────────────────────────────────────────────────────
+// The photo slot plays /videos/beep.mp4 once, starting the moment the section
+// reaches the middle of the screen. The -50% rootMargin collapses the IO's
+// viewport to its horizontal centre line, so "intersecting" means exactly
+// "the section straddles mid-screen". The image stays layered underneath as
+// the frame shown until the video has data (and forever on reduced-motion).
+const sectionEl = ref<HTMLElement | null>(null)
+const videoEl = ref<HTMLVideoElement | null>(null)
+let videoPlayed = false
+let videoIo: IntersectionObserver | null = null
+
+onMounted(() => {
+  if (typeof IntersectionObserver === 'undefined' || !sectionEl.value) return
+  videoIo = new IntersectionObserver(
+    (entries) => {
+      if (!entries[entries.length - 1]?.isIntersecting || videoPlayed) return
+      videoPlayed = true
+      videoIo?.disconnect()
+      videoIo = null
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+      const v = videoEl.value
+      if (!v) return
+      // Set the property, not just the attribute: the `muted` content attribute
+      // only applies at element creation, and autoplay policy needs the real
+      // property true at play() time.
+      v.muted = true
+      v.play().catch(() => {})
+    },
+    { rootMargin: '-50% 0px -50% 0px', threshold: 0 },
+  )
+  videoIo.observe(sectionEl.value)
+})
+onBeforeUnmount(() => videoIo?.disconnect())
 </script>
 
 <template>
-  <section data-section="home-beep" class="overflow-hidden bg-[rgba(242,242,233,0.5)]">
+  <section ref="sectionEl" data-section="home-beep" class="overflow-hidden bg-[rgba(242,242,233,0.5)]">
     <div class="beep2-stage">
-      <!-- Concentric lime glow (Ellipses 1022–1024): three #CAFF00 circles at
-           4% alpha stacked into a stepped glow, all centred on the same point
-           (x 1422.5, y 388.5 of the 1512×607 frame). One wrapper carries the
-           outer circle's box; the smaller two centre inside it. -->
       <div class="beep2-glow" aria-hidden="true">
         <img :src="glowOuter" alt="" class="beep2-glow-img" style="--d: 100%">
         <img :src="glowMid" alt="" class="beep2-glow-img" style="--d: 73.28%">
-        <img :src="glowInner" alt="" class="beep2-glow-img" style="--d: 49.26%">
+        <!-- <img :src="glowInner" alt="" class="beep2-glow-img" style="--d: 49.26%"> -->
       </div>
 
-      <!-- Lifestyle photo — anchored to the right edge, head cropped by the
-           section's top edge (Figma: y -153.9, h 807.8 in a 607 frame). -->
       <div class="beep2-person" aria-hidden="true">
-        <NuxtImg
+        <!-- <NuxtImg
           src="/images/home/beep-lifestyle-v2.png"
           alt=""
           sizes="sm:100vw md:560px lg:760px"
           class="beep2-person-img"
+        /> -->
+        <video
+          ref="videoEl"
+          src="/videos/beep.mp4"
+          class="beep2-person-img beep2-person-video"
+          muted
+          playsinline
+          preload="auto"
+          style="mix-blend-mode: darken;"
         />
       </div>
 
@@ -108,8 +145,6 @@ const textSettled = ref(false)
         <div class="beep2-qr">
           <MotionReveal :y="48" :delay="0.15">
             <span class="beep2-qr-card">
-              <!-- The design's own QR artwork (dark-teal rounded modules),
-                   full-bleed in the card like the Figma frame. -->
               <img src="/images/home/beep-qr-v2.png" alt="" class="beep2-qr-img">
             </span>
           </MotionReveal>
@@ -179,6 +214,11 @@ const textSettled = ref(false)
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+/* Overlays the image in the same box; transparent until it has frames. */
+.beep2-person-video {
+  position: absolute;
+  inset: 0;
 }
 
 /* Text column — left 159/1512, a 396px (65.24%) band centred vertically,
@@ -297,9 +337,10 @@ const textSettled = ref(false)
     font-size: 1.125rem;
     line-height: 1.25rem;
   }
-  /* Photo becomes an in-flow banner, lime glow dropped with the stage. */
+  /* Photo becomes an in-flow banner, lime glow dropped with the stage.
+     `relative`, not `static`: the video overlay anchors to this box. */
   .beep2-person {
-    position: static;
+    position: relative;
     order: 5;
     width: 100%;
     height: 17.5rem;
