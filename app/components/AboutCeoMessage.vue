@@ -38,7 +38,7 @@ function onLetterWheel(e: WheelEvent) {
       <div class="absolute -left-40 top-1/3 size-[420px] rounded-full bg-[#c4b5fd]/20 blur-[130px]" />
     </div>
 
-    <div class="relative mx-auto max-w-7xl px-4 py-[80px]">
+    <div class="relative mx-auto max-w-7xl px-4 py-[120px]">
       <MotionReveal class="max-w-4xl">
         <h2 class="font-display text-3xl font-normal leading-tight text-[#141414] sm:text-4xl">
           {{ ceo.headingLead }}<span class="text-[#4c41d8]">{{ ceo.headingAccent }}</span>

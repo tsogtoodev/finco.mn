@@ -110,12 +110,12 @@ onBeforeUnmount(() => {
 
 <template>
   <section class="relative overflow-hidden bg-[#fbfbfb]">
-    <div class="mx-auto max-w-[1200px] px-4 pt-12 sm:pt-[80px]">
+    <div class="mx-auto max-w-[1200px] px-4 pt-12 sm:pt-[120px]">
       <MotionReveal class="flex max-w-5xl flex-col gap-[12px]">
         <h2 class="font-display text-3xl font-normal text-[#141414] sm:text-[36px] leading-normal">
           {{ headingLead }}<span class="text-[#4c41d8]">{{ headingAccent }}</span>
         </h2>
-        <p class="max-w-[573px] text-lg font-extralight leading-[24px] text-[rgba(0,0,0,0.6)] sm:text-[18px]">
+        <p class="max-w-[850px] text-lg font-extralight leading-[24px] text-[rgba(0,0,0,0.6)] sm:text-[18px]">
           {{ subheading }}
         </p>
       </MotionReveal>
@@ -144,7 +144,7 @@ onBeforeUnmount(() => {
             <div class="font-display text-[18px] font-normal tracking-[1px] text-[rgba(20,20,20,0.8)] sm:text-[20px]">
               {{ m.year }}
             </div>
-            <p class="text-sm font-extralight leading-[22px] text-[rgba(0,0,0,0.7)] sm:max-w-[710px] sm:text-[15px]">
+            <p class="text-sm font-extralight leading-[22px] text-[rgba(0,0,0,0.7)] sm:max-w-[710px] sm:text-[13px]">
               {{ m.body }}
             </p>
           </div>

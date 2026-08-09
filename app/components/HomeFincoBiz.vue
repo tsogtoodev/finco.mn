@@ -152,14 +152,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section ref="rootEl" class="relative overflow-hidden bg-white py-24 lg:py-28 lg:pb-[80px]">
-    <!-- Background wash (Figma 568:5696) — a soft lavender → violet → magenta
-         S-curve. See the .biz-blob rules below for why it's CSS, not the raster. -->
-    <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+  <section ref="rootEl" class="relative overflow-hidden py-24 lg:py-28 lg:pb-[80px]" style="background: linear-gradient(180deg, rgba(19, 207, 185, 0.00) 0%, rgba(19, 207, 185, 0.05) 100%);">
+    <!-- <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
       <span class="biz-blob biz-blob--violet" />
       <span class="biz-blob biz-blob--periwinkle" />
       <span class="biz-blob biz-blob--magenta" />
-    </div>
+    </div> -->
 
     <div class="relative mx-auto w-full max-w-[1200px] px-6">
       <MotionReveal class="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -182,17 +180,6 @@ onBeforeUnmount(() => {
             @pointerleave="onLeave"
           >
             <div class="relative">
-              <!-- The reveal lives on this wrapper, NOT on .biz-card. The card
-                   already owns `transform` for the deck offset
-                   (translateY(--depth * --peek) scale(...)), and a CSS animation
-                   overrides the declared transform while it runs — with
-                   `animation-fill-mode: both` on .carousel-reveal it would hold
-                   translateY(0) forever afterwards, collapsing the stack into a
-                   single flat pile. Two elements, two transforms, and the browser
-                   composes them.
-                   The wrapper also takes the positioning and z-index, since those
-                   have to sit on the element the stack is laid out with; --depth
-                   stays readable to the card because custom properties inherit. -->
               <div
                 v-for="card in cards"
                 :key="card.id"
@@ -206,18 +193,11 @@ onBeforeUnmount(() => {
                   animationDelay: revealed ? revealDelay(card.id) : undefined,
                 }"
               >
-                <!-- h-full, not h-auto: the two back cards used to be `absolute
-                     inset-0` themselves, which stretched them to the stack's
-                     height. That inset now lives on the wrapper, so the card has
-                     to fill it explicitly or it would collapse to content height
-                     below lg. On the in-flow `request` card the wrapper's height
-                     is auto, so 100% resolves back to auto — unchanged. -->
                 <article
                   class="biz-card flex h-full flex-col overflow-hidden rounded-xl bg-white ring-1 ring-black/[0.06] [will-change:transform] lg:h-[450px]"
                   :class="depth(card.id) === 0 ? 'is-front' : ''"
                   @click="onPromote(card.id)"
                 >
-                <!-- browser-chrome header: the clickable, translatable tab -->
                 <button
                   type="button"
                   class="flex w-full shrink-0 items-center gap-3 border-b border-black/[0.06] bg-[#fbfbfc] px-5 py-3 text-left sm:py-3.5"
