@@ -15,9 +15,9 @@ const props = withDefaults(
     as?: string
   }>(),
   {
-    y: 24,
+    y: 128,
     delay: 0,
-    duration: 0.6,
+    duration: 0.8,
     once: true,
     as: 'div',
   },

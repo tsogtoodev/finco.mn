@@ -170,28 +170,28 @@ const routeD = computed(() => {
           </div>
         </div>
 
-        <div class="relative z-10 flex flex-col gap-6 md:hidden">
+        <div class="relative z-10 flex flex-col gap-2 md:hidden">
           <div
             v-for="(it, i) in items"
             :key="`vs-${i}`"
-            class="hero-rise flex w-full flex-col gap-2 rounded-[12px] bg-white p-4 shadow-[0px_0px_20px_0px_rgba(0,0,0,0.05)]"
+            class="hero-rise flex w-full flex-col gap-[2px] rounded-[12px] bg-white p-4 shadow-[0px_0px_20px_0px_rgba(0,0,0,0.05)]"
             :style="{ animationDelay: `${0.1 + i * 0.08}s` }"
           >
-            <h3 class="text-[18px] font-medium leading-7 text-[rgba(0,0,0,0.6)]">
+            <h3 class="text-[16px] font-normal leading-7 text-[rgba(0,0,0,0.6)]">
               {{ it.title }}
             </h3>
-            <p class="text-base font-light leading-6 text-[rgba(0,0,0,0.4)]">
+            <p class="text-[14px] font-light leading-6 text-[rgba(0,0,0,0.4)]">
               {{ it.body }}
             </p>
           </div>
         </div>
 
-        <div class="relative z-10 hidden grid-cols-2 gap-6 md:grid lg:hidden">
+        <div class="relative z-10 hidden grid-cols-2 gap-2 md:grid lg:hidden">
           <button
             v-for="(it, i) in items"
             :key="`m-${i}`"
             type="button"
-            class="hero-rise flex w-full flex-col gap-2 rounded-[12px] p-4 text-left transition-[background-color,box-shadow] duration-300 cursor-pointer md:p-6"
+            class="hero-rise flex w-full flex-col gap-2 rounded-[12px] p-2 text-left transition-[background-color,box-shadow] duration-300 cursor-pointer md:p-4"
             :style="{ animationDelay: `${0.1 + i * 0.08}s` }"
             :class="active === i
               ? 'bg-white shadow-[0px_0px_20px_0px_rgba(0,0,0,0.05)]'
@@ -199,13 +199,13 @@ const routeD = computed(() => {
             @click="active = i"
           >
             <h3
-              class="text-[18px] leading-7 transition-colors duration-300"
-              :class="active === i ? 'font-semibold text-[#2de0c6]' : 'font-normal text-[rgba(0,0,0,0.6)]'"
+              class="text-[16px] leading-7 transition-colors duration-300"
+              :class="active === i ? 'font-normal text-[#2de0c6]' : 'font-normal text-[rgba(0,0,0,0.6)]'"
             >
               {{ it.title }}
             </h3>
             <p
-              class="text-base font-light leading-6 transition-colors duration-300"
+              class="text-[14px] font-light leading-6 transition-colors duration-300"
               :class="active === i ? 'text-[rgba(0,0,0,0.6)]' : 'text-[rgba(0,0,0,0.4)]'"
             >
               {{ it.body }}

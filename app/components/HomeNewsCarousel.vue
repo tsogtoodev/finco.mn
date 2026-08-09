@@ -195,7 +195,7 @@ function measure() {
 const hydrated = ref(false)
 const revealed = ref(false)
 let revealObserver: IntersectionObserver | null = null
-const revealDelay = (i: number) => `${Math.min(i, 6) * 80}ms`
+const revealDelay = (i: number) => `${Math.min(i, 6) * 160}ms`
 
 onMounted(() => {
   measure()
@@ -272,8 +272,6 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
       @click.capture="onClickCapture"
       @dragstart.prevent
     >
-      <!-- Fixed card height keeps the row uniform (news text lengths vary);
-           overflow-hidden clips any overflow. -->
       <div
         ref="trackEl"
         class="flex h-[420px] items-start pl-[var(--carousel-edge,1.5rem)] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
@@ -307,11 +305,6 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
         :style="{ maskImage: MASK_R, WebkitMaskImage: MASK_R }"
       />
 
-      <!-- Floating nav on the blurred peeks (Figma 238:9754): a frosted arrow
-           button centred over each peek. Wrapper handles position + show/hide so
-           IconButton stays untouched; pointer-events only on the 44px circle so
-           the rest of the peek still accepts drag. `.stop` keeps a button press
-           from also starting a track drag. -->
       <div
         v-show="overflowsLeft"
         class="pointer-events-none absolute left-[38px] top-1/2 z-10 hidden -translate-y-1/2 md:block lg:left-[56px]"

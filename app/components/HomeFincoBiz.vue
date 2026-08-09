@@ -60,6 +60,24 @@ let onScreen = false
 
 const rootEl = ref<HTMLElement | null>(null)
 
+// Staggered card reveal, same contract as the three carousels: SSR/no-JS renders
+// the cards visible; after hydration they hide (`hydrated`) until the deck enters
+// the viewport, then rise in one by one via inline animation-delay. Reuses the
+// shared `.carousel-reveal` / `.carousel-pre` pair in main.css so the timing,
+// easing and reduced-motion handling stay in one place — the classes are named
+// for their first caller, not restricted to carousels.
+const hydrated = ref(false)
+const revealed = ref(false)
+let revealObserver: IntersectionObserver | null = null
+
+// Front card first, then the two peeking behind it. Deliberately NOT the v-for
+// index (which is back-to-front) and deliberately NOT live `depth()`: the deck
+// auto-advances every 5s, so a reactive delay could renumber the cards midway
+// through their own reveal. This order is fixed and matches `order`'s initial
+// value, so at reveal time it IS the visual front-to-back order.
+const REVEAL_ORDER: CardId[] = ['request', 'receivables', 'eligibility']
+const revealDelay = (id: CardId) => `${REVEAL_ORDER.indexOf(id) * 80}ms`
+
 function advance() {
   const back = order.value[order.value.length - 1]
   if (back) promote(back)
@@ -98,20 +116,36 @@ onMounted(() => {
   if (!('IntersectionObserver' in window)) {
     // No IO to gate on — fall back to always-on rather than never-on.
     onScreen = true
+    revealed.value = true
     startAuto()
     return
   }
+  hydrated.value = true
   autoObserver = new IntersectionObserver((entries) => {
     onScreen = entries[entries.length - 1]?.isIntersecting ?? false
     if (onScreen) startAuto()
     else stopAuto()
   }, { threshold: 0.2 })
   if (rootEl.value) autoObserver.observe(rootEl.value)
+
+  // Separate from autoObserver: this one disconnects after the first reveal and
+  // so can't double as the auto-advance gate, which has to keep tracking the
+  // deck leaving the viewport again.
+  revealObserver = new IntersectionObserver((entries) => {
+    if (entries.some((e) => e.isIntersecting)) {
+      revealed.value = true
+      revealObserver?.disconnect()
+      revealObserver = null
+    }
+  }, { threshold: 0.15 })
+  if (rootEl.value) revealObserver.observe(rootEl.value)
 })
 
 onBeforeUnmount(() => {
   autoObserver?.disconnect()
   autoObserver = null
+  revealObserver?.disconnect()
+  revealObserver = null
   stopAuto()
   document.removeEventListener('visibilitychange', onVisibility)
 })
@@ -148,17 +182,41 @@ onBeforeUnmount(() => {
             @pointerleave="onLeave"
           >
             <div class="relative">
-              <article
+              <!-- The reveal lives on this wrapper, NOT on .biz-card. The card
+                   already owns `transform` for the deck offset
+                   (translateY(--depth * --peek) scale(...)), and a CSS animation
+                   overrides the declared transform while it runs — with
+                   `animation-fill-mode: both` on .carousel-reveal it would hold
+                   translateY(0) forever afterwards, collapsing the stack into a
+                   single flat pile. Two elements, two transforms, and the browser
+                   composes them.
+                   The wrapper also takes the positioning and z-index, since those
+                   have to sit on the element the stack is laid out with; --depth
+                   stays readable to the card because custom properties inherit. -->
+              <div
                 v-for="card in cards"
                 :key="card.id"
-                class="biz-card flex h-auto flex-col overflow-hidden rounded-xl bg-white ring-1 ring-black/[0.06] [will-change:transform] lg:h-[450px]"
                 :class="[
-                  depth(card.id) === 0 ? 'is-front' : '',
                   card.id === 'request' ? 'relative' : 'absolute inset-0',
+                  revealed ? 'carousel-reveal' : hydrated ? 'carousel-pre' : '',
                 ]"
-                :style="{ '--depth': depth(card.id), zIndex: 3 - depth(card.id) }"
-                @click="onPromote(card.id)"
+                :style="{
+                  '--depth': depth(card.id),
+                  zIndex: 3 - depth(card.id),
+                  animationDelay: revealed ? revealDelay(card.id) : undefined,
+                }"
               >
+                <!-- h-full, not h-auto: the two back cards used to be `absolute
+                     inset-0` themselves, which stretched them to the stack's
+                     height. That inset now lives on the wrapper, so the card has
+                     to fill it explicitly or it would collapse to content height
+                     below lg. On the in-flow `request` card the wrapper's height
+                     is auto, so 100% resolves back to auto — unchanged. -->
+                <article
+                  class="biz-card flex h-full flex-col overflow-hidden rounded-xl bg-white ring-1 ring-black/[0.06] [will-change:transform] lg:h-[450px]"
+                  :class="depth(card.id) === 0 ? 'is-front' : ''"
+                  @click="onPromote(card.id)"
+                >
                 <!-- browser-chrome header: the clickable, translatable tab -->
                 <button
                   type="button"
@@ -219,6 +277,7 @@ onBeforeUnmount(() => {
                   />
                 </div>
               </article>
+              </div>
             </div>
           </div>
         </div>

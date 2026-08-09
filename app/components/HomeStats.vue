@@ -3,23 +3,9 @@ const { t } = useI18n()
 
 const page = await usePageContent('home')
 
-// The wave behind this section used to be a live Spline scene — the heaviest on
-// the site (431k triangles/frame) inside a `sticky top-0` section, so it kept
-// rendering for the whole products scroll. It is now a pre-rendered 30fps loop
-// of that same scene: same picture, no WebGL context, no per-frame geometry.
-//
-// Starts false so SSR and hydration both render the raster (same contract as
-// `useSplineEnabled`), then flips on mount for everyone except reduced-motion
-// visitors — ambient background motion is exactly what that preference is about,
-// and they also avoid the download.
 const videoEl = useTemplateRef<HTMLVideoElement>('videoEl')
 const videoEnabled = ref(false)
 
-// Playback is driven from here rather than by the `autoplay` attribute — the
-// attribute starts the loop as soon as data arrives, whatever this gate decided.
-// It matters because the file is large and the section is on screen far longer
-// than it is visible: index.vue pins it `sticky top-0` and scrolls
-// #home-products over the top of it.
 let frame: number | null = null
 
 /** Start buffering this far before the wave scrolls in; the poster covers the gap. */
@@ -31,9 +17,6 @@ function shouldPlay(el: HTMLVideoElement) {
   if (!r.width || !r.height) return false // `hidden sm:block` wrapper on mobile
   if (r.bottom < -PREROLL_PX || r.top > window.innerHeight + PREROLL_PX) return false
 
-  // Occlusion, against the VISIBLE slice only: this wrapper is `min-h-[51vw]
-  // scale-120`, routinely taller than the viewport, and the off-screen remainder
-  // isn't the question.
   const top = Math.max(r.top, 0)
   const bottom = Math.min(r.bottom, window.innerHeight)
   const left = Math.max(r.left, 0)
@@ -61,9 +44,6 @@ function sync() {
   }
 }
 
-// Scroll and resize coalesce into one rect read per frame. Visibility does NOT:
-// rAF is paused in a backgrounded tab, so a scheduled sync would never run and
-// the video would keep decoding behind the user's other tabs.
 function schedule() {
   if (frame === null) frame = requestAnimationFrame(sync)
 }
@@ -165,9 +145,6 @@ onMounted(async () => {
   measureCoverage()
   videoEnabled.value = true
   await nextTick()
-  // Vue renders `muted` as an attribute, which Safari ignores when deciding
-  // whether an unmuted-by-default play() counts as autoplay; set the property
-  // too, before the first play() attempt.
   const el = videoEl.value
   if (el) {
     el.muted = true
@@ -205,41 +182,20 @@ const stats = computed(
     ],
 )
 
-// Per-column gradient for the numbers (Figma). Positional, not editorial — the
-// CMS `stats` entries carry copy only, so this can't live in the content layer.
 const MASKS = ['mask-1', 'mask-2', 'mask-3']
 </script>
 
 <template>
-  <!-- `filter` only while it is actually being covered: a full-viewport blur is
-       expensive to composite, and at rest it would buy nothing. The sticky
-       wrapper in index.vue carries the same background, so the soft edge the
-       filter puts on this section lands on an identical colour. -->
   <section
     ref="sectionEl"
     class="relative isolate overflow-hidden bg-[#0a0a1a] px-6 py-6 lg:py-32"
     :style="coverage > 0 ? { filter: `blur(${(coverage * MAX_BLUR_PX).toFixed(2)}px)` } : undefined"
   >
-    <!-- Purple glow band (Figma 993:23263). Figma exports this as a shallow
-         chevron path under `feGaussianBlur stdDeviation="95.55"`, and the export
-         also carried `backdrop-filter: blur(95.55px)` on the <svg> itself.
-         Measured, that was the single most expensive piece of CSS on the site: a
-         95px blur is ~4x the cost of a 24px one, it ran over a 1894x601 region,
-         the backdrop-filter forced a backdrop snapshot and re-blur on every
-         composite, and all of it lived inside this section — which index.vue pins
-         `sticky top-0`, so it re-composited for the entire products scroll while a
-         live WebGL canvas rendered underneath.
-         At that blur radius the chevron resolves to a diffuse elliptical glow, so
-         a gradient IS the shape. Same picture, no filter, no snapshot. -->
     <div
       aria-hidden="true"
       class="pointer-events-none absolute left-1/2 top-1/2 hidden h-full w-full -translate-x-1/2 -translate-y-1/2 sm:block [background:radial-gradient(ellipse_58%_17%_at_50%_38%,rgba(74,57,208,0.30)_0%,rgba(74,57,208,0.14)_45%,transparent_78%)]"
     />
     <div class="pointer-events-none absolute left-1/2 top-4/7 hidden h-full min-h-[51vw] w-full -translate-x-1/2 -translate-y-[calc(50%+100px)] scale-120 sm:block">
-      <!-- Poster is the same raster the `v-else` branch shows, so a browser that
-           can't decode the WebM (or blocks autoplay) still lands on the designed
-           picture rather than a hole.
-           The opacity dip covers the loop seam — see `armFade`. -->
       <video
         v-if="videoEnabled"
         ref="videoEl"
@@ -254,13 +210,13 @@ const MASKS = ['mask-1', 'mask-2', 'mask-3']
         disablepictureinpicture
         preload="none"
       />
-      <NuxtImg
+      <!-- <NuxtImg
         v-else
         src="/images/home/stats-wave.png"
         alt=""
         aria-hidden="true"
         class="size-full object-cover"
-      />
+      /> -->
     </div>
     <NuxtImg
       src="/images/home/stats-wave.png"
@@ -268,17 +224,13 @@ const MASKS = ['mask-1', 'mask-2', 'mask-3']
       aria-hidden="true"
       class="pointer-events-none absolute inset-0 size-full object-cover sm:hidden"
     />
-    <!-- Edge softening. The masked `backdrop-blur-[4px]` pair that used to sit here
-         cost two extra composited layers, each with its own backdrop snapshot, on
-         every frame of the sticky scroll — to soften the edges of a scene the
-         opaque gradients below already fade to the panel colour. Gradients alone. -->
     <div class="pointer-events-none absolute inset-y-0 left-0 w-[28%] bg-gradient-to-r from-[#0a0a1a] to-transparent" />
     <div class="pointer-events-none absolute inset-y-0 right-0 w-[28%] bg-gradient-to-l from-[#0a0a1a] to-transparent" />
 
     <div class="relative mx-auto flex w-full max-w-[1200px] flex-col items-center">
       <MotionReveal
         as="h2"
-        class="max-w-[1015px] text-center font-display text-[24px] font-semibold leading-tight tracking-wide text-white"
+        class="max-w-[1015px] text-center font-display text-[24px] font-semibold leading-tight tracking-wide text-white mb-[40px]"
       >
         {{ heading }}
       </MotionReveal>
