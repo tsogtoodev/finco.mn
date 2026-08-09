@@ -27,7 +27,7 @@ const splineEnabled = useSplineEnabled()
 
 // Marker rows are evenly spaced down the 568px spine (132.1px between centres),
 // independent of the cards' heights — matches Figma's fixed grid.
-const markerTop = (i: number) => `${i * 132.1}px`
+const markerTop = (i: number) => `${i * 110}px`
 
 // Highlighted connector route (viewBox space of the spine SVG): cluster branch →
 // vertical spine → the active marker's stub. Redrawn (and its draw-in animation
@@ -43,7 +43,7 @@ const routeD = computed(() => {
 
 <template>
   <section class="relative overflow-hidden bg-[#fafafe]">
-    <div class="mx-auto max-w-7xl px-4 pb-20 pt-20 sm:pt-24 md:pb-40 md:pt-[120px] lg:pb-20 lg:pt-28 lg:px-0">
+    <div class="mx-auto max-w-7xl px-4 pb-20 pt-20 sm:pt-24 md:pb-40 md:pt-[80px] lg:pb-20 lg:pt-28 lg:px-0">
       <div class="hero-rise relative z-[1] flex flex-col items-center gap-3 text-center">
         <h2 class="max-w-[750px] font-display text-3xl font-medium leading-tight text-[#141414] sm:text-4xl md:text-[36px] md:leading-9 lg:text-[36px] lg:leading-9">
           {{ headingLead }}<span class="text-[#2de0c6]">{{ headingAccent }}</span>
@@ -53,28 +53,12 @@ const routeD = computed(() => {
         </p>
       </div>
 
-      <div class="relative mx-auto mt-12 max-w-[1200px] sm:mt-16 md:mt-20 lg:mt-[120px]">
-        <!-- Cluster Spline scene (Figma 571:6516): a free-floating box centred on
-             an anchor by the row's left edge, bleeding past the row on both sides
-             (the section root clips the overflow). The canvas keeps a constant
-             1024×1024 so the exported camera framing never reflows on resize;
-             --cluster-size scales it to display size via the same tan(atan2())
-             length-division trick as AboutMission.
-             Sizing/anchor follow the 1920 Figma frame proportionally on narrower
-             viewports (size = 2/3 of the frame's 2700 → 1800·vw/1920 = 93.75vw;
-             anchor-x 610·vw/1920, expressed row-relative as 600px − 18.229vw
-             since the row is centred), and pin to those values from 1920 up,
-             where the row stops drifting relative to the frame. -->
+      <div class="relative mx-auto mt-12 max-w-[1200px] sm:mt-16 md:mt-20 lg:mt-[80px]">
         <div
           aria-hidden="true"
           class="absolute z-0 hidden -translate-x-[60%] -translate-y-1/2 lg:block"
           style="--cluster-size: clamp(1267px, 93.75vw, 1800px); left: max(250px, calc(600px - 18.229vw)); top: calc(50% - 40px); width: var(--cluster-size); height: var(--cluster-size)"
         >
-          <!-- The 1024 canvas is already CSS-upscaled to --cluster-size (1267px+),
-               so it was rendering 2048x2048 of buffer to display blurry anyway;
-               0.75x drops that to 768x768 for the same picture. This is also the
-               heaviest scene on the site for DRAW CALLS (189 objects -> 503 calls
-               per frame), which only merging meshes in the Spline editor can fix. -->
           <div
             v-if="splineEnabled"
             class="h-[1024px] w-[1024px] origin-top-left"
@@ -88,10 +72,6 @@ const routeD = computed(() => {
               class="size-full"
             />
           </div>
-          <!-- Same render as the scene, at 2/3 of the raster's Figma size and
-               offset from the anchor (571:6516: centre 143px left / 41px up,
-               both × 2/3) so it matches the scaled-down live scene. Sits OUTSIDE
-               the scaled box above — the scale transform would resize it too. -->
           <img
             v-else
             :src="cluster"
@@ -102,9 +82,9 @@ const routeD = computed(() => {
         </div>
 
         <div class="pointer-events-none relative hidden items-center gap-8 lg:flex">
-          <div class="hero-rise pointer-events-auto relative z-10 hidden h-[568px] w-[241px] shrink-0 lg:ml-[367px] lg:block" style="animation-delay: 0.1s">
+          <div class="hero-rise pointer-events-auto relative z-10 hidden h-[568px] w-[241px] shrink-0 lg:ml-[367px] lg:block top-[50px]" style="animation-delay: 0.1s">
             <svg
-            class="absolute left-0 top-[20px] h-[528px] w-[192px]"
+            class="absolute left-0 top-[20px] h-[445px] w-[192px]"
             viewBox="0 0 193.981 530.413"
             fill="none"
             preserveAspectRatio="none"
@@ -145,7 +125,7 @@ const routeD = computed(() => {
             v-for="(it, i) in items"
             :key="`m-${i}`"
             type="button"
-            class="absolute left-[201px] h-[39px] w-[40px]"
+            class="absolute left-[201px] h-[40px] w-[40px]"
             :style="{ top: markerTop(i) }"
             :aria-label="it.title"
             @click="active = i"
@@ -162,12 +142,12 @@ const routeD = computed(() => {
           </button>
           </div>
 
-          <div class="pointer-events-auto relative z-10 flex min-w-0 flex-1 flex-col gap-6">
+          <div class="pointer-events-auto relative z-10 flex min-w-0 flex-1 flex-col gap-[2px]">
             <button
               v-for="(it, i) in items"
               :key="`v-${i}`"
               type="button"
-              class="hero-rise flex w-full flex-col gap-2 rounded-[12px] p-4 text-left transition-[background-color,box-shadow] duration-300 cursor-pointer"
+              class="hero-rise flex w-full flex-col gap-[2px] rounded-[12px] p-4 text-left transition-[background-color,box-shadow] duration-300 cursor-pointer"
               :style="{ animationDelay: `${0.1 + i * 0.08}s` }"
               :class="active === i
                 ? 'bg-white shadow-[0px_0px_20px_0px_rgba(0,0,0,0.05)]'
@@ -175,13 +155,13 @@ const routeD = computed(() => {
               @click="active = i"
             >
               <h3
-                class="text-[18px] leading-7 transition-colors duration-300"
-                :class="active === i ? 'font-semibold text-[#2de0c6]' : 'font-normal text-[rgba(0,0,0,0.6)]'"
+                class="text-[16px] leading-7 transition-colors duration-300"
+                :class="active === i ? 'font-normal text-[#2de0c6]' : 'font-normal text-[rgba(0,0,0,0.6)]'"
               >
                 {{ it.title }}
               </h3>
               <p
-                class="text-base font-light leading-6 transition-colors duration-300"
+                class="text-[14px] font-light leading-6 transition-colors duration-300"
                 :class="active === i ? 'text-[rgba(0,0,0,0.6)]' : 'text-[rgba(0,0,0,0.4)]'"
               >
                 {{ it.body }}
@@ -206,9 +186,6 @@ const routeD = computed(() => {
           </div>
         </div>
 
-        <!-- Tablet (md–lg): interactive card grid. Selection is kept here — a
-             separate static grid-cols-6 variant previously left tablet with no
-             selection affordance at all between 768 and 1023. -->
         <div class="relative z-10 hidden grid-cols-2 gap-6 md:grid lg:hidden">
           <button
             v-for="(it, i) in items"
@@ -238,15 +215,11 @@ const routeD = computed(() => {
       </div>
     </div>
 
-    <!-- Bottom fade into white over the cluster's lower bleed (Figma 464:9717 /
-         462:9283); sits above the raster but below the content row. -->
     <div class="pointer-events-none absolute inset-x-0 bottom-0 z-[1] hidden h-[310px] bg-gradient-to-b from-transparent to-white md:block" />
   </section>
 </template>
 
 <style scoped>
-/* Draw-in for the highlighted connector: the mask's solid stroke sweeps from the
-   cluster to the active marker, revealing the full-opacity dashed route beneath. */
 .spine-draw {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
