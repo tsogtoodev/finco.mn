@@ -71,10 +71,12 @@ const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p)
 // `measure`), so deepening the cut automatically lengthens the pull needed to
 // reveal the whole logo, up to MAX_PULL.
 const LOGO_CUT = 0.5
-// Wordmark aspect (viewBox 139.355 × 28) → its height as a % of its WIDTH.
-// Percentage margins resolve against the containing block's width, never its
-// height, which is why the cut has to be expressed in those units.
-const LOGO_ASPECT_PCT = (28 / 139.355) * 100
+// Wordmark aspect (<FincoWordmark> viewBox 1172 × 236) → its height as a % of
+// its WIDTH. Percentage margins resolve against the containing block's width,
+// never its height, which is why the cut has to be expressed in those units.
+// Keep this in step with the component's viewBox: the cut, the pull ceiling and
+// the overhang measurement all derive from it.
+const LOGO_ASPECT_PCT = (236 / 1172) * 100
 // Exposed as a custom property and applied via an `md:` arbitrary utility, so
 // below md the wordmark shows IN FULL (the original design) — with the reveal
 // now desktop-only, a permanent phone-side clip would hide half the logo with
@@ -537,7 +539,7 @@ onBeforeUnmount(() => {
       </div>
 
         <div ref="logoEl" class="mt-10" aria-hidden="true">
-          <FincoLogo class="block w-full md:[margin-bottom:var(--logo-cut)]" :style="logoCutStyle" />
+          <FincoWordmark class="block w-full text-black/20 md:[margin-bottom:var(--logo-cut)]" :style="logoCutStyle" />
         </div>
       </div>
     </div>
