@@ -10,15 +10,8 @@ useSeoMeta({
 
 <template>
   <div>
-    <div class="relative">
-      <div class="z-0 overflow-hidden bg-[#0a0a1a] lg:motion-safe:sticky lg:motion-safe:top-0">
-        <HomeStats />
-      </div>
-      <div class="relative z-10">
-        <HomeProducts />
-      </div>
-    </div>
     <HomeBeepV2 />
-    <HomeFincoBiz />
+    <HomeFincoBizV2 />
+    <HomeNews />
   </div>
 </template>
