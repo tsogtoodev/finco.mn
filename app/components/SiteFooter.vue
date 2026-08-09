@@ -539,7 +539,7 @@ onBeforeUnmount(() => {
       </div>
 
         <div ref="logoEl" class="mt-10" aria-hidden="true">
-          <FincoWordmark class="block w-full text-black/20 md:[margin-bottom:var(--logo-cut)]" :style="logoCutStyle" />
+          <FincoWordmark class="block w-full text-black/10 md:[margin-bottom:var(--logo-cut)]" :style="logoCutStyle" />
         </div>
       </div>
     </div>
