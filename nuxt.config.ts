@@ -1,45 +1,14 @@
 import tailwindcss from '@tailwindcss/vite'
 
-// Page-HTML cache policy, applied to every locale-prefixed route below.
-//
-// WHY: Workers observability showed 29 `exceededCpu` invocations (503s) in one
-// hour, 28 of them bots — Chrome-Lighthouse from CMH and Claude-SearchBot from
-// TPE. Those colos see none of the site's organic traffic, so a crawler lands on
-// a cold isolate, and the render is killed almost immediately (cpu 10ms /
-// wall 13ms) while warm renders in ULN happily spend 130–496ms of CPU. Serving
-// stored HTML costs a fraction of a render, which is what gets a cold isolate
-// under the ceiling.
-//
-// The store is the KV namespace behind `hub.cache`, which is GLOBAL: a page
-// rendered for one visitor in Ulaanbaatar serves the crawler that reaches
-// Columbus five minutes later. That cross-colo sharing is the whole mechanism —
-// a per-isolate memory cache would do nothing for the traffic that is failing.
-const PAGE_CACHE = {
-  cache: {
-    maxAge: 300,
-    // NO swr, for the same reason as the CMS data cache (see
-    // server/api/cms/[collection].get.ts): on Workers the background
-    // revalidation is killed when the isolate suspends, so an swr entry can
-    // serve stale forever. A blocking re-render every 5 minutes is bounded.
-    swr: false,
-    // Cookies must be part of the cache key. Two reasons, both correctness
-    // rather than tuning:
-    //  • a cached handler is invoked with a request proxy carrying ONLY the
-    //    varied headers, so without this a live-preview session would be
-    //    invisible to the CMS endpoint and previews would silently render
-    //    published content.
-    //  • SSR responses carry `set-cookie` (finco_locale,
-    //    finco_announcement_dismissed) and nitro caches response headers
-    //    verbatim, so a shared entry would replay one visitor's cookies onto
-    //    everyone — re-raising a dismissed announcement, for instance.
-    // Fragmentation is small today: locale is already implied by the URL, so
-    // the real variants are "no cookies" (all crawlers — the case this exists
-    // for), dismissed-or-not, and the rare preview session. ADDING ANY
-    // PER-VISITOR COOKIE (analytics, A/B, session) SILENTLY DESTROYS THIS —
-    // every visitor would then get a private entry and cache-miss every page.
-    varies: ['cookie'],
-  },
-}
+const PAGE_CACHE = process.env.NODE_ENV === 'production'
+  ? {
+      cache: {
+        maxAge: 300,
+        swr: false,
+        varies: ['cookie'],
+      },
+    }
+  : {}
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -48,12 +17,6 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', type: 'image/png', href: '/favicon.png' },
         { rel: 'manifest', href: '/manifest.json' },
-        // Spline CDN. Declared globally rather than inside SplineScene because
-        // every scene is wrapped in <ClientOnly>, so a `useHead` there never runs
-        // during SSR — the hint would only reach the DOM after hydration, which
-        // is the one moment it is no longer worth having. Scenes appear on home,
-        // about, product detail and (via MapEmbed) branches + contact, so the
-        // origin is wanted on effectively every page anyway.
         { rel: 'preconnect', href: 'https://prod.spline.design', crossorigin: 'anonymous' },
         { rel: 'dns-prefetch', href: 'https://prod.spline.design' },
       ],

@@ -15,20 +15,20 @@ useSeoMeta({
 <template>
   <div v-if="c">
     <AboutHero :headline="c.hero.headline" :intro="c.hero.intro" :photo="c.hero.photo" />
-    <AboutMissionV2 :blocks="c.mission.blocks" />
+    <AboutMission :blocks="c.mission.blocks" />
     <AboutValues
       :heading-lead="c.values.headingLead"
       :heading-accent="c.values.headingAccent"
       :subheading="c.values.subheading"
       :items="c.values.items"
     />
-    <AboutTimeline
+    <AboutTimelineV3
       :heading-lead="c.history.headingLead"
       :heading-accent="c.history.headingAccent"
       :subheading="c.history.subheading"
       :milestones="c.history.milestones"
     />
-    <AboutCeoMessage :ceo="c.ceo" />
+    <AboutCeoMessageV2 :ceo="c.ceo" />
     <AboutBoard :board="c.board" />
     <AboutOrgChart :org="c.org" />
   </div>

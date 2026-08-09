@@ -4,6 +4,39 @@ import signature from '~/assets/images/about-ceo-signature.png'
 
 defineProps<{ ceo: AboutContent['ceo'] }>()
 
+// Matches Figma (node 775:10214): each band is a vertical indigo→white gradient
+// at a uniform low alpha (see FRACTAL_LAYERS). The per-layer opacity carries the
+// alpha, so the gradient itself is full-opacity indigo → white top→bottom.
+const FRACTAL_RAMP = `linear-gradient(to bottom,
+  rgb(76, 65, 216) 0%,
+  rgb(255, 255, 255) 100%)`
+// Five bands at 0/20/40/60/80% down, each 3% alpha. Figma (775:10214) uses 5%
+// per band (topmost 3%); dialled down to a uniform 3% here per design direction
+// for a subtler stack.
+const FRACTAL_LAYERS = [
+  { t: 0, o: 0.02 },
+  { t: 20, o: 0.02 },
+  { t: 40, o: 0.02 },
+  { t: 60, o: 0.02 },
+  { t: 80, o: 0.02 },
+] as const
+
+// Colour-glow ellipses behind the steps (Figma 775:10211–10213). Each is a
+// 30%-opacity solid ellipse seen through the band's 80px blur; reproduced here
+// as a blurred solid ellipse. Geometry is Figma's (frame 1920×200) expressed as
+// % of the band — centre (cx,cy), size (w,h) — so the pools sit along the bottom
+// edge and rise into view exactly as designed. The frame clips them (the band's
+// overflow-hidden does the same here).
+const FRACTAL_GLOWS = [
+  { cx: 0, cy: 140, w: 44.9, h: 136.5, color: 'rgb(140, 131, 255)' }, // periwinkle, left
+  { cx: 63.2, cy: 160, w: 44.9, h: 136.5, color: 'rgb(76, 65, 216)' }, // indigo, centre-right
+  { cx: 88.2, cy: 140, w: 37.2, h: 69.2, color: 'rgb(45, 224, 198)' }, // teal, right
+] as const
+
+const FRACTAL_MIN = 0.35
+const bandEl = ref<HTMLElement | null>(null)
+const fs = ref(1)
+
 // The letter body is an inner scroller inside a Lenis-driven page. It used to
 // carry `data-lenis-prevent`, which opts the whole subtree out of the smooth
 // layer — but with `allowNestedScroll: false` that made the wheel a DEAD ZONE:
@@ -28,6 +61,25 @@ function onLetterWheel(e: WheelEvent) {
   e.stopPropagation()
   el.scrollTop += e.deltaY
 }
+
+function syncFractal() {
+  const el = bandEl.value
+  if (!el) return
+  const vh = window.innerHeight || 1
+  const p = Math.min(Math.max((vh - el.getBoundingClientRect().top) / vh, 0), 1)
+  fs.value = 1 - p * (1 - FRACTAL_MIN)
+}
+
+// Drives the fractal off the smooth-scroll layer so it tracks the page in the
+// same frame rather than a frame behind. Also owns the resize listener.
+const fractalScroll = useScrollSync(syncFractal)
+
+onMounted(() => {
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+  syncFractal()
+  // useScrollSync detaches its own listeners on unmount.
+  fractalScroll.start()
+})
 </script>
 
 <template>
@@ -36,6 +88,37 @@ function onLetterWheel(e: WheelEvent) {
     <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-0">
       <div class="absolute -right-32 -top-32 size-[640px] rounded-full bg-[#a78bfa]/20 blur-[140px]" />
       <div class="absolute -left-40 top-1/3 size-[420px] rounded-full bg-[#c4b5fd]/20 blur-[130px]" />
+    </div>
+
+    <div
+      ref="bandEl"
+      aria-hidden="true"
+      class="pointer-events-none relative z-0 w-full overflow-hidden"
+      :style="{ '--fs': fs, height: 'calc(min(10.417vw, 200px) * var(--fs))', background: 'rgb(239, 238, 253)', backdropFilter: 'blur(80px)' }"
+    >
+      <!-- <div style="background: linear-gradient(180deg, rgba(76, 65, 216, 0.03) 0%, rgba(255, 255, 255, 0.03) 100%); backdrop-filter: blur(80px); width: 100%; height: 100%; position: absolute; left: 0; top: 0;"></div> -->
+      <!-- Colour-glow ellipses (Figma 775:10211–10213), behind the step layers. -->
+      <div
+        v-for="(g, i) in FRACTAL_GLOWS"
+        :key="`glow-${i}`"
+        class="absolute rounded-full"
+        :style="{
+          left: `${g.cx}%`,
+          top: `${g.cy}%`,
+          width: `${g.w}%`,
+          height: `${g.h}%`,
+          transform: 'translate(-50%, -50%)',
+          background: g.color,
+          opacity: 0.3,
+          filter: 'blur(80px)',
+        }"
+      />
+      <div
+        v-for="(l, i) in FRACTAL_LAYERS"
+        :key="i"
+        class="absolute inset-x-0 bottom-0"
+        :style="{ top: `${l.t}%`, opacity: l.o, backgroundImage: FRACTAL_RAMP }"
+      />
     </div>
 
     <div class="relative mx-auto max-w-7xl px-4 py-[80px]">
