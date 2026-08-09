@@ -24,7 +24,7 @@
  * SQUARE of this number (1.5 is 2.25x the fill of 1, 2 would be 4x). Individual
  * call sites can still pass a lower `max-pixel-ratio`.
  */
-export const SPLINE_MAX_PIXEL_RATIO = 1.5
+export const SPLINE_MAX_PIXEL_RATIO = 2
 
 /**
  * Frame-rate ceiling for a scene's render loop. None of these scenes are
@@ -32,7 +32,7 @@ export const SPLINE_MAX_PIXEL_RATIO = 1.5
  * every number in the measurements above and is close to invisible. This is the
  * first dial to raise if a scene reads as choppy.
  */
-export const SPLINE_MAX_FPS = 45
+export const SPLINE_MAX_FPS = 60
 
 /**
  * How many scenes may render simultaneously. Both `/` and `/about` mount two,

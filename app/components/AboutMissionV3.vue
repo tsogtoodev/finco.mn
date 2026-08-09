@@ -49,6 +49,7 @@ const bodyStart = computed(
       <SplineScene
         scene="https://prod.spline.design/5QI6kS8kPdn7j7Y3/scene.splinecode?timestamp=20260810040000"
         preload
+        no-drag
         defer-until-lcp
         :zoom="1"
         class="size-full"

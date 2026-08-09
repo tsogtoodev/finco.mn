@@ -141,7 +141,8 @@ const textSettled = ref(false)
 /* Glow — outer circle box: d 1532.12 (101.33cqw) centred at 94.08% / 64.01% */
 .beep2-glow {
   position: absolute;
-  left: 94.08%;
+  /* Tracks the photo's gutter shift so the circles stay centred behind it. */
+  left: calc(94.08% + max(0px, (100vw - 1512px) / 2));
   top: 64.01%;
   width: 101.33cqw;
   height: 101.33cqw;
@@ -158,10 +159,16 @@ const textSettled = ref(false)
   transform: translate(-50%, -50%);
 }
 
-/* Photo — right-anchored, w 538.6/1512, spans y -153.9 → 653.9 of 607 */
+/* Photo — right-anchored, w 538.6/1512, spans y -153.9 → 653.9 of 607.
+   `right` compensates for the stage's centering gutter: above 1512px the stage
+   stops short of the screen edge, and a photo pinned to the STAGE edge leaves
+   a strip of empty panel to its right — the design keeps it flush with the
+   frame edge, so shift it right by the gutter width ((100vw - 1512) / 2).
+   100vw includes the scrollbar, so this can overshoot by ~15px; the section's
+   overflow-hidden clips that sliver of the photo, which is already a crop. */
 .beep2-person {
   position: absolute;
-  right: 0;
+  right: min(0px, calc((1512px - 100vw) / 2));
   top: -25.35%;
   width: 35.62%;
   height: 133.08%;
