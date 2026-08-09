@@ -4,6 +4,7 @@
 // off the top-right, and three concentric lime circles glowing behind it.
 // Like HomeBeep, the desktop layout is a fixed 1512×607 coordinate stage that
 // scales via container units; below `lg` it becomes an ordinary stacked flow.
+import { useInView } from 'motion-v'
 import glowOuter from '~/assets/images/beep2-glow-outer.svg'
 import glowMid from '~/assets/images/beep2-glow-mid.svg'
 import glowInner from '~/assets/images/beep2-glow-inner.svg'
@@ -18,6 +19,40 @@ const copy = computed(() => ({
   lead: page.value?.beep?.expandLead ?? t('home.beep.expandLead'),
   rest: page.value?.beep?.expandRest ?? t('home.beep.expandRest'),
 }))
+
+// ── Paragraph reveal ─────────────────────────────────────────────────────────
+// BlurText can't render this paragraph: the bold lead and light rest must flow
+// INLINE through one wrapping text block, and each <BlurText> is its own flex
+// container — two of them stack (or shrink side-by-side) instead of flowing.
+// So the paragraph rebuilds BlurText's word reveal inline: same keyframes, same
+// per-word stagger, same settle cleanup — with the lead's words styled bold.
+const words = computed(() => {
+  const split = (s: string) => s.trim().split(/\s+/).filter(Boolean)
+  return [
+    ...split(copy.value.lead).map((w) => ({ w, bold: true })),
+    ...split(copy.value.rest).map((w) => ({ w, bold: false })),
+  ]
+})
+
+const textEl = ref<HTMLElement | null>(null)
+const textInView = useInView(textEl, { once: true, amount: 0.1 })
+
+const WORD_FROM = { filter: 'blur(10px)', opacity: 0, y: -20 }
+const WORD_KEYFRAMES = {
+  filter: ['blur(10px)', 'blur(5px)', 'blur(0px)'],
+  opacity: [0, 0.5, 1],
+  y: [-20, 5, 0],
+}
+const wordTransition = (i: number) => ({
+  duration: 0.44,
+  times: [0, 0.5, 1],
+  delay: 0.05 + i * 0.02,
+})
+
+// Same trick as BlurText's `blurtext-settled`: motion leaves inline
+// `filter: blur(0px)` / `translateY(0)` on every word, each holding a
+// compositing layer that degrades text antialiasing — clear them once done.
+const textSettled = ref(false)
 </script>
 
 <template>
@@ -48,18 +83,44 @@ const copy = computed(() => ({
            396px band vertically centred on the stage. -->
       <div class="beep2-col">
         <div class="beep2-copy">
-          <img :src="wordmark" :alt="t('hero.wordmarkAlt')" class="beep2-wordmark">
-          <p class="beep2-text">
-            <span class="beep2-text-lead">{{ copy.lead }}</span>
-            {{ ' ' }}<span>{{ copy.rest }}</span>
+          <MotionReveal :y="32">
+            <img :src="wordmark" :alt="t('hero.wordmarkAlt')" class="beep2-wordmark">
+          </MotionReveal>
+          <p
+            ref="textEl"
+            class="beep2-text"
+            :class="textSettled ? 'beep2-text--settled' : undefined"
+          >
+            <Motion
+              v-for="(seg, i) in words"
+              :key="`${i}-${seg.w}`"
+              as="span"
+              :initial="WORD_FROM"
+              :animate="textInView ? WORD_KEYFRAMES : WORD_FROM"
+              :transition="wordTransition(i)"
+              :style="{ display: 'inline-block' }"
+              :class="seg.bold ? 'beep2-text-lead' : undefined"
+              :on-animation-complete="i === words.length - 1 ? () => (textSettled = true) : undefined"
+            >{{ seg.w + (i < words.length - 1 ? ' ' : '') }}</Motion>
           </p>
         </div>
 
         <div class="beep2-qr">
-          <span class="beep2-qr-card">
-            <img src="/images/home/beep-qr.svg" alt="" class="beep2-qr-img">
-          </span>
-          <span class="beep2-qr-cap">Beep wallet</span>
+          <MotionReveal :y="48" :delay="0.15">
+            <span class="beep2-qr-card">
+              <!-- The design's own QR artwork (dark-teal rounded modules),
+                   full-bleed in the card like the Figma frame. -->
+              <img src="/images/home/beep-qr-v2.png" alt="" class="beep2-qr-img">
+            </span>
+          </MotionReveal>
+          <BlurText
+            text="Beep wallet"
+            as="p"
+            animate-by="words"
+            :delay="45"
+            :start-delay="0.3"
+            class="beep2-qr-cap justify-center"
+          />
         </div>
       </div>
     </div>
@@ -139,6 +200,9 @@ const copy = computed(() => ({
   height: 2.6455cqw; /* 40px */
 }
 .beep2-text {
+  display: flex;
+  flex-wrap: wrap;
+  white-space: pre-wrap; /* keep each word's trailing space from collapsing */
   font-weight: 200;
   font-size: 1.0582cqw; /* 16px */
   line-height: 1.5873cqw; /* 24px */
@@ -147,6 +211,12 @@ const copy = computed(() => ({
 }
 .beep2-text-lead {
   font-weight: 700;
+}
+/* Same as BlurText's .blurtext-settled: release the per-word layers. */
+.beep2-text--settled > :deep(span) {
+  filter: none !important;
+  transform: none !important;
+  will-change: auto !important;
 }
 
 /* QR block — 177px card, white, r12, caption 20px @ #25403f/50 */
@@ -157,9 +227,7 @@ const copy = computed(() => ({
   gap: 0.2646cqw; /* 4px */
 }
 .beep2-qr-card {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   width: 11.706cqw; /* 177px */
   height: 12.302cqw; /* 186px */
   border-radius: 0.7937cqw; /* 12px */
@@ -168,8 +236,9 @@ const copy = computed(() => ({
 }
 .beep2-qr-img {
   display: block;
-  width: 79.1%; /* ≈140px of 177 — the QR art inside the card */
-  height: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Figma: the QR art fills the card edge-to-edge */
 }
 .beep2-qr-cap {
   font-weight: 300;
