@@ -23,7 +23,7 @@ useSeoMeta({
         <HomeProducts />
       </div>
     </div>
-    <HomeBeep />
+    <HomeBeepV2 />
     <HomeFincoBiz />
     <HomeNews />
     <HomeContactCta />
