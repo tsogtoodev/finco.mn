@@ -24,7 +24,7 @@ useSeoMeta({
       </div>
     </div>
     <HomeBeepV2 />
-    <HomeFincoBiz />
+    <HomeFincoBizV2 />
     <HomeNews />
     <HomeContactCta />
   </div>
