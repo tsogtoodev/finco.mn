@@ -10,7 +10,7 @@ Unfinished TODOS
 [ ] CMS-n products-n tab content dotor table-g column header-gui oruulahler bolku bgag zasah
 [ ] CMS-n products-n tab content dotor list-r yum oruulhad bolku bgag zasah
 [ ] CMS deer archive hiisen jagsaalt garch irehgui bsan. Er ni archive hiineguud site deeree zarimdaa garch ired, zarim deer ni bhgui bgag neg sain checkleh
-[ ] RelatedProductsCarousel-n items-n thumb zurag ni yag CMS deer tohiruulsan zuragaar orku bgag zasah
+[X] RelatedProductsCarousel-n items-n thumb zurag ni yag CMS deer tohiruulsan zuragaar orku bgag zasah
 [ ] HomeContactCTA -n spline scene-n chanar-g buuruulah.
 [ ] ProductDetailHero dotorh stat box-n gap-nii 12px -g 8px bolgoh
 [ ] Buh section guudiin title-g 28px, subtitle-g 18px, hoorondiin zaig (gap) -g 8px bolgoj uurchluh
@@ -18,7 +18,7 @@ Unfinished TODOS
 [X] AboutCeoMessage dotorh zuragnii baruun dood tald bga gradient ungiig arilgah
 [ ] AboutHero nii title-g 28px, description-g 14px, hoorondiin gap-g jhon bagasgah (4px-r bagasgah, medremj)
 [ ] About page deerh page overflow hiisen bug bsan, eniig olj zasah
-[ ] ProductsGrid-n dotorh card title nii line-height-g 28px bolgoh
+[X] ProductsGrid-n dotorh card title nii line-height-g 28px bolgoh
 [ ] Sanal huselt ilgeeh form-n email field nii placeholder text-g zasah
 [ ] HomeBeep section deer playstore, appstore logo-g oruulah. QR Code-n hajuud
 [ ] ProductsHero nii zuragnii blur-g arilgah

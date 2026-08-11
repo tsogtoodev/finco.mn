@@ -33,8 +33,8 @@ const cards = await useProductList(props.audience)
         />
 
         <h3
-          class="absolute inset-x-6 top-1/2 -translate-y-1/2 text-balance text-center font-display font-extrabold leading-9 text-white transition-transform duration-300 group-hover:-translate-y-[calc(100%+26.45px)] group-focus-visible:-translate-y-[calc(100%+26.45px)] touch:-translate-y-[calc(100%+26.45px)] motion-reduce:transition-none"
-          :class="c.title.trim().split(/\s+/).length > 6 ? 'text-[18px]' : 'text-[20px]'"
+          class="absolute inset-x-6 top-1/2 -translate-y-1/2 text-balance text-center font-display font-extrabold text-white transition-transform duration-300 group-hover:-translate-y-[calc(100%+26.45px)] group-focus-visible:-translate-y-[calc(100%+26.45px)] touch:-translate-y-[calc(100%+26.45px)] motion-reduce:transition-none"
+          :class="c.title.trim().split(/\s+/).length > 6 ? 'text-[18px] leading-[26px]' : 'text-[20px] leading-[28px]'"
         >
           {{ c.title }}
         </h3>
