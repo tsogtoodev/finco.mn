@@ -12,11 +12,11 @@ cardImage: /images/home/product-5.png
 featured: true
 tabs:
   info: The salary loan is designed for employees of subsidiaries within the Premium Corporation group. Loan terms depend on the borrower's salary income.
-  requirements:
-    - Be a legally capable citizen aged 21 or over
-    - Have a regular income sufficient to repay the loan
-    - Have no overdue or non-performing loan balances at banks or NBFIs
-    - Provide collateral where the product requires it
+  requirements: |-
+    1. Be a legally capable citizen aged 21 or over
+    2. Have a regular income sufficient to repay the loan
+    3. Have no overdue or non-performing loan balances at banks or NBFIs
+    4. Provide collateral where the product requires it
   other: A national ID, proof of income, collateral documents and a loan application form are required.
 related:
   - consumer-loan

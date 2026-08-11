@@ -151,9 +151,18 @@ export function normalizeHeaderlessTables(src: string): string {
   return out.join('\n')
 }
 
+// Markdown that stays a STRING: the editor-facing fixups (asset refs, headerless
+// tables) without the parse, for fields the components hand to <MDC> and parse at
+// render time (the product detail tabs).
+async function mdText(src: string | null | undefined) {
+  if (!src) return undefined
+  return normalizeHeaderlessTables(await rewriteAssetRefs(src))
+}
+
 async function md(body: string | null | undefined) {
-  if (!body) return undefined
-  const parsed = await parseMarkdown(normalizeHeaderlessTables(await rewriteAssetRefs(body)))
+  const src = await mdText(body)
+  if (!src) return undefined
+  const parsed = await parseMarkdown(src)
   return parsed.body
 }
 
@@ -177,6 +186,15 @@ const textRows = (v: unknown): string[] | undefined => {
   return out.length ? out : undefined
 }
 
+// Markdown, tolerating the repeater rows a field held before it became rich
+// text: [{text}] rows fold into an ordered list, a string passes through.
+const markdownRows = (v: unknown): string | undefined => {
+  if (typeof v === 'string') return v || undefined
+  return textRows(v)
+    ?.map((s, i) => `${i + 1}. ${s}`)
+    .join('\n')
+}
+
 // Editor-managed images on pages are relational file uuids
 // (directus/setup-image-fields.mjs); the translations.* wildcard returns them
 // as bare uuid strings, so resolve id -> media URL in one batched /files
@@ -189,6 +207,7 @@ async function fileUrlResolver(t: Row): Promise<(v: unknown) => string | undefin
     t.about_hero_photo_file,
     t.about_ceo_portrait_file,
     ...(Array.isArray(t.about_board_members) ? t.about_board_members.map((m: Row) => m?.photo) : []),
+    ...(Array.isArray(t.hero_slides) ? t.hero_slides.map((s: Row) => s?.image) : []),
   ].filter((v): v is string => typeof v === 'string' && UUID_RE.test(v))
   if (!ids.length) return () => undefined
   const files = await directusFetch<DirectusFile[]>('/files', {
@@ -210,6 +229,20 @@ const assembleHero = (t: Row, url: (v: unknown) => string | undefined) =>
     cta: linkObj(t.hero_cta_label, t.hero_cta_to),
     secondaryCta: linkObj(t.hero_secondary_cta_label, t.hero_secondary_cta_to),
   })
+// Home hero carousel rows. Copy passes through as-is; `image` is a file uuid
+// (directus/setup-hero-slide-images.mjs) resolved to a media URL, with a legacy
+// path string tolerated. Rows with no image keep the component's baked art.
+const assembleHeroSlides = (t: Row, url: (v: unknown) => string | undefined) => {
+  if (!Array.isArray(t.hero_slides)) return undefined
+  return t.hero_slides.map((s: Row) => {
+    const raw = s?.image
+    // A uuid that didn't resolve (file deleted) must NOT reach the <img> as a
+    // src, so drop it and let the component fall back.
+    const image = typeof raw === 'string' && UUID_RE.test(raw) ? url(raw) : raw || undefined
+    const { image: _, ...rest } = s ?? {}
+    return image ? { ...rest, image } : rest
+  })
+}
 const assembleValueProps = (t: Row) =>
   strip({
     heading: t.value_props_heading,
@@ -313,8 +346,15 @@ export const CMS_COLLECTIONS: Record<string, CmsCollectionConfig> = {
   news: {
     param: 'slug',
     sort: '-published_at',
+    // `*` for the base columns, not a list: naming `featured` while the column
+    // is still absent 403s the WHOLE query ("...or it does not exist"), which
+    // would take the news index and every article down in the window between
+    // deploying this and running directus/setup-news-featured.mjs. The wildcard
+    // reads it once it exists and shrugs until then — same trick the pages
+    // normalizer uses for `translations.*`. The explicit image sub-fields still
+    // win over the wildcard's bare uuid, so `asset()` gets its file object.
     fields: [
-      'slug', 'published_at', 'external_url', ...fileSel('image'),
+      '*', ...fileSel('image'),
       'translations.languages_code', 'translations.title', 'translations.summary', 'translations.body',
     ],
     normalize: async (item, locale, asset) => {
@@ -323,6 +363,7 @@ export const CMS_COLLECTIONS: Record<string, CmsCollectionConfig> = {
         locale,
         slug: item.slug,
         publishedAt: item.published_at,
+        featured: undef(item.featured),
         to: undef(item.external_url),
         image: asset(item.image),
         title: t.title,
@@ -386,7 +427,14 @@ export const CMS_COLLECTIONS: Record<string, CmsCollectionConfig> = {
         summary: undef(t.summary),
         category: undef(t.category),
         loanTerms: strip({ amount: t.loan_amount, rate: t.loan_rate, period: t.loan_period }) ?? undef(t.loan_terms),
-        tabs: strip({ requirements: textRows(t.tabs_requirements), other: t.tabs_other }) ?? undef(t.tabs),
+        // Both tab bodies are markdown (rich-text editor, directus/setup-tabs-richtext.mjs).
+        // A pre-migration repeater value is folded into an ordered list so the
+        // rendered result is identical to the numbered rows it used to produce.
+        tabs:
+          strip({
+            requirements: await mdText(markdownRows(t.tabs_requirements)),
+            other: await mdText(t.tabs_other),
+          }) ?? undef(t.tabs),
         faq: undef(t.faq),
         body: await md(t.body),
         related: item.related?.map((r: Row) => r.related_products_id?.slug).filter(Boolean) ?? undefined,
@@ -485,7 +533,7 @@ export const CMS_COLLECTIONS: Record<string, CmsCollectionConfig> = {
         stats: undef(t.stats),
         statsHeading: undef(t.stats_heading),
         valueProps: assembleValueProps(t) ?? undef(t.value_props),
-        heroSlides: undef(t.hero_slides),
+        heroSlides: assembleHeroSlides(t, url) ?? undef(t.hero_slides),
         beep: assembleBeep(t) ?? undef(t.beep),
         fincobiz: assembleFincobiz(t) ?? undef(t.fincobiz),
         showcases: undef(t.showcases),

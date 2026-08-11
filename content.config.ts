@@ -43,10 +43,15 @@ const products = defineCollection({
         period: z.string(),
       })
       .optional(),
+    // Detail-page tabs. All three are MARKDOWN strings — the CMS gives editors a
+    // rich-text editor for each (directus/setup-tabs-richtext.mjs) — and render
+    // through <MDC>. `requirements` was a string[] repeater before that; a plain
+    // list is now just a markdown ordered list, so the numbered rows survive.
+    // `info` only shows when the doc has no body, which otherwise shadows it.
     tabs: z
       .object({
         info: z.string().optional(),
-        requirements: z.array(z.string()).optional(),
+        requirements: z.string().optional(),
         other: z.string().optional(),
       })
       .optional(),
@@ -145,6 +150,9 @@ const news = defineCollection({
     summary: z.string().optional(),
     image: z.string().optional(),
     publishedAt: z.string(),
+    // Pins the article into the "Онцлох" block on the news index (up to 3;
+    // unflagged slots fill with the latest). directus/setup-news-featured.mjs.
+    featured: z.boolean().optional(),
     to: z.string().optional(),
   }),
 })
@@ -204,9 +212,11 @@ const pages = defineCollection({
         ),
       })
       .optional(),
-    // Home hero carousel copy, keyed to the component's slide configs
-    // (fincoBiz / beepWallet / loans / trust). Art, routes and timing stay
-    // component-side; editors manage the words.
+    // Home hero carousel copy + art, keyed to the component's slide configs
+    // (fincoBiz / beepWallet / loans / trust). Routes, wordmarks and timing stay
+    // component-side; editors manage the words and the background photo.
+    // `image` is a resolved media URL (Directus file uuid -> URL happens in the
+    // normalizer); omit it and HomeHero falls back to its baked /images/… art.
     heroSlides: z
       .array(
         z.object({
@@ -214,6 +224,7 @@ const pages = defineCollection({
           tab: z.string(),
           headline: z.string(),
           subtext: z.string(),
+          image: z.string().optional(),
         }),
       )
       .optional(),

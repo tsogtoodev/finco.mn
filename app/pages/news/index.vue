@@ -19,7 +19,16 @@ const { data: news } = await useAsyncData(
 
 useSeoMeta({ title: () => t('nav.news') })
 
-const featured = computed(() => news.value?.slice(0, 3) ?? [])
+// The "Онцлох" block prefers CMS-flagged articles (news.featured —
+// directus/setup-news-featured.mjs), newest-first, then backfills with the
+// latest unflagged ones so it always fills its three cards. Flag nothing and it
+// renders exactly what it did before the flag existed; flag more than three and
+// the newest three win. Both providers already return newest-first.
+const FEATURED_COUNT = 3
+const featured = computed(() => {
+  const all = news.value ?? []
+  return [...all.filter((n) => n.featured), ...all.filter((n) => !n.featured)].slice(0, FEATURED_COUNT)
+})
 const listAll = computed(() => news.value ?? [])
 
 const PAGE_SIZE = 5

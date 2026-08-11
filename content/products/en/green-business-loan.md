@@ -12,11 +12,11 @@ cardImage: /images/home/product-3.png
 featured: true
 tabs:
   info: A green business loan finances environmentally friendly, energy-saving business projects. Loan terms depend on the project and business assessment.
-  requirements:
-    - Be a legal entity registered in Mongolia with 1+ years of stable operations, or a business owner operating for 6+ months
-    - Have sufficient, regular cash flow to repay the loan
-    - Have no overdue or non-performing loan balances at banks or NBFIs
-    - Provide collateral depending on the product terms
+  requirements: |-
+    1. Be a legal entity registered in Mongolia with 1+ years of stable operations, or a business owner operating for 6+ months
+    2. Have sufficient, regular cash flow to repay the loan
+    3. Have no overdue or non-performing loan balances at banks or NBFIs
+    4. Provide collateral depending on the product terms
   other: A national ID, proof of income, collateral documents and a loan application form are required.
 related:
   - business-loan

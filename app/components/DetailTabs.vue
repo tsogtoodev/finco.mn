@@ -3,8 +3,13 @@ import type { Collections } from '@nuxt/content'
 
 // Product-detail tab strip (Figma 1:13353): three equal-width underline tabs
 // (Үйлчилгээний нөхцөл · Тавигдах шаардлага · Бүрдүүлэх материал), the active one
-// in medium weight with a dark underline. The requirements panel renders a numbered
-// list with full-width dividers between rows.
+// in medium weight with a dark underline.
+//
+// All three panels are markdown, authored in the CMS rich-text editor: the info
+// tab from the doc `body` (already an AST -> <ContentRenderer>), the other two
+// as raw markdown strings parsed at render time by <MDC>. The numbered rows with
+// full-width dividers the Figma shows for requirements are the `.tab-prose ol`
+// styles below, so an ordered list still renders as designed.
 const props = defineProps<{ tabs: NonNullable<Collections['products']['tabs']>; body?: unknown }>()
 const { t } = useI18n()
 
@@ -12,7 +17,7 @@ const { t } = useI18n()
 const available = computed(() => {
   const out: { key: string; label: string }[] = []
   if (props.tabs.info || props.body) out.push({ key: 'info', label: t('tabs.info') })
-  if (props.tabs.requirements?.length) out.push({ key: 'requirements', label: t('tabs.requirements') })
+  if (props.tabs.requirements) out.push({ key: 'requirements', label: t('tabs.requirements') })
   if (props.tabs.other) out.push({ key: 'other', label: t('tabs.other') })
   return out
 })
@@ -26,6 +31,11 @@ const active = ref(
 const activeIndex = computed(() =>
   Math.max(0, available.value.findIndex((to) => to.key === active.value)),
 )
+
+// Shared panel typography — the same `prose` modifier set legal/[slug].vue uses,
+// tuned to the tab body style (16px/28 light, black/80).
+const proseClass =
+  'prose prose-neutral tab-prose max-w-none text-base font-light prose-headings:font-display prose-headings:font-medium prose-p:leading-7 prose-p:text-black/80 prose-li:text-black/80 prose-strong:text-foreground'
 </script>
 
 <template>
@@ -67,23 +77,52 @@ const activeIndex = computed(() =>
         :transition="{ duration: 0.2, ease: 'easeOut' }"
         class="mt-6 min-h-[320px]"
       >
-        <div v-if="active === 'info'" class="prose max-w-none text-base font-light leading-7 text-black/80">
+        <div v-if="active === 'info'" :class="proseClass">
           <ContentRenderer v-if="body" :value="{ body } as any" />
-          <p v-else-if="tabs.info">{{ tabs.info }}</p>
+          <MDC v-else-if="tabs.info" :value="tabs.info" />
         </div>
 
-        <ol v-else-if="active === 'requirements'" class="flex flex-col gap-3 rounded-[12px] px-3 py-6">
-          <template v-for="(r, i) in tabs.requirements" :key="i">
-            <li class="flex gap-2 text-base font-light leading-7 text-black/80">
-              <span class="shrink-0 tabular-nums">{{ i + 1 }}.</span>
-              <span>{{ r }}</span>
-            </li>
-            <div v-if="i < (tabs.requirements?.length ?? 0) - 1" class="h-px w-full bg-black/10" />
-          </template>
-        </ol>
+        <div v-else-if="active === 'requirements'" :class="[proseClass, 'px-3 py-6']">
+          <MDC :value="tabs.requirements!" />
+        </div>
 
-        <p v-else-if="active === 'other'" class="text-base font-light leading-7 text-black/80">{{ tabs.other }}</p>
+        <div v-else-if="active === 'other'" :class="proseClass">
+          <MDC :value="tabs.other!" />
+        </div>
       </Motion>
     </AnimatePresence>
   </div>
 </template>
+
+<style scoped>
+/* The Figma requirements panel is numbered rows with full-width hairlines
+   between them. That design now has to survive arbitrary CMS markdown, so it
+   lives on `ol`: an ordered list renders exactly as designed, and anything else
+   the editor writes (paragraphs, bullets, tables) falls back to plain prose.
+   `:deep` because every node here is rendered by <MDC>/<ContentRenderer>, which
+   carry no scope attribute. */
+.tab-prose :deep(ol) {
+  list-style: none;
+  counter-reset: tab-row;
+  padding-left: 0;
+  margin: 0;
+}
+.tab-prose :deep(ol > li) {
+  counter-increment: tab-row;
+  display: flex;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.375rem 0;
+  padding-inline-start: 0;
+  line-height: 1.75;
+  color: rgb(0 0 0 / 0.8);
+}
+.tab-prose :deep(ol > li)::before {
+  content: counter(tab-row) '.';
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+.tab-prose :deep(ol > li + li) {
+  border-top: 1px solid rgb(0 0 0 / 0.1);
+}
+</style>

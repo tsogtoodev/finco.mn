@@ -288,7 +288,9 @@ const COLLECTIONS = {
       f.repeater('stats', [['value', 'input', 'integer'], ['prefix'], ['suffix'], ['label']], { template: '{{label}}' }),
       f.input('stats_heading', { width: 'full' }),
       f.json('value_props', { note: 'Bento value-prop block (heading/accent/subheading/items).' }),
-      f.repeater('hero_slides', [['key'], ['tab'], ['headline'], ['subtext', 'input-multiline', 'text']], { template: '{{key}}: {{headline}}' }),
+      // `image` is a file picker storing a uuid in the JSON (see
+      // directus/setup-hero-slide-images.mjs, which back-fills existing rows).
+      f.repeater('hero_slides', [['key'], ['tab'], ['headline'], ['subtext', 'input-multiline', 'text'], ['image', 'file', 'uuid']], { template: '{{key}}: {{headline}}' }),
       f.json('beep', { note: 'Beep showcase copy.' }),
       f.json('fincobiz', { note: 'FincoBiz showcase copy incl. card-deck tab titles.' }),
       f.repeater('showcases', [['theme'], ['eyebrow'], ['title'], ['body', 'input-multiline', 'text'], ['image']], { template: '{{title}}' }),

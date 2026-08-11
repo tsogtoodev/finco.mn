@@ -162,4 +162,18 @@ export default defineNuxtConfig({
       bindingName: 'DB',
     },
   },
+
+  // Editors write prose in Directus' plain markdown box and expect a single
+  // Enter to break the line — but CommonMark collapses a lone newline into a
+  // space, so those breaks silently vanished (e.g. the sub-headings in the
+  // beep-terms article merged into the paragraph below them). remark-breaks
+  // turns every soft break into a real <br>. @nuxt/content merges these
+  // remarkPlugins into its own build-time markdown pipeline, so this covers
+  // both the /content files and the parseMarkdown() calls in
+  // server/utils/cms-normalizers.ts.
+  mdc: {
+    remarkPlugins: {
+      'remark-breaks': {},
+    },
+  },
 })

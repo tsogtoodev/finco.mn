@@ -235,6 +235,10 @@ const SPECS = [
       input('loan_amount', { sort: 60, note: 'Display string, e.g. "300 сая₮ хүртэл".' }),
       input('loan_rate', { sort: 61, note: 'Display string, e.g. "3.3%/сар".' }),
       input('loan_period', { sort: 62, note: 'Display string, e.g. "60 сар хүртэл".' }),
+      // Both superseded by directus/setup-tabs-richtext.mjs, which converts them
+      // to markdown fields on the rich-text editor (run it after this script on
+      // a fresh instance). Left as-is so the legacy `tabs` JSON still explodes
+      // into the shape that migration expects.
       repeater('tabs_requirements', [['text', 'input-multiline', 'text']], { sort: 80, template: '{{text}}', note: 'Rows of the "Requirements" tab.' }),
       text('tabs_other', { sort: 81, note: 'Content of the "Other" tab.' }),
     ],

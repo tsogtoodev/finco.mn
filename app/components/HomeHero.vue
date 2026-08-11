@@ -20,11 +20,15 @@ import fincoBizLogo from '~/assets/icons/fincobiz-logo-white.svg?url'
 
 const { t } = useI18n()
 
-// Slide copy comes from the `pages` home doc (heroSlides, matched by slide
-// key) so editors manage it in /content; i18n remains the fallback.
+// Slide copy AND background photo come from the `pages` home doc (heroSlides,
+// matched by slide key) so editors manage them in /content + Directus; i18n is
+// the copy fallback and the baked `bg` below the art fallback.
 const page = await usePageContent('home')
+function slideDoc(key: string) {
+  return page.value?.heroSlides?.find((s) => s.key === key)
+}
 function slideCopy(key: string) {
-  const doc = page.value?.heroSlides?.find((s) => s.key === key)
+  const doc = slideDoc(key)
   return {
     tab: doc?.tab ?? t(`hero.tabs.${key}`),
     headline: doc?.headline ?? t(`hero.slides.${key}.headline`),
@@ -56,12 +60,18 @@ const partners = [
 
 // Carousel slides — order matches the tab bar (left→right). `logo` only for the
 // designed BeepWallet slide; the others show an eyebrow text label instead.
+// `bg` is the baked fallback: a CMS `heroSlides[].image` wins when set.
 const slides = [
   { key: 'fincoBiz', to: '/business', bg: '/images/products/hero-business.jpg', logo: fincoBizLogo },
   { key: 'beepWallet', to: '/products', bg: '/images/home/hero-beep-bg.jpg', logo: beepWordmark },
   { key: 'loans', to: '/products', bg: '/images/products/hero-individual.jpg' },
   { key: 'trust', to: '/services', bg: '/images/services/itgeltsel-hero.jpg' },
 ] as const
+
+// Background photo per slide: editor upload (resolved media URL) or baked art.
+function slideBg(key: string, fallback: string) {
+  return slideDoc(key)?.image || fallback
+}
 
 const SLIDE_MS = 6000
 const current = ref(0) // start on the first tab (FincoBiz); cycles in tab order
@@ -241,7 +251,7 @@ onBeforeUnmount(() => {
           <NuxtImg
             v-for="(s, i) in slides"
             :key="s.key"
-            :src="s.bg"
+            :src="slideBg(s.key, s.bg)"
             alt=""
             width="1440"
             height="737"

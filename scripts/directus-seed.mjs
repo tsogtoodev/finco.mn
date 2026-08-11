@@ -73,7 +73,8 @@ const TYPES = {
       // tabs.info is not seeded: body always shadows it on the detail page.
       loan_amount: d.loanTerms?.amount ?? null, loan_rate: d.loanTerms?.rate ?? null,
       loan_period: d.loanTerms?.period ?? null,
-      tabs_requirements: wrapText(d.tabs?.requirements), tabs_other: d.tabs?.other ?? null,
+      // both tab bodies are markdown (directus/setup-tabs-richtext.mjs)
+      tabs_requirements: d.tabs?.requirements ?? null, tabs_other: d.tabs?.other ?? null,
       faq: d.faq ?? null,
       body: d._body || null, // rendered as the "info" tab on product detail
     }),
@@ -117,7 +118,7 @@ const TYPES = {
   },
   news: {
     key: 'slug',
-    base: (d) => ({ slug: d.slug, published_at: d.publishedAt, external_url: d.to ?? null }),
+    base: (d) => ({ slug: d.slug, published_at: d.publishedAt, featured: d.featured ?? false, external_url: d.to ?? null }),
     files: { image: 'image' },
     trans: (d) => ({ title: d.title, summary: d.summary ?? '', body: d._body ?? '' }),
     required: (d) => (!d.publishedAt ? 'missing publishedAt' : !d._body ? 'missing markdown body' : null),

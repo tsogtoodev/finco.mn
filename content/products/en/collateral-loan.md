@@ -10,11 +10,11 @@ category: Consumer loan
 order: 4
 tabs:
   info: A quick collateral loan provides financing against real estate or movable assets. Loan terms depend on the valuation of the pledged collateral.
-  requirements:
-    - Be a legally capable citizen aged 21 or over
-    - Have a regular income sufficient to repay the loan
-    - Have no overdue or non-performing loan balances at banks or NBFIs
-    - Provide collateral where the product requires it
+  requirements: |-
+    1. Be a legally capable citizen aged 21 or over
+    2. Have a regular income sufficient to repay the loan
+    3. Have no overdue or non-performing loan balances at banks or NBFIs
+    4. Provide collateral where the product requires it
   other: A national ID, proof of income, collateral documents and a loan application form are required.
 related:
   - consumer-loan

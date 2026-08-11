@@ -10,11 +10,11 @@ category: Business loan
 order: 5
 tabs:
   info: This loan finances machinery, equipment and technical tools on preferential terms. Loan terms depend on business income and the assessment of the purchased assets.
-  requirements:
-    - Be a legal entity registered in Mongolia with 1+ years of stable operations, or a business owner operating for 6+ months
-    - Have sufficient, regular cash flow to repay the loan
-    - Have no overdue or non-performing loan balances at banks or NBFIs
-    - Provide collateral depending on the product terms
+  requirements: |-
+    1. Be a legal entity registered in Mongolia with 1+ years of stable operations, or a business owner operating for 6+ months
+    2. Have sufficient, regular cash flow to repay the loan
+    3. Have no overdue or non-performing loan balances at banks or NBFIs
+    4. Provide collateral depending on the product terms
   other: A national ID, proof of income, collateral documents and a loan application form are required.
 related:
   - business-loan

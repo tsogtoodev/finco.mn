@@ -15,10 +15,10 @@ loanTerms:
   rate: 3.3%/mo
   period: Up to 60 mo
 tabs:
-  requirements:
-    - Citizen aged 21–60
-    - Stable income
-    - No adverse credit history
+  requirements: |-
+    1. Citizen aged 21–60
+    2. Stable income
+    3. No adverse credit history
 related:
   - green-loan
   - business-loan
