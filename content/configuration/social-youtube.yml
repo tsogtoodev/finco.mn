@@ -1,0 +1,5 @@
+# Empty until the real URL is confirmed — callers treat "" as "no link".
+key: social_youtube
+label: YouTube channel URL
+sort: 5
+value: ""

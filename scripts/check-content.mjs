@@ -15,6 +15,11 @@ import { parse as parseYaml } from 'yaml'
 const ROOT = new URL('..', import.meta.url).pathname
 const CONTENT = join(ROOT, 'content')
 const LOCALES = ['mn', 'en']
+// Collections with no mn/ en/ split, and so nothing for the parity and
+// locale-matches-folder rules below to check. `configuration` holds key/value
+// site settings (a phone number, a Facebook URL) that read the same in every
+// language — see directus/setup-configuration.mjs for why it isn't translated.
+const LOCALE_FREE = new Set(['configuration'])
 const errors = []
 
 function frontmatter(path) {
@@ -30,6 +35,7 @@ function frontmatter(path) {
 for (const collection of readdirSync(CONTENT)) {
   const colDir = join(CONTENT, collection)
   if (!statSync(colDir).isDirectory()) continue
+  if (LOCALE_FREE.has(collection)) continue
 
   const byLocale = {}
   for (const locale of LOCALES) {

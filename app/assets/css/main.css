@@ -6,6 +6,21 @@
    lists lose their markers) — so the policy pages rendered as one flat block. */
 @plugin "@tailwindcss/typography";
 
+/* Headerless CMS tables.
+   GFM has no headerless-table syntax: the delimiter row is only recognised when
+   a header row precedes it, so `| --- | --- |` followed by rows parses as a
+   PARAGRAPH and renders as literal pipe characters. Verified against the actual
+   pipeline (@nuxtjs/mdc's parseMarkdown, which server/utils/cms-normalizers.ts
+   calls for every `body` field).
+   The authoring workaround is an empty header row — `|  |  |` above the
+   delimiter — which does parse, but yields <thead><tr><th></th>…, and the
+   typography plugin gives thead a bottom border and th padding, i.e. a blank
+   bordered strip above the data. This hides a thead whose cells are ALL empty;
+   a table with real headers is untouched because its th are not :empty. */
+.prose thead:not(:has(th:not(:empty))) {
+  display: none;
+}
+
 /* `touch:` — applies only where the pointer cannot hover.
    Several sections reveal content on :hover (product card summaries and CTAs,
    board-member career timelines). On a touch device that content is in the DOM —

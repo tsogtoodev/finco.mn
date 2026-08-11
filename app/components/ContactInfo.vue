@@ -1,17 +1,19 @@
 <script setup lang="ts">
-// Contact details card. Reuses the footer's contact block (Figma 1:14377):
-// social icon circles + underlined pill rows for phone / email / address.
 const { t } = useI18n()
 
-const phone = computed(() => t('contact.phone'))
-const email = computed(() => t('contact.email'))
+const { config } = await useSiteSettings()
+
+const phone = computed(() => config('contact_phone').value || t('contact.phone'))
+const email = computed(() => config('contact_email').value || t('contact.email'))
 const address = computed(() => t('contact.address'))
 
-const socials = [
-  { icon: 'f:facebook', href: 'https://facebook.com', label: 'Facebook' },
-  { icon: 'f:linkedin', href: 'https://linkedin.com', label: 'LinkedIn' },
-  { icon: 'f:youtube', href: 'https://youtube.com', label: 'YouTube' },
-]
+const socials = computed(() =>
+  [
+    { icon: 'f:facebook', href: config('social_facebook').value, label: 'Facebook' },
+    { icon: 'f:instagram', href: config('social_instagram').value, label: 'Instagram' },
+    { icon: 'f:youtube', href: config('social_youtube').value, label: 'YouTube' },
+  ].filter((s) => s.href),
+)
 
 const rows = computed(() => [
   {

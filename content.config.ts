@@ -349,6 +349,26 @@ const pages = defineCollection({
   }),
 })
 
+// ─── Configuration (site-wide key/value settings) ────────────────────────────
+// The one collection with no `locale`: a phone number, an email address and a
+// social URL are the same string in every language, so these files are NOT
+// duplicated per locale (scripts/check-content.mjs exempts them from the parity
+// rule). Mirrors the Directus `configuration` collection row for row — see
+// directus/setup-configuration.mjs.
+const configuration = defineCollection({
+  type: 'data',
+  source: 'configuration/*.yml',
+  schema: z.object({
+    // Referenced from code via useSiteSettings(); the filename matches it.
+    key: z.string(),
+    value: z.string(),
+    // Editor-facing note in the CMS. Carried here so the two sides stay
+    // comparable; never rendered.
+    label: z.string().optional(),
+    sort: z.number().optional(),
+  }),
+})
+
 export default defineContentConfig({
-  collections: { products, services, branches, jobs, news, legal, pages },
+  collections: { products, services, branches, jobs, news, legal, pages, configuration },
 })

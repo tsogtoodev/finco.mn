@@ -33,9 +33,127 @@ async function rewriteAssetRefs(body: string): Promise<string> {
   return body.replace(ASSET_REF_RE, (match, id) => byId.get(id) ?? match)
 }
 
+// ── headerless tables ────────────────────────────────────────────────────────
+// GFM has no headerless-table syntax: the delimiter row (`| --- | --- |`) is
+// what marks a block as a table, and it is only recognised when a header row
+// precedes it. So the spec tables editors naturally write —
+//
+//   | Зээлийн хэмжээ | 5-300 сая |
+//   | Зээлийн хугацаа | 1–12 сар |
+//
+// — parse as a PARAGRAPH and render as literal pipe characters. Nothing
+// downstream can recover that; by the time <ContentRenderer> sees the AST there
+// is no table to style. So the markdown is normalised here, before the parser:
+// a run of pipe rows with no delimiter gets an empty header row and a delimiter
+// row injected above it. The empty <thead> that produces is hidden by
+// `.prose thead:not(:has(th:not(:empty)))` in app/assets/css/main.css, so it
+// renders as the headerless table the editor intended.
+const TABLE_ROW_RE = /^\s*\|.*\|\s*$/
+const DELIM_CELL_RE = /^\s*:?-+:?\s*$/
+const FENCE_RE = /^\s*(?:```|~~~)/
+/** Rows required before a pipe block is treated as a table rather than prose. */
+const MIN_TABLE_ROWS = 2
+
+/** Cells of a pipe row. Naive on escaped `\|`, which would inflate the count. */
+function tableCells(line: string): string[] {
+  return line.trim().slice(1, -1).split('|')
+}
+
+function isDelimiterRow(line: string): boolean {
+  const cells = tableCells(line)
+  return cells.length > 0 && cells.every((c) => DELIM_CELL_RE.test(c))
+}
+
+export function normalizeHeaderlessTables(src: string): string {
+  if (!src.includes('|')) return src
+  const lines = src.split('\n')
+  const out: string[] = []
+  let inFence = false
+  let i = 0
+
+  while (i < lines.length) {
+    const line = lines[i]!
+    // Pipes inside fenced code are content, not table syntax.
+    if (FENCE_RE.test(line)) {
+      inFence = !inFence
+      out.push(line)
+      i++
+      continue
+    }
+    if (inFence || !TABLE_ROW_RE.test(line)) {
+      out.push(line)
+      i++
+      continue
+    }
+
+    let j = i
+    while (j < lines.length && TABLE_ROW_RE.test(lines[j]!)) j++
+    const run = lines.slice(i, j)
+
+    const hasDelimiter = run.length >= 2 && isDelimiterRow(run[1]!)
+    const delimiterFirst = isDelimiterRow(run[0]!)
+    // A table cannot interrupt a paragraph — without a blank line above, an
+    // injected header would just extend the preceding text block.
+    const separate = () => {
+      if (out.length && out[out.length - 1]!.trim() !== '') out.push('')
+    }
+
+    if (delimiterFirst) {
+      // Delimiter with no header above it — the CMS "insert table" control emits
+      // this. The injected header AND the delimiter both have to be sized to the
+      // widest row: keeping the authored delimiter's own width would leave it
+      // mismatched against the header (GFM then silently refuses the table), and
+      // sizing everything down to it would truncate the cells of any wider row.
+      const cols = Math.max(...run.map((r) => tableCells(r).length))
+      separate()
+      out.push(`|${' |'.repeat(cols)}`)
+      out.push(`|${' --- |'.repeat(cols)}`)
+      out.push(...run.slice(1)) // the original delimiter is replaced, not kept
+      i = j
+      continue
+    }
+
+    if (hasDelimiter) {
+      // GFM also requires the delimiter row to have EXACTLY as many cells as the
+      // header. The CMS's "insert table" control emits mismatched counts (a
+      // 6-cell empty header over a 4-cell delimiter on secured-loan), which
+      // silently fails to parse the same way a missing delimiter does.
+      const header = run[0]!
+      const headerCells = tableCells(header)
+      const delimCells = tableCells(run[1]!).length
+      if (headerCells.length !== delimCells) {
+        const dataCols = Math.max(delimCells, ...run.slice(2).map((r) => tableCells(r).length))
+        separate()
+        // An all-empty header is the editor artifact, not authored content — it
+        // can be resized freely. A header with real text is left intact and only
+        // the delimiter is brought into line, so no copy is ever dropped.
+        const headerIsEmpty = headerCells.every((c) => c.trim() === '')
+        const cols = headerIsEmpty ? dataCols : headerCells.length
+        out.push(headerIsEmpty ? `|${' |'.repeat(cols)}` : header)
+        out.push(`|${' --- |'.repeat(cols)}`)
+        out.push(...run.slice(2))
+        i = j
+        continue
+      }
+    }
+    else if (run.length >= MIN_TABLE_ROWS) {
+      // Widest row wins: GFM truncates any row longer than the header, so
+      // sizing to the max is what keeps every cell the editor typed.
+      const cols = Math.max(...run.map((r) => tableCells(r).length))
+      separate()
+      out.push(`|${' |'.repeat(cols)}`)
+      out.push(`|${' --- |'.repeat(cols)}`)
+    }
+    out.push(...run)
+    i = j
+  }
+
+  return out.join('\n')
+}
+
 async function md(body: string | null | undefined) {
   if (!body) return undefined
-  const parsed = await parseMarkdown(await rewriteAssetRefs(body))
+  const parsed = await parseMarkdown(normalizeHeaderlessTables(await rewriteAssetRefs(body)))
   return parsed.body
 }
 
@@ -360,5 +478,20 @@ export const CMS_COLLECTIONS: Record<string, CmsCollectionConfig> = {
         about: assembleAbout(t, url) ?? undef(t.about),
       }
     },
+  },
+
+  // Flat key/value site settings (directus/setup-configuration.mjs). The only
+  // collection with no translations table: a phone number and a Facebook URL
+  // are the same string in every locale, so `locale` is accepted and ignored
+  // rather than used to pick a row. The shape matches the @nuxt/content
+  // fallback in content/configuration/*.yml one field for one field.
+  configuration: {
+    param: 'key',
+    sort: 'sort',
+    fields: ['key', 'value'],
+    normalize: (item) => ({
+      key: item.key,
+      value: item.value ?? '',
+    }),
   },
 }

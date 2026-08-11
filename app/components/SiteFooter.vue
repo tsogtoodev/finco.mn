@@ -44,14 +44,26 @@ const businessGroup = computed(() => ({
   links: productLinks('business'),
 }))
 
-const socials = [
-  { icon: 'f:facebook', href: 'https://facebook.com', label: 'Facebook' },
-  { icon: 'f:linkedin', href: 'https://linkedin.com', label: 'LinkedIn' },
-  { icon: 'f:youtube', href: 'https://youtube.com', label: 'YouTube' },
-]
+// Contact details and social links come from the CMS `configuration` collection.
+// The i18n strings stay as the fallback: they are what shipped, so a missing or
+// unpublished CMS entry degrades to the current copy instead of a blank pill.
+// Written as computeds over the raw config value rather than passing t() as the
+// fallback argument, so switching locale still re-evaluates the fallback.
+const { config } = await useSiteSettings()
 
-const phone = computed(() => t('contact.phone'))
-const email = computed(() => t('contact.email'))
+const phone = computed(() => config('contact_phone').value || t('contact.phone'))
+const email = computed(() => config('contact_email').value || t('contact.email'))
+
+// No fallback URL on purpose: the previous hardcoded hrefs pointed at the bare
+// facebook.com / youtube.com homepages, so an unset key is better represented by
+// no icon than by a link that goes nowhere useful.
+const socials = computed(() =>
+  [
+    { icon: 'f:facebook', href: config('social_facebook').value, label: 'Facebook' },
+    { icon: 'f:instagram', href: config('social_instagram').value, label: 'Instagram' },
+    { icon: 'f:youtube', href: config('social_youtube').value, label: 'YouTube' },
+  ].filter((s) => s.href),
+)
 const disclaimer = computed(() => (tm('footer.disclaimer') as unknown[]).map((p) => rt(p as string)))
 
 // --- elastic overscroll logo reveal ----------------------------------------

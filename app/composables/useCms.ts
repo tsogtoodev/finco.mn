@@ -9,7 +9,7 @@ export function useCmsProvider(): 'directus' | 'nuxt-content' {
 }
 
 export function fetchCms<T>(
-  collection: 'products' | 'services' | 'branches' | 'jobs' | 'news' | 'legal' | 'pages',
+  collection: 'products' | 'services' | 'branches' | 'jobs' | 'news' | 'legal' | 'pages' | 'configuration',
   query: { locale: string; slug?: string; key?: string; limit?: number },
 ): Promise<T> {
   // On the server, forward the incoming request's cookies so the CMS endpoint
