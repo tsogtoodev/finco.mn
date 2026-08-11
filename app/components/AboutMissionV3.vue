@@ -26,7 +26,16 @@ const bodyStart = computed(
 </script>
 
 <template>
-  <section class="relative isolate overflow-visible bg-[#080a12] pb-44 text-white sm:pb-80">
+  <!-- overflow-x-clip, not overflow-hidden. The glow below is deliberately wider
+       than the viewport — 1.6x max(560px, 65.1vw) once its `inset-[-30%]`
+       wrapper is applied — and with the section `overflow-visible` its right
+       half stretched the document: +30px at 1440, +253px (65% of the viewport)
+       at 390, where the 560px floor stops it scaling down with the screen.
+       `clip` is the axis that can be clipped ALONE: `overflow-x: hidden` forces
+       the y axis to `auto`, which would turn this section into a scroll
+       container and cut the glow's vertical bleed — it sits ~70% of its height
+       below the section by design (`bottom: calc(var(--glow-d) * -0.6992)`). -->
+  <section class="relative isolate overflow-x-clip bg-[#080a12] pb-44 text-white sm:pb-80">
     <div
       aria-hidden="true"
       class="pointer-events-none absolute left-1/2 -z-10 -translate-x-1/2"

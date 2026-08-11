@@ -22,7 +22,6 @@ const FADE_TO = [
       wrapper-class="-z-20"
       img-class="size-full object-cover object-center"
     />
-    <!-- Legibility gradient: solid dark bottom → lightly tinted top (Figma) -->
     <div
       aria-hidden="true"
       class="absolute inset-0 -z-10"
@@ -37,7 +36,7 @@ const FADE_TO = [
         :delay="60"
         :animation-from="FADE_FROM"
         :animation-to="FADE_TO"
-        class="mx-auto max-w-4xl justify-center font-display text-[1.75rem] font-medium leading-[1.2] tracking-tight text-white sm:text-[2.25rem] lg:text-[2.5rem] lg:leading-[1.25]"
+        class="mx-auto max-w-4xl justify-center font-display text-[1.75rem] font-medium leading-[1.2] tracking-tight text-white sm:text-[28px] lg:text-[28px] lg:leading-[1.25]"
         style="text-shadow: 0 0 10px rgba(255,255,255,0.12);"
       />
       <BlurText
@@ -48,7 +47,7 @@ const FADE_TO = [
         :start-delay="0.1"
         :animation-from="FADE_FROM"
         :animation-to="FADE_TO"
-        class="mx-auto mt-8 max-w-[1200px] justify-center text-sm font-thin leading-6 tracking-[0.2px] text-white/60 sm:mt-10 sm:text-[16px] sm:leading-[24px]"
+        class="mx-auto mt-8 max-w-[1200px] justify-center text-sm font-thin leading-6 tracking-[0.2px] text-white/60 sm:mt-6 sm:text-[14px] sm:leading-[24px]"
       />
     </div>
   </section>
