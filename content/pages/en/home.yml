@@ -83,6 +83,15 @@ fincobiz:
   calloutHeading: Faster than you think
   calloutSubtext: The FincoBiz platform makes the whole journey — from application to decision — simpler and faster.
   cards:
-    request: Submit a loan request
-    receivables: Track receivables
-    eligibility: Check loan eligibility
+    request:
+      tab: Submit a loan request
+      heading: Faster than you think
+      body: A digital solution delivering modern financial services.
+    receivables:
+      tab: Track receivables
+      heading: Receivables-backed loan
+      body: Get advance financing without waiting to be paid.
+    eligibility:
+      tab: Check loan eligibility
+      heading: Check your loan eligibility with ease
+      body: A digital platform that handles business loans and flexible financing for companies in the fastest, simplest and easiest way.

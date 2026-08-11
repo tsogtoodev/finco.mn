@@ -14,14 +14,27 @@ const cards = [
   { id: 'request' as CardId, dot: '#f7b23b', bar: '#f7b23b', img: 2, art: '60.76%', w: 1400 },
 ]
 
-// The request card's heading/body map onto the callout fields editors already
-// have in Directus; the other two are i18n-only until matching CMS fields exist.
+// Every card is CMS-editable: tab, heading and body each come from the card's
+// own field, with i18n as the fallback for anything an editor leaves blank.
+//
+// `cards[id]` accepts two shapes. The object form is current. The bare string is
+// the legacy shape — it only ever held the tab label, which is why the deck's
+// headings/bodies used to be i18n-only (the `request` card excepted, since it
+// borrowed the section-level callout fields). Reading both means the component
+// works whether or not the Directus migration has run yet.
 function cardCopy(id: CardId) {
   const cms = page.value?.fincobiz
+  const card = cms?.cards?.[id]
+  const field = (k: 'tab' | 'heading' | 'body') =>
+    typeof card === 'string' ? (k === 'tab' ? card : undefined) : card?.[k]
+
   return {
-    tab: cms?.cards?.[id] ?? t(`home.fincobiz.cards.${id}.tab`),
-    heading: (id === 'request' ? cms?.calloutHeading : undefined) ?? t(`home.fincobiz.cards.${id}.heading`),
-    body: (id === 'request' ? cms?.calloutSubtext : undefined) ?? t(`home.fincobiz.cards.${id}.body`),
+    tab: field('tab') || t(`home.fincobiz.cards.${id}.tab`),
+    // The callout fallback is kept for `request` alone: those two fields are
+    // what that card rendered before it had its own, so dropping them would
+    // silently revert live copy to the i18n default.
+    heading: field('heading') || (id === 'request' ? cms?.calloutHeading : undefined) || t(`home.fincobiz.cards.${id}.heading`),
+    body: field('body') || (id === 'request' ? cms?.calloutSubtext : undefined) || t(`home.fincobiz.cards.${id}.body`),
   }
 }
 

@@ -219,12 +219,34 @@ const assembleValueProps = (t: Row) =>
   })
 const assembleBeep = (t: Row) =>
   strip({ heading: t.beep_heading, subtext: t.beep_subtext, expandLead: t.beep_expand_lead, expandRest: t.beep_expand_rest, teaser: t.beep_teaser })
+// Each FincoBiz card carries its own tab label, heading and body. Previously
+// only the tab existed (`fincobiz_card_<id>`, a bare string) and the deck's
+// headings/bodies came from i18n — except the `request` card, which borrowed the
+// section-level callout fields. The per-card `_heading`/`_body` fields are added
+// by directus/setup-fincobiz-cards.mjs; until that has run they are simply
+// absent from the `translations.*` wildcard and the card falls back as before.
+const FINCOBIZ_CARDS = ['request', 'receivables', 'eligibility'] as const
+
+const assembleFincobizCards = (t: Row) =>
+  strip(
+    Object.fromEntries(
+      FINCOBIZ_CARDS.map((id) => [
+        id,
+        strip({
+          tab: t[`fincobiz_card_${id}`],
+          heading: t[`fincobiz_card_${id}_heading`],
+          body: t[`fincobiz_card_${id}_body`],
+        }),
+      ]),
+    ),
+  )
+
 const assembleFincobiz = (t: Row) =>
   strip({
     subtext: t.fincobiz_subtext,
     calloutHeading: t.fincobiz_callout_heading,
     calloutSubtext: t.fincobiz_callout_subtext,
-    cards: strip({ request: t.fincobiz_card_request, receivables: t.fincobiz_card_receivables, eligibility: t.fincobiz_card_eligibility }),
+    cards: assembleFincobizCards(t),
   })
 
 // The About page's structure lives as flat about_* fields in Directus (editor

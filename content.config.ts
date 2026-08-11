@@ -226,17 +226,27 @@ const pages = defineCollection({
         expandRest: z.string(),
       })
       .optional(),
-    // FincoBiz showcase copy (home) incl. the interactive card-deck tab titles.
+    // FincoBiz showcase copy (home) incl. the interactive card deck. Each card
+    // owns its tab label, heading and body. The bare-string form is the legacy
+    // shape (tab only, heading/body from i18n) and stays accepted so a doc that
+    // predates the split still validates — see assembleFincobizCards() in
+    // server/utils/cms-normalizers.ts, which produces the same union.
     fincobiz: z
       .object({
         subtext: z.string(),
         calloutHeading: z.string(),
         calloutSubtext: z.string(),
-        cards: z.object({
-          request: z.string(),
-          receivables: z.string(),
-          eligibility: z.string(),
-        }),
+        cards: z.record(
+          z.enum(['request', 'receivables', 'eligibility']),
+          z.union([
+            z.string(),
+            z.object({
+              tab: z.string().optional(),
+              heading: z.string().optional(),
+              body: z.string().optional(),
+            }),
+          ]),
+        ),
       })
       .optional(),
     // Dark/light product showcase panels (Beep, FincoBiz).

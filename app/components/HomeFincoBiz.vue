@@ -14,14 +14,19 @@ const cards = [
   { id: 'request' as CardId, dot: '#f7b23b', bar: '#f7b23b', img: 2, art: '60.76%', w: 1400 },
 ]
 
-// The request card's heading/body map onto the callout fields editors already
-// have in Directus; the other two are i18n-only until matching CMS fields exist.
+// Mirrors HomeFincoBizV2's cardCopy — see the reasoning there. Every card is
+// CMS-editable; `cards[id]` may be the current object shape or the legacy bare
+// string (tab only), so both are read.
 function cardCopy(id: CardId) {
   const cms = page.value?.fincobiz
+  const card = cms?.cards?.[id]
+  const field = (k: 'tab' | 'heading' | 'body') =>
+    typeof card === 'string' ? (k === 'tab' ? card : undefined) : card?.[k]
+
   return {
-    tab: cms?.cards?.[id] ?? t(`home.fincobiz.cards.${id}.tab`),
-    heading: (id === 'request' ? cms?.calloutHeading : undefined) ?? t(`home.fincobiz.cards.${id}.heading`),
-    body: (id === 'request' ? cms?.calloutSubtext : undefined) ?? t(`home.fincobiz.cards.${id}.body`),
+    tab: field('tab') || t(`home.fincobiz.cards.${id}.tab`),
+    heading: field('heading') || (id === 'request' ? cms?.calloutHeading : undefined) || t(`home.fincobiz.cards.${id}.heading`),
+    body: field('body') || (id === 'request' ? cms?.calloutSubtext : undefined) || t(`home.fincobiz.cards.${id}.body`),
   }
 }
 
