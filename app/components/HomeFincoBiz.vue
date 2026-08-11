@@ -235,7 +235,6 @@ onBeforeUnmount(() => {
 
                     <AppButton
                       to="https://biz.finco.mn?utm_source=finco_home&utm_medium=card"
-                      target="_blank"
                       variant="ghost"
                       arrow
                       class="h-10 self-start text-foreground"
