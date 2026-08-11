@@ -3,13 +3,14 @@ Unfinished TODOS
 [ ] HomeProducts-n door har zuraas garch irj bgag zasah
 
 2026-08-11 TODOS
-[ ] CDN deer zurag oruulahleer het ih compress hiij bgag boliulah, arai jhon compress hiideg bolgoh
+[X] CDN deer zurag oruulahleer het ih compress hiij bgag boliulah, arai jhon compress hiideg bolgoh
 [ ] CMS deer site nii tohirgoonii collection uusged teren deer contact medeelel-g oruuldag
 [ ] CMS deer content body dotor husnegt oruulj bolohgui bgag bugdend ni bolgoj zasah
 [ ] CMS-n products deer shineer tab oruulah leer site deer garch irehgui bga
 [ ] CMS-n products-n tab content dotor table-g column header-gui oruulahler bolku bgag zasah
 [ ] CMS-n products-n tab content dotor list-r yum oruulhad bolku bgag zasah
 [ ] CMS deer archive hiisen jagsaalt garch irehgui bsan. Er ni archive hiineguud site deeree zarimdaa garch ired, zarim deer ni bhgui bgag neg sain checkleh
+[ ] HomeFincoBiz -n card uudiin text-g CMS-r udirddag bolgoh
 [X] RelatedProductsCarousel-n items-n thumb zurag ni yag CMS deer tohiruulsan zuragaar orku bgag zasah
 [X] HomeContactCTA -n spline scene-n chanar-g buuruulah.
 [X] ProductDetailHero dotorh stat box-n gap-nii 12px -g 8px bolgoh
