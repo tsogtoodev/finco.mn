@@ -4,30 +4,12 @@ import signature from '~/assets/images/about-ceo-signature.png'
 
 defineProps<{ ceo: AboutContent['ceo'] }>()
 
-// The letter body is an inner scroller inside a Lenis-driven page. It used to
-// carry `data-lenis-prevent`, which opts the whole subtree out of the smooth
-// layer — but with `allowNestedScroll: false` that made the wheel a DEAD ZONE:
-// once the letter hit its own top/bottom (or when it isn't overflowing at all)
-// nothing moved, so the page froze while the cursor sat over it.
-//
-// Instead, claim the wheel only while the letter still has room to travel in
-// that direction; at the edges the event bubbles on to Lenis and the page
-// scrolls as usual. Lenis listens on the window, so stopping propagation here
-// (bubble phase) is what keeps the page still during the letter's own scroll.
-const letterBody = ref<HTMLElement | null>(null)
-
-function onLetterWheel(e: WheelEvent) {
-  const el = letterBody.value
-  if (!el) return
-  const max = el.scrollHeight - el.clientHeight
-  if (max <= 0) return
-  const atTop = el.scrollTop <= 0
-  const atBottom = el.scrollTop >= max - 1
-  if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) return
-  e.preventDefault()
-  e.stopPropagation()
-  el.scrollTop += e.deltaY
-}
+// The letter body used to be an inner scroller, which needed a wheel handler to
+// cooperate with Lenis (claim the wheel only while the letter had room to
+// travel, hand it back at the edges) — without that the cursor sitting over the
+// card froze the page. The card is now sized by its content, so there is nothing
+// to scroll inside it and the whole mechanism is gone. Reinstate it from git
+// history if a max-height ever comes back.
 </script>
 
 <template>
@@ -60,30 +42,27 @@ function onLetterWheel(e: WheelEvent) {
             height="1008"
             class="size-full object-cover object-top"
           />
-          <div
+          <!-- <div
             aria-hidden="true"
             class="absolute inset-0"
             style="background: linear-gradient(to bottom, rgba(84,87,220,0) 69%, rgba(84,87,220,0.4));"
-          />
+          /> -->
         </MotionReveal>
 
-        <!-- Greeting card — letter sheet, A4-ish but a touch shorter (210:272) -->
+        <!-- Greeting card — height follows the letter copy. It used to be pinned
+             to a fixed sheet aspect (210:272) at lg, which meant a long letter
+             overflowed into an inner scrollbar and a short one left dead white
+             space; the CMS owns `greetingBody`, so neither was predictable. -->
         <MotionReveal
           :delay="0.1"
-          class="relative z-10 mx-auto mt-6 flex w-full max-w-[520px] flex-col rounded-[2rem] bg-white px-8 py-6 shadow-[0_4px_24px_rgba(0,0,0,0.1)] sm:px-10 sm:py-8 lg:mx-0 lg:-ml-16 lg:mt-0 lg:aspect-[210/272] lg:max-w-[560px] lg:self-center lg:px-14 lg:py-10"
+          class="relative z-10 mx-auto mt-6 flex w-full max-w-[520px] flex-col rounded-[2rem] bg-white px-8 py-6 shadow-[0_4px_24px_rgba(0,0,0,0.1)] sm:px-10 sm:py-8 lg:mx-0 lg:-ml-16 lg:mt-0 lg:max-w-[560px] lg:self-center lg:px-14 lg:py-10"
         >
           <div
             aria-hidden="true"
             class="pointer-events-none absolute inset-0 -z-10 rounded-[2rem] bg-white shadow-[0_4px_24px_rgba(0,0,0,0.1)]"
           />
           <h3 class="text-lg font-medium text-[#141414]">{{ ceo.greetingTitle }}</h3>
-          <!-- See onLetterWheel: this scroller cooperates with Lenis rather than
-               opting out of it, so the page still scrolls at the letter's edges. -->
-          <div
-            ref="letterBody"
-            class="mt-5 space-y-4 text-sm font-light leading-6 text-[rgba(0,0,0,0.7)] lg:overflow-y-auto"
-            @wheel="onLetterWheel"
-          >
+          <div class="mt-5 space-y-4 text-sm font-light leading-6 text-[rgba(0,0,0,0.7)]">
             <p v-for="(para, i) in ceo.greetingBody" :key="i">{{ para }}</p>
           </div>
           <p class="mt-6 text-sm font-medium text-[#4c41d8]">{{ ceo.tagline }}</p>
