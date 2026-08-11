@@ -46,7 +46,6 @@ function goBack() {
     <div
       class="relative mx-auto w-full max-w-[1248px] px-6 lg:px-0 pb-10 pt-[100px] sm:pb-12 sm:pt-[112px] lg:pb-[54px] lg:pt-[100px]"
     >
-      <!-- Back, ghost variant. Matches the product-detail and service heroes. -->
       <div class="hero-rise">
         <AppButton variant="ghost" class="h-10 w-fit" @click="goBack">
           <Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />
@@ -54,7 +53,6 @@ function goBack() {
         </AppButton>
       </div>
 
-      <!-- centred headline + audience toggle -->
       <div class="mt-6 flex flex-col items-center gap-7 text-center sm:gap-8">
         <BlurText
           :text="props.headline ?? t('productsPage.headline')"

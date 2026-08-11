@@ -1,9 +1,4 @@
 <script setup lang="ts">
-// Beep showcase V2 (Figma 987:21965). Light 1512×607 panel: dark Beep wordmark
-// + bold-lead paragraph and a QR card on the left, the lifestyle photo bleeding
-// off the top-right, and three concentric lime circles glowing behind it.
-// Like HomeBeep, the desktop layout is a fixed 1512×607 coordinate stage that
-// scales via container units; below `lg` it becomes an ordinary stacked flow.
 import { useInView } from 'motion-v'
 import glowOuter from '~/assets/images/beep2-glow-outer.svg'
 import glowMid from '~/assets/images/beep2-glow-mid.svg'
@@ -12,20 +7,12 @@ import wordmark from '~/assets/images/beep-wordmark-dark.svg'
 
 const { t } = useI18n()
 
-// Same copy source as HomeBeep: the home doc's beep group, i18n fallback.
-// The design's paragraph is exactly expandLead (bold) + expandRest (light).
 const page = await usePageContent('home')
 const copy = computed(() => ({
   lead: page.value?.beep?.expandLead ?? t('home.beep.expandLead'),
   rest: page.value?.beep?.expandRest ?? t('home.beep.expandRest'),
 }))
 
-// ── Paragraph reveal ─────────────────────────────────────────────────────────
-// BlurText can't render this paragraph: the bold lead and light rest must flow
-// INLINE through one wrapping text block, and each <BlurText> is its own flex
-// container — two of them stack (or shrink side-by-side) instead of flowing.
-// So the paragraph rebuilds BlurText's word reveal inline: same keyframes, same
-// per-word stagger, same settle cleanup — with the lead's words styled bold.
 const words = computed(() => {
   const split = (s: string) => s.trim().split(/\s+/).filter(Boolean)
   return [
@@ -49,17 +36,8 @@ const wordTransition = (i: number) => ({
   delay: 0.05 + i * 0.02,
 })
 
-// Same trick as BlurText's `blurtext-settled`: motion leaves inline
-// `filter: blur(0px)` / `translateY(0)` on every word, each holding a
-// compositing layer that degrades text antialiasing — clear them once done.
 const textSettled = ref(false)
 
-// ── One-shot video ───────────────────────────────────────────────────────────
-// The photo slot plays /videos/beep.mp4 once, starting the moment the section
-// reaches the middle of the screen. The -50% rootMargin collapses the IO's
-// viewport to its horizontal centre line, so "intersecting" means exactly
-// "the section straddles mid-screen". The image stays layered underneath as
-// the frame shown until the video has data (and forever on reduced-motion).
 const sectionEl = ref<HTMLElement | null>(null)
 const videoEl = ref<HTMLVideoElement | null>(null)
 let videoPlayed = false
@@ -76,9 +54,6 @@ onMounted(() => {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
       const v = videoEl.value
       if (!v) return
-      // Set the property, not just the attribute: the `muted` content attribute
-      // only applies at element creation, and autoplay policy needs the real
-      // property true at play() time.
       v.muted = true
       v.play().catch(() => {})
     },
@@ -116,8 +91,6 @@ onBeforeUnmount(() => videoIo?.disconnect())
         />
       </div>
 
-      <!-- Text column: wordmark + paragraph on top, QR card at the bottom of a
-           396px band vertically centred on the stage. -->
       <div class="beep2-col">
         <div class="beep2-copy">
           <MotionReveal :y="32">
@@ -144,8 +117,14 @@ onBeforeUnmount(() => videoIo?.disconnect())
 
         <div class="beep2-qr">
           <MotionReveal :y="48" :delay="0.15">
-            <span class="beep2-qr-card">
-              <img src="/images/home/beep-qr-v2.png" alt="" class="beep2-qr-img">
+            <span class="beep2-qr-row">
+              <span class="beep2-qr-card">
+                <img src="/images/home/beep-qr-v2.png" alt="" class="beep2-qr-img">
+              </span>
+              <span class="beep2-qr-stores">
+                <img src="/images/home/beep-playstore.svg" alt="Google Play" class="beep2-store beep2-store--play">
+                <img src="/images/home/beep-apple-dark.svg" alt="App Store" class="beep2-store beep2-store--apple">
+              </span>
             </span>
           </MotionReveal>
           <BlurText
@@ -163,7 +142,6 @@ onBeforeUnmount(() => videoIo?.disconnect())
 </template>
 
 <style scoped>
-/* 1512×607 stage; cqw resolves against the stage width (=1512px at full size). */
 .beep2-stage {
   position: relative;
   width: 100%;
@@ -173,10 +151,8 @@ onBeforeUnmount(() => videoIo?.disconnect())
   container-type: inline-size;
 }
 
-/* Glow — outer circle box: d 1532.12 (101.33cqw) centred at 94.08% / 64.01% */
 .beep2-glow {
   position: absolute;
-  /* Tracks the photo's gutter shift so the circles stay centred behind it. */
   left: calc(94.08% + max(0px, (100vw - 1512px) / 2));
   top: 64.01%;
   width: 101.33cqw;
@@ -193,14 +169,6 @@ onBeforeUnmount(() => videoIo?.disconnect())
   max-width: none;
   transform: translate(-50%, -50%);
 }
-
-/* Photo — right-anchored, w 538.6/1512, spans y -153.9 → 653.9 of 607.
-   `right` compensates for the stage's centering gutter: above 1512px the stage
-   stops short of the screen edge, and a photo pinned to the STAGE edge leaves
-   a strip of empty panel to its right — the design keeps it flush with the
-   frame edge, so shift it right by the gutter width ((100vw - 1512) / 2).
-   100vw includes the scrollbar, so this can overshoot by ~15px; the section's
-   overflow-hidden clips that sliver of the photo, which is already a crop. */
 .beep2-person {
   position: absolute;
   right: min(0px, calc((1512px - 100vw) / 2));
@@ -215,14 +183,10 @@ onBeforeUnmount(() => videoIo?.disconnect())
   height: 100%;
   object-fit: cover;
 }
-/* Overlays the image in the same box; transparent until it has frames. */
 .beep2-person-video {
   position: absolute;
   inset: 0;
 }
-
-/* Text column — left 159/1512, a 396px (65.24%) band centred vertically,
-   wordmark+copy at the top, QR card pushed to its bottom. */
 .beep2-col {
   position: absolute;
   left: 10.516%;
@@ -259,19 +223,37 @@ onBeforeUnmount(() => videoIo?.disconnect())
 .beep2-text-lead {
   font-weight: 700;
 }
-/* Same as BlurText's .blurtext-settled: release the per-word layers. */
 .beep2-text--settled > :deep(span) {
   filter: none !important;
   transform: none !important;
   will-change: auto !important;
 }
 
-/* QR block — 177px card, white, r12, caption 20px @ #25403f/50 */
 .beep2-qr {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: start;
   gap: 0.2646cqw; /* 4px */
+}
+.beep2-qr-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9259cqw; /* 14px */
+}
+.beep2-qr-stores {
+  display: flex;
+  flex-direction: column;
+  gap: 1.0582cqw; /* 16px */
+}
+.beep2-store {
+  display: block;
+  height: 2.6455cqw; /* 40px */
+}
+.beep2-store--play {
+  width: 2.3148cqw; /* 35px — 14:16 */
+}
+.beep2-store--apple {
+  width: 2.1495cqw; /* 32.5px — 13:16 */
 }
 .beep2-qr-card {
   display: block;
@@ -285,16 +267,16 @@ onBeforeUnmount(() => videoIo?.disconnect())
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Figma: the QR art fills the card edge-to-edge */
+  object-fit: cover;
 }
 .beep2-qr-cap {
   font-weight: 300;
   font-size: 1.3228cqw; /* 20px */
   line-height: 1.3228cqw;
   color: rgba(37, 64, 63, 0.5);
+  padding-left: 30px;
 }
 
-/* ── Mobile / tablet (<1024px): stacked flow, px type, stage layers rehomed ── */
 @media (max-width: 1023.98px) {
   .beep2-stage {
     aspect-ratio: auto;
@@ -333,12 +315,25 @@ onBeforeUnmount(() => videoIo?.disconnect())
     height: 11.625rem;
     border-radius: 0.75rem;
   }
+  .beep2-qr-row {
+    gap: 0.875rem;
+  }
+  .beep2-qr-stores {
+    gap: 1rem;
+  }
+  .beep2-store {
+    height: 2.5rem; /* 40px */
+  }
+  .beep2-store--play {
+    width: 2.1875rem; /* 35px */
+  }
+  .beep2-store--apple {
+    width: 2.03125rem; /* 32.5px */
+  }
   .beep2-qr-cap {
     font-size: 1.125rem;
     line-height: 1.25rem;
   }
-  /* Photo becomes an in-flow banner, lime glow dropped with the stage.
-     `relative`, not `static`: the video overlay anchors to this box. */
   .beep2-person {
     position: relative;
     order: 5;

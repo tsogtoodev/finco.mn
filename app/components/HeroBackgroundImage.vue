@@ -1,7 +1,4 @@
 <script setup lang="ts">
-// Full-bleed hero background — fades/zooms in once the image has loaded so the
-// entrance animation never finishes before pixels are ready. Toggles `.is-revealed`
-// on the wrapper (see `.hero-image-reveal` in main.css).
 const props = withDefaults(
   defineProps<{
     src: string

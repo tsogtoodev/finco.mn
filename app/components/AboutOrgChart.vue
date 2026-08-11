@@ -1,25 +1,12 @@
 <script setup lang="ts">
-// Organisational structure (Figma 238:8004) — ТУЗ → Гүйцэтгэх захирал → 5 depts.
-// Desktop: HTML pills positioned in a 1440×450 coordinate space with an SVG
-// indigo→teal gradient bezier-connector overlay. The figure is a CSS container
-// (`container-type: inline-size`) and every pill metric is sized in `cqw`, so
-// text, padding and radii scale with the diagram exactly as in Figma — keeping
-// each pill anchored on its true 1440-space coordinate at any viewport width.
-// Mobile: a stacked, semantic nested tree. Real text throughout — never an image.
-// Entrance uses the CSS `.hero-rise` stagger (not motion-v) so this below-the-
-// fold section is never stranded at opacity:0 on SSR.
 import type { AboutContent } from '~/composables/useAboutContent'
 
 const props = defineProps<{ org: AboutContent['org'] }>()
 
-// The diagram's shared coordinate space (the Figma frame is 1440 wide × 450 tall).
 const VB = { w: 1440, h: 450 }
 const pctX = (v: number) => `${(v / VB.w) * 100}%`
 const pctY = (v: number) => `${(v / VB.h) * 100}%`
 
-// Departments, in data order, each anchored to the pill edge its connector meets:
-// the left column is right-aligned at x=472, the right column left-aligned at
-// x=968 (both 248px out from the 720 centre line); the centre dept is centred.
 const TX = { right: '-100%', left: '0%', center: '-50%' } as const
 type Anchor = keyof typeof TX
 const depts = computed(() =>
@@ -39,9 +26,6 @@ const nodeStyle = (x: number, y: number, anchor: Anchor) => ({
   transform: `translate(${TX[anchor]}, -50%)`,
 })
 
-// Connector paths (CEO edges → each node), tuned to the Figma curve geometry.
-// `g` selects a gradient oriented along the path so it reads indigo at the
-// interior end and teal at the department end.
 const connectors = [
   { d: 'M720,121 L720,190', g: 'oc-root' }, // ТУЗ → CEO
   { d: 'M720,250 L720,332', g: 'oc-center' }, // CEO → centre dept
@@ -51,8 +35,6 @@ const connectors = [
   { d: 'M797,250 C797,330 900,358 968,358', g: 'oc-lr' }, // CEO → low-right
 ]
 
-// Iridescent glow rings behind the pills (pink → lavender → periwinkle, teal
-// pooling at the foot) — matches the blurred wisp baked into the Figma design.
 const ceoGlow =
   'background: radial-gradient(115% 82% at 60% 122%, rgba(74,210,196,0.6) 0%, rgba(74,210,196,0) 56%), linear-gradient(100deg, #ffa7e6 0%, #dcc0f4 36%, #cdcdf7 55%, #b2cff3 100%)'
 const tuzGlow = 'background: linear-gradient(125deg, #ffa6e9 0%, #b89bf1 55%, #8784ea 100%)'
@@ -61,14 +43,14 @@ const tuzGlow = 'background: linear-gradient(125deg, #ffa6e9 0%, #b89bf1 55%, #8
 <template>
   <section class="bg-white">
     <div class="mx-auto max-w-7xl px-4 py-20 sm:py-24">
-      <div class="hero-rise flex max-w-[1012px] flex-col gap-6">
+      <div class="hero-rise flex max-w-[1012px] flex-col gap-[8px]">
         <h2
-          class="max-w-[750px] font-display text-3xl font-normal leading-tight text-[#141414] sm:text-4xl lg:text-[36px] lg:leading-[44px]"
+          class="max-w-[750px] font-display text-3xl font-normal leading-tight text-[#141414] sm:text-[28px] lg:text-[28px] lg:leading-[44px]"
         >
           {{ org.headingLead }}<span class="text-[#5457dc]">{{ org.headingAccent }}</span>
         </h2>
         <p
-          class="text-lg font-extralight leading-[26px] text-[rgba(0,0,0,0.6)] sm:text-xl lg:text-[18px]"
+          class="text-lg font-extralight leading-[26px] text-[rgba(0,0,0,0.6)] sm:text-[18px] lg:text-[18px]"
         >
           {{ org.subheading }}
         </p>

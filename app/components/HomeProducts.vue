@@ -49,13 +49,10 @@ const subtextStart = computed(
 </script>
 
 <template>
-  <!-- `id` is load-bearing: index.vue pins HomeStats `sticky top-0` and scrolls
-       this opaque panel over it, so the stats Spline scene reads this element to
-       know when it is completely hidden and can stop rendering. -->
   <section id="home-products" class="bg-[#fdfffe] py-24 lg:py-32">
     <div class="mx-auto w-full max-w-[1200px] px-6">
-      <div class="flex flex-col items-center gap-3 text-center">
-        <h2 class="flex w-full flex-wrap items-baseline justify-center gap-x-[0.28em] font-display text-3xl font-bold leading-tight text-[#231f20] sm:text-4xl">
+      <div class="flex flex-col items-center gap-[8px] text-center">
+        <h2 class="flex w-full flex-wrap items-baseline justify-center gap-x-[0.28em] font-display text-3xl font-bold leading-tight text-[#231f20] sm:text-[28px]">
           <BlurText
             :key="audience"
             :text="heading.trim()"
@@ -83,7 +80,7 @@ const subtextStart = computed(
           animate-by="words"
           :delay="18"
           :start-delay="subtextStart"
-          class="w-full justify-center text-base font-light leading-relaxed text-[#231f20]/60"
+          class="w-full justify-center text-base font-light leading-relaxed text-[#231f20]/60 sm:text-[18px]"
         />
 
         <MotionReveal :delay="0.2" class="mt-9">

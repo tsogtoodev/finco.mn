@@ -15,25 +15,10 @@ const DOT_COLORS = ['#dddbf7', '#ceccf4', '#c1bef1', '#b5b1ee', '#aaa6ec', '#a19
 const rowTint = (i: number) => ROW_TINTS[Math.min(i, ROW_TINTS.length - 1)]
 const dotColor = (i: number) => DOT_COLORS[Math.min(i, DOT_COLORS.length - 1)]
 
-// ——— Smooth expanding rows ———
-//
-// Every row after the first starts translated up by its distance to row 0, so
-// the whole list sits stacked behind the first row (descending z-index keeps
-// row 0 on top). As the block scrolls into view the rows slide down into their
-// natural flex positions — lower rows travel further in the same window, so
-// the stack fans open smoothly and every row lands at once.
-//
-// The progress window is tied to the viewport bottom: it opens when the 25%
-// mark of the block crosses it and closes when the 112.5% mark does, so the
-// unfold completes just as the block fills the screen. No pinning.
-
 const blockEl = ref<HTMLElement | null>(null)
 
-// Quadratic in-out, applied to the scroll progress before mapping to offsets.
 const easeInOutQuad = (t: number) => (t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t))
 
-// Exponential catch-up rate (1/s) between the raw scroll progress and the
-// applied one — the "scrub" that keeps the unfold buttery on top of Lenis.
 const SCRUB_RATE = 5
 
 let current = 0
@@ -89,7 +74,6 @@ function sync() {
 const { start } = useScrollSync(sync)
 
 function jumpToScrollPosition() {
-  // Land on the current scroll position without animating into it.
   current = target = computeTarget()
   apply(current)
 }
@@ -98,8 +82,6 @@ onMounted(() => {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   jumpToScrollPosition()
   start()
-  // The milestone rows can render after mount (async page content) — re-apply
-  // once they exist so they start stacked instead of waiting for a scroll.
   watch(() => props.milestones, () => nextTick(jumpToScrollPosition), { flush: 'post' })
 })
 
@@ -111,8 +93,8 @@ onBeforeUnmount(() => {
 <template>
   <section class="relative overflow-hidden bg-[#fbfbfb]">
     <div class="mx-auto max-w-[1200px] px-4 pt-12 sm:pt-[120px]">
-      <MotionReveal class="flex max-w-5xl flex-col gap-[12px]">
-        <h2 class="font-display text-3xl font-normal text-[#141414] sm:text-[36px] leading-normal">
+      <MotionReveal class="flex max-w-5xl flex-col gap-[8px]">
+        <h2 class="font-display text-3xl font-normal text-[#141414] sm:text-[28px] leading-normal">
           {{ headingLead }}<span class="text-[#4c41d8]">{{ headingAccent }}</span>
         </h2>
         <p class="max-w-[850px] text-lg font-extralight leading-[24px] text-[rgba(0,0,0,0.6)] sm:text-[18px]">
@@ -121,8 +103,6 @@ onBeforeUnmount(() => {
       </MotionReveal>
     </div>
 
-    <!-- The block keeps its full height while rows are stacked; the last tint
-         shows through beneath rows that haven't slid into place yet. -->
     <div
       ref="blockEl"
       class="relative mt-10 overflow-hidden sm:mt-16"

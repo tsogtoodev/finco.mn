@@ -35,8 +35,8 @@ const items = computed(() =>
 <template>
   <section class="bg-white py-24 lg:py-28 lg:pt-[80px]">
     <div class="mx-auto w-full max-w-[1200px] px-6">
-      <MotionReveal class="flex items-center justify-between gap-4">
-        <h2 class="font-display text-2xl font-normal leading-tight text-[#141414] sm:text-[32px]">
+      <MotionReveal class="flex items-center justify-between gap-[8px]">
+        <h2 class="font-display text-2xl font-normal leading-tight text-[#141414] sm:text-[28px]">
           {{ t('nav.news') }}
         </h2>
         <AppButton to="/news" variant="accent" pill arrow class="shrink-0">

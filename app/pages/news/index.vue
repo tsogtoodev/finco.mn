@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-// News index rebuilt to Figma 663:16826: solid header over a light centered
-// hero, "Онцлох мэдээлэл" three-card grid on a #fbfbfb band, then a paginated
-// "Шинээр нэмэгдсэн" list of date/title/summary rows with 368×184 thumbnails.
 const { locale, t } = useI18n()
 const localePath = useLocalePath()
 
@@ -22,15 +19,10 @@ const { data: news } = await useAsyncData(
 
 useSeoMeta({ title: () => t('nav.news') })
 
-// Top three latest are the featured cards. The paginated list below is the FULL
-// feed, newest first — it must not be `news.slice(3)`: a freshly published post
-// is always among the three newest, so excluding them hid every new article
-// from "Шинээр нэмэгдсэн". Featured is a highlight of the list, not a slice out
-// of it, so the overlap is intentional.
 const featured = computed(() => news.value?.slice(0, 3) ?? [])
 const listAll = computed(() => news.value ?? [])
 
-const PAGE_SIZE = 5 // rows per page (Figma shows five)
+const PAGE_SIZE = 5
 const page = ref(1)
 const totalPages = computed(() => Math.max(1, Math.ceil(listAll.value.length / PAGE_SIZE)))
 const pageItems = computed(() =>
@@ -45,11 +37,6 @@ function goTo(p: number) {
   listEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-// Staggered reveals (same .carousel-reveal pattern as the carousels): SSR/no-JS
-// renders everything visible; after hydration the featured cards and list rows
-// hide (`hydrated`) until their section scrolls into view, then rise one by one
-// via inline animation-delay. Pagination re-staggers for free — `listRevealed`
-// stays true and the fresh keyed rows replay the mount animation.
 const featuredEl = ref<HTMLElement | null>(null)
 const hydrated = ref(false)
 const featuredRevealed = ref(false)
@@ -83,7 +70,6 @@ onBeforeUnmount(() => {
   revealObserver?.disconnect()
 })
 
-// Windowed page numbers with ellipsis — mirrors the Figma state (1‥6 … 12).
 const pageNumbers = computed<(number | '…')[]>(() => {
   const n = totalPages.value
   const c = page.value
@@ -93,7 +79,6 @@ const pageNumbers = computed<(number | '…')[]>(() => {
   return [1, '…', c - 1, c, c + 1, '…', n]
 })
 
-// "2026.12.22" — dotted date like the design.
 function fmtDate(d?: string) {
   if (!d) return ''
   const date = new Date(d)
@@ -108,9 +93,6 @@ function fmtDate(d?: string) {
 
 <template>
   <div class="bg-white">
-    <!-- Hero — BlurText word-reveal like every other page hero. The two-tone
-         title is two inline BlurText spans; the accent one starts one word
-         later so the stagger reads as a single phrase. -->
     <section class="px-6 py-14 sm:py-20">
       <div class="mx-auto flex w-full max-w-[1200px] flex-col items-center gap-4 text-center">
         <h1 class="flex flex-wrap justify-center gap-x-[0.3em] font-display text-[32px] font-semibold tracking-[0.01em] text-black/80 sm:text-[40px]">
@@ -138,7 +120,7 @@ function fmtDate(d?: string) {
     <!-- Featured -->
     <section v-if="featured.length" ref="featuredEl" class="news-featured px-6 py-14 sm:py-20">
       <div class="mx-auto flex w-full max-w-[1200px] flex-col gap-8 sm:gap-12">
-        <h2 class="font-display text-2xl font-medium tracking-[0.01em] text-black/80 sm:text-[32px]">
+        <h2 class="font-display text-2xl font-medium tracking-[0.01em] text-black/80 sm:text-[28px]">
           {{ t('newsPage.featured') }}
         </h2>
         <div class="grid gap-8 sm:grid-cols-2 sm:gap-12 lg:grid-cols-3">
@@ -157,14 +139,12 @@ function fmtDate(d?: string) {
     <!-- Recently added -->
     <section v-if="listAll.length" ref="listEl" class="scroll-mt-24 px-6 pb-20 pt-14 sm:pb-30 sm:pt-20">
       <div class="mx-auto flex w-full max-w-[1200px] flex-col">
-        <h2 class="font-display text-2xl font-medium tracking-[0.01em] text-[#323232] sm:text-[32px]">
+        <h2 class="font-display text-2xl font-medium tracking-[0.01em] text-[#323232] sm:text-[28px]">
           {{ t('newsPage.recent') }}
         </h2>
 
         <ul class="mt-8 flex flex-col divide-y divide-black/10">
           <li v-for="(n, i) in pageItems" :key="n.slug" class="py-8 first:pt-0">
-            <!-- Reveal classes live on the link, not the <li>, so the divider
-                 borders stay put while the row content rises. -->
             <NuxtLink
               :to="localePath(`/news/${n.slug}`)"
               class="group flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-8"

@@ -91,7 +91,7 @@ function goBack() {
           <div
             v-for="s in statItems"
             :key="s.key"
-            class="flex min-w-0 flex-col items-center justify-center gap-3 text-balance rounded-[12px] border border-white/20 bg-white/10 p-3 text-center backdrop-blur-[20px]"
+            class="flex min-w-0 flex-col items-center justify-center gap-[8px] text-balance rounded-[12px] border border-white/20 bg-white/10 p-3 text-center backdrop-blur-[20px]"
           >
             <dt class="text-base font-extralight leading-6 text-white/80">{{ t(`loanTerms.${s.key}`) }}:</dt>
             <dd class="text-xl font-bold leading-6 text-white lg:text-2xl">{{ s.value }}</dd>

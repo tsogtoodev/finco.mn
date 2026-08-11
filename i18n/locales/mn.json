@@ -279,7 +279,7 @@
       "name": "Нэр",
       "namePlaceholder": "Таны нэр",
       "email": "И-мэйл",
-      "emailPlaceholder": "tanii{'@'}email.mn",
+      "emailPlaceholder": "user{'@'}example.com",
       "phone": "Утасны дугаар",
       "phonePlaceholder": "+976 ХХХХ ХХХХ",
       "message": "Зурвас",

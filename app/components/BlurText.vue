@@ -1,13 +1,4 @@
 <script setup lang="ts">
-// Vue 3 + motion-v port of the React Bits <BlurText /> component
-// (https://reactbits.dev — TypeScript + CSS variant). Reveals text one word
-// (or letter) at a time with a blur → sharp, fade, and slide as it scrolls into
-// view. Each segment is staggered by `delay` ms.
-//
-// Vue notes vs. the React original:
-//   • `className` is dropped — pass `class` directly; Vue's attribute
-//     fallthrough lands it on the root <p>.
-//   • `onAnimationComplete` becomes the `@animation-complete` emit.
 import { useInView } from 'motion-v'
 
 type Keyframe = Record<string, string | number>
@@ -82,8 +73,6 @@ const defaultTo = computed<Keyframe[]>(() => [
 const fromSnapshot = computed<Keyframe>(() => props.animationFrom ?? defaultFrom.value)
 const toSnapshots = computed<Keyframe[]>(() => props.animationTo ?? defaultTo.value)
 
-// Merge the `from` keyframe and every `to` step into per-property value arrays,
-// e.g. { opacity: [0, 0.5, 1], y: [-50, 5, 0] } — what motion animates through.
 const animateKeyframes = computed<Record<string, Array<string | number>>>(() => {
   const from = fromSnapshot.value
   const steps = toSnapshots.value
@@ -112,8 +101,6 @@ function spanTransition(index: number) {
   }
 }
 
-// A space collapses to a non-breaking space; word mode also appends one after
-// each non-final word so the reflowed words keep their gaps.
 function displaySegment(segment: string, index: number): string {
   const base = segment === ' ' ? ' ' : segment
   const trailing =
@@ -121,13 +108,6 @@ function displaySegment(segment: string, index: number): string {
   return base + trailing
 }
 
-// motion-v writes each keyframe as an INLINE style, so when the reveal finishes
-// every word keeps `filter: blur(0px)` and `transform: translateY(0px)` — neither
-// of which is the same as having none. Both keep the element rasterised in its own
-// compositing layer, which drops subpixel antialiasing to grayscale. Clearing them
-// hands the text back to normal glyph rendering once there is nothing left to
-// animate, and releases one layer per word (this component previously janked
-// scroll site-wide by holding 68 of them on /about).
 const settled = ref(false)
 function handleComplete() {
   settled.value = true
@@ -142,10 +122,6 @@ function handleComplete() {
     :class="settled ? 'blurtext-settled' : undefined"
     style="display: flex; flex-wrap: wrap"
   >
-    <!-- No static `will-change` on the spans: it used to be set on EVERY word and
-         was never removed, permanently promoting one compositing layer per word
-         (68 of them on /about alone) and janking scroll site-wide. motion-v adds
-         and drops will-change around the animation itself. -->
     <Motion
       v-for="(segment, index) in segments"
       :key="index"
@@ -160,8 +136,6 @@ function handleComplete() {
 </template>
 
 <style scoped>
-/* `!important` because motion-v's values are inline. The last word completing
-   means every earlier word already has, so one flag on the root is enough. */
 .blurtext-settled > :deep(span) {
   filter: none !important;
   transform: none !important;

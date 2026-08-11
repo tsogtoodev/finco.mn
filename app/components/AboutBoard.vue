@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Board of directors (Figma 1:12404) — heading + member rows with dividers.
 import type { AboutContent } from '~/composables/useAboutContent'
 
 defineProps<{ board: AboutContent['board'] }>()
@@ -8,15 +7,12 @@ defineProps<{ board: AboutContent['board'] }>()
 <template>
   <section class="bg-[#fbfbfb]">
     <div class="mx-auto max-w-7xl px-4 py-[80px]">
-      <MotionReveal>
-        <h2 class="font-display text-3xl font-normal leading-tight text-[#141414] sm:text-4xl">
+      <MotionReveal class="flex flex-col gap-[8px]">
+        <h2 class="font-display text-3xl font-normal leading-tight text-[#141414] sm:text-[28px]">
           {{ board.headingLead }}<span class="text-[#4c41d8]">{{ board.headingAccent }}</span>
         </h2>
       </MotionReveal>
 
-      <!-- Rows cascade in once the list reaches the vertical center of the
-           viewport. A parent Motion drives the stagger; each child inherits
-           the hidden/visible variant so they reveal in DOM order. -->
       <Motion
         as="ul"
         class="mt-12 lg:mt-16"

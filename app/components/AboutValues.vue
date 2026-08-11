@@ -1,15 +1,4 @@
 <script setup lang="ts">
-// Values section (Figma 571:6515) — heading + two-column explorer: the live
-// teal cube-cluster Spline scene on the left (raster fallback while it loads),
-// joined by a dashed connector spine with five numbered diamond markers to five
-// selectable value cards on the right.
-// The active card is white with a soft shadow and teal semibold title; its marker
-// lights up. Clicking a card or marker activates it; non-active cards tint on
-// hover (Figma's `hover` annotation). The cluster + spine are desktop-only (lg+);
-// tablet (md–lg) uses a 2+3 card grid with the cluster in the bottom-right
-// (Figma 462:9281); below md the cards simply stack. Entrance uses the CSS
-// `.hero-rise` stagger rather than motion-v so below-the-fold content is never
-// stranded at opacity:0 on SSR (see app/assets/css/main.css).
 import type { ValueItem } from '~/composables/useAboutContent'
 import cluster from '~/assets/images/fig-76f105c432.png'
 
@@ -22,16 +11,10 @@ defineProps<{
 
 const active = ref(0)
 
-// Live cluster on capable devices, the matching raster everywhere else.
 const splineEnabled = useSplineEnabled()
 
-// Marker rows are evenly spaced down the 568px spine (132.1px between centres),
-// independent of the cards' heights — matches Figma's fixed grid.
 const markerTop = (i: number) => `${i * 110}px`
 
-// Highlighted connector route (viewBox space of the spine SVG): cluster branch →
-// vertical spine → the active marker's stub. Redrawn (and its draw-in animation
-// replayed via :key) whenever the selection changes.
 const SPINE_X = 153.695
 const STUB_X = 192.981
 const MARKER_YS = [1, 134.445, 265.207, 397.877, 529.413]
@@ -44,11 +27,11 @@ const routeD = computed(() => {
 <template>
   <section class="relative overflow-hidden bg-[#fafafe]">
     <div class="mx-auto max-w-7xl px-4 pb-20 pt-20 sm:pt-24 md:pb-40 md:pt-[80px] lg:pb-20 lg:pt-28 lg:px-0">
-      <div class="hero-rise relative z-[1] flex flex-col items-center gap-3 text-center">
-        <h2 class="max-w-[750px] font-display text-3xl font-medium leading-tight text-[#141414] sm:text-4xl md:text-[36px] md:leading-9 lg:text-[36px] lg:leading-9">
+      <div class="hero-rise relative z-[1] flex flex-col items-center gap-[8px] text-center">
+        <h2 class="max-w-[750px] font-display text-3xl font-medium leading-tight text-[#141414] sm:text-4xl md:text-[36px] md:leading-9 lg:text-[28px] lg:leading-9">
           {{ headingLead }}<span class="text-[#2de0c6]">{{ headingAccent }}</span>
         </h2>
-        <p class="max-w-[1012px] text-lg font-extralight leading-[26px] text-[rgba(0,0,0,0.6)] sm:text-xl md:text-[20px] md:leading-7 lg:text-[20px] lg:leading-7">
+        <p class="max-w-[1012px] text-lg font-extralight leading-[26px] text-[rgba(0,0,0,0.6)] sm:text-xl md:text-[20px] md:leading-7 lg:text-[18px] lg:leading-7">
           {{ subheading }}
         </p>
       </div>

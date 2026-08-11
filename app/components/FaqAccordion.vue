@@ -9,8 +9,8 @@ const { t } = useI18n()
 <template>
   <section v-if="items?.length" class="bg-white px-6 py-[80px]">
     <div class="mx-auto flex w-full max-w-[1240px] flex-col gap-10 sm:gap-16">
-      <MotionReveal>
-        <h2 class="text-center font-display text-3xl font-normal leading-tight text-black sm:text-4xl">
+      <MotionReveal class="flex flex-col gap-[8px]">
+        <h2 class="text-center font-display text-3xl font-normal leading-tight text-black sm:text-[28px]">
           {{ heading || t('faq.heading') }}
         </h2>
       </MotionReveal>

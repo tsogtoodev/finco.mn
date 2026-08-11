@@ -25,7 +25,10 @@ const BEEP_URL = 'https://beep.finco.mn'
 const qrOpen = ref(false)
 const downloadBtn = ref<HTMLElement | null>(null)
 const qrPop = ref<HTMLElement | null>(null)
-const POP_W = 184 // px; matches the popover's fixed width for centering math
+// px; matches the popover's fixed width for centering math — the popover has no
+// intrinsic width, it is set from this. 14px padding + 156px QR (140 + its 8px
+// content-box quiet zone) + 12px gap + the ~23px store column + 14px padding.
+const POP_W = 220
 const qrStyle = ref<Record<string, string>>({})
 // Hover-intent timers so the button↔popover gap doesn't flicker it closed.
 let qrOpenTimer: ReturnType<typeof setTimeout> | undefined
@@ -244,7 +247,13 @@ onBeforeUnmount(() => {
           @mouseleave="scheduleQrClose"
         >
           <span class="beep-qr-inner">
-            <img src="/images/home/beep-qr.svg" alt="" width="140" height="140" class="beep-qr-img">
+            <span class="beep-qr-row">
+              <img src="/images/home/beep-qr.svg" alt="" width="140" height="140" class="beep-qr-img">
+              <span class="beep-qr-stores">
+                <img src="/images/home/beep-playstore.svg" alt="Google Play" class="beep-qr-store beep-qr-store--play">
+                <img src="/images/home/beep-apple.svg" alt="App Store" class="beep-qr-store beep-qr-store--apple">
+              </span>
+            </span>
             <span class="beep-qr-cap">{{ t('home.beep.scanToDownload') }}</span>
           </span>
           <span class="beep-qr-caret" aria-hidden="true" />
@@ -543,6 +552,32 @@ onBeforeUnmount(() => {
   border-radius: 10px;
   background: #fff;
   box-sizing: content-box; /* keep the QR crisp at 140px + an 8px quiet zone */
+}
+/* QR + store marks side by side. The two SVGs are authored
+   `preserveAspectRatio="none"`, so BOTH axes have to be set from the viewBox
+   ratio or they skew — the same reason .beep-store-icon--play/--apple carry
+   explicit widths rather than `width: auto`. Plain px here, not cqw: this
+   popover is teleported to <body> and so sits outside the card's container
+   context. Widening it also means POP_W had to grow (see the constant). */
+.beep-qr-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.beep-qr-stores {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.beep-qr-store {
+  display: block;
+  height: 26px;
+}
+.beep-qr-store--play {
+  width: 22.75px; /* 14:16 */
+}
+.beep-qr-store--apple {
+  width: 21.125px; /* 13:16 */
 }
 .beep-qr-cap {
   max-width: 156px;

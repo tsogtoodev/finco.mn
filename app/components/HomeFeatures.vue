@@ -22,11 +22,11 @@ const cards = computed(() => {
 <template>
   <section class="bg-[#fcfcff] py-[60px] lg:pb-[120px]">
     <div class="mx-auto w-full max-w-[1200px] px-6">
-      <MotionReveal class="flex flex-col items-center gap-y-[16px] text-center">
-        <h2 class="font-display text-3xl font-medium leading-tight text-[#141414] sm:text-[32px]">
+      <MotionReveal class="flex flex-col items-center gap-[8px] text-center">
+        <h2 class="font-display text-3xl font-medium leading-tight text-[#141414] sm:text-[28px]">
           {{ heading }}<span class="text-accent">{{ headingAccent }}</span>
         </h2>
-        <p class="max-w-[702px] text-lg font-extralight leading-7 tracking-[0.01em] text-black/60">
+        <p class="max-w-[702px] text-lg font-extralight leading-7 tracking-[0.01em] text-black/60 sm:text-[18px]">
           {{ subtext }}
         </p>
       </MotionReveal>
