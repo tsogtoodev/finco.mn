@@ -43,7 +43,7 @@ const bodyStart = computed(
     <div
       v-if="splineEnabled"
       aria-hidden="true"
-      class="absolute bottom-0 left-1/2 -z-10 aspect-video -translate-x-1/2"
+      class="absolute bottom-0 left-1/2 -z-10 aspect-square -translate-x-1/2"
       style="width: max(560px, 65.1vw)"
     >
       <SplineScene

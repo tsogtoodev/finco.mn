@@ -41,15 +41,12 @@ function goBack() {
       img-class="size-full object-cover"
       preload
     />
-    <!-- Diagonal scrim (Figma gradient fill: 250.94deg, 25% black → solid black) -->
     <div
       aria-hidden="true"
       class="absolute inset-0 -z-10"
       style="background: linear-gradient(250.94deg, rgba(0, 0, 0, 0.25) 7.446%, rgb(0, 0, 0) 95.599%)"
     />
 
-    <!-- 1200px content column (max-w 1248 − 2×24 padding), matching the design's
-         360px left edge at 1920. -->
     <div
       class="relative mx-auto w-full max-w-[1248px] px-6 lg:px-0 pb-10 pt-[100px] sm:pb-12 sm:pt-[112px] lg:pb-[49px] lg:pt-[100px]"
     >
@@ -86,13 +83,6 @@ function goBack() {
           />
         </div>
 
-        <!-- Stat boxes break 32px past the column on each side (design: a 1264
-             row centred on the 1200 column), so the three 400px cards land
-             exactly. Gated at xl, not lg: the break-out only fits once the
-             viewport clears 1264px, otherwise the section clips the edges.
-             blur-[40px] matches Figma's BACKGROUND_BLUR radius 40 1:1 — halving
-             it (the usual layer-blur conversion) leaves the photo readable
-             through the card, which is not what the design shows. -->
         <dl
           v-if="statItems.length"
           class="hero-rise-glass grid w-full grid-cols-1 gap-4 md:grid-cols-3 lg:gap-8"
@@ -104,8 +94,6 @@ function goBack() {
             class="flex min-w-0 flex-col items-center justify-center gap-3 text-balance rounded-[12px] border border-white/20 bg-white/10 p-3 text-center backdrop-blur-[20px]"
           >
             <dt class="text-base font-extralight leading-6 text-white/80">{{ t(`loanTerms.${s.key}`) }}:</dt>
-            <!-- 24px is the design's size against a 400px card; below lg the
-                 cards are much narrower, so the value steps down to stay on one line -->
             <dd class="text-xl font-bold leading-6 text-white lg:text-2xl">{{ s.value }}</dd>
           </div>
         </dl>
