@@ -6,7 +6,7 @@ Unfinished TODOS
 [X] CDN deer zurag oruulahleer het ih compress hiij bgag boliulah, arai jhon compress hiideg bolgoh
 [X] CMS deer site nii tohirgoonii collection uusged teren deer contact medeelel-g oruuldag
 [X] CMS deer content body dotor husnegt oruulj bolohgui bgag bugdend ni bolgoj zasah
-[ ] CMS-n products deer shineer tab oruulah leer site deer garch irehgui bga
+[X] CMS-n products deer shineer tab oruulah leer site deer garch irehgui bga
 [X] CMS-n home hero images are not controllable by the CMS
 [X] CMS-n products-n tab content dotor table-g column header-gui oruulahler bolku bgag zasah
 [X] CMS-n products-n tab content dotor list-r yum oruulhad bolku bgag zasah

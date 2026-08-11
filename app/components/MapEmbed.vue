@@ -24,7 +24,7 @@ const props = withDefaults(
   }>(),
   {
     pin: () => ({ x: 0.5, y: 0.5 }),
-    pinScene: 'https://prod.spline.design/jz0xkk2dguy2XY4p/scene.splinecode?timestamp=20260810040000',
+    pinScene: 'https://prod.spline.design/jz0xkk2dguy2XY4p/scene.splinecode?timestamp=20260812040000',
   },
 )
 
