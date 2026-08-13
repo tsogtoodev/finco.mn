@@ -1,15 +1,3 @@
-// Allowlisted public CMS endpoint (plan §8). Only published content, only the
-// seven known collections, only locale + single-record lookups — arbitrary
-// Directus filters are rejected by construction.
-//
-// Caching lives on the published-data FUNCTION (60s + SWR), not the event
-// handler: cached event handlers strip request headers, which would blind the
-// handler to the preview cookie. The outer handler keeps the full event.
-//
-// Live preview (plan §7): a valid sealed preview cookie — scoped to one
-// collection+item — switches THAT item to a draft/version fetch via the
-// preview token, never touching the shared cache, with no-store/noindex.
-
 const LOCALES = new Set(['mn', 'en'])
 
 const getPublished = defineCachedFunction(
@@ -29,10 +17,6 @@ const getPublished = defineCachedFunction(
   {
     name: 'cms',
     maxAge: 60,
-    // NO swr: on Cloudflare Workers the background revalidation is killed when
-    // the isolate suspends, so an swr entry can serve stale forever. A blocking
-    // refetch after 60s is one Directus roundtrip and keeps the ≤60s publish
-    // guarantee (plan §12). The revalidate webhook purges sooner than that.
     swr: false,
     getKey: (name, locale, single, limit) => `${name}:${locale}:${single ?? ''}:${limit}`,
   },
@@ -53,7 +37,6 @@ export default defineEventHandler(async (event) => {
   const single = q[cfg.param] ? String(q[cfg.param]) : null
   const limit = Math.min(Number(q.limit) || 100, 100)
 
-  // Preview session (if any) applies only to its own collection.
   const preview = await getPreviewData(event)
   const previewHere = preview?.c === name ? preview : null
 
@@ -79,19 +62,14 @@ export default defineEventHandler(async (event) => {
     return row ? await cfg!.normalize(row, locale, cmsAssetUrl) : null
   }
 
-  // Single-record request for the previewed item -> draft/version fetch.
   if (single && previewHere && previewHere.s === single) {
     const item = await fetchPreviewItem()
     if (item) return item
-    // fall through to the published copy if the preview fetch failed
   }
 
   const items = await getPublished(name, locale, single, limit)
   if (single) return items[0] ?? null
 
-  // List request while previewing this collection: overlay the draft item so
-  // list pages (branches, news index, …) reflect the edit without exposing
-  // any OTHER draft.
   if (previewHere) {
     const draft = await fetchPreviewItem()
     if (draft) {

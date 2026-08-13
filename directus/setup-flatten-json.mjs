@@ -1,28 +1,4 @@
 #!/usr/bin/env node
-/**
- * Flatten the remaining raw-JSON editor fields into real form controls, so
- * editors never see a code editor. Companion to setup-about-restructure.mjs
- * (same lifecycle: create -> migrate+verify -> hide legacy -> --drop-legacy).
- *
- *   pages_translations   hero            -> hero_* fields in a "hero_group" (visible on non-about pages)
- *                        value_props     -> value_props_* + items repeater   (home_valueprops_group)
- *                        beep            -> beep_* inputs                    (home_beep_group)
- *                        fincobiz        -> fincobiz_* inputs                (home_fincobiz_group)
- *   products_translations loan_terms     -> loan_amount / loan_rate / loan_period
- *                        tabs            -> tabs_requirements repeater + tabs_other
- *                                           (tabs.info dropped: body always shadows it — DetailTabs prefers body)
- *   services_translations cta            -> cta_label / cta_to
- *   branches (base)      pin             -> pin_x / pin_y floats
- *   jobs_translations    requirements / responsibilities
- *                                        -> IN-PLACE repeaters: strings wrapped to {text} rows
- *                        application_sections
- *                                        -> interface-only change to a nested repeater (data shape already fits)
- *
- * Explode/assemble mappings are mirrored by scripts/directus-seed.mjs and
- * server/utils/cms-normalizers.ts — keep the three in sync.
- *
- * Usage:  DIRECTUS_URL=... DIRECTUS_TOKEN=... node directus/setup-flatten-json.mjs [--force] [--drop-legacy]
- */
 
 const BASE = (process.env.DIRECTUS_URL ?? 'https://cms.finco.design').replace(/\/$/, '')
 let token = process.env.DIRECTUS_TOKEN ?? null
@@ -58,7 +34,6 @@ function log(step, msg) {
   console.log(`  ${step === 'skip' ? '=' : '+'} ${msg}`)
 }
 
-// field builders (conventions from setup-phase2.mjs)
 const input = (field, opts = {}) => ({
   field,
   type: 'string',
@@ -121,19 +96,13 @@ const strip = (o) => {
 const linkObj = (label, to) => strip({ label, to })
 const wrapText = (arr) => arr?.map((s) => (typeof s === 'string' ? { text: s } : s)) ?? null
 const unwrapText = (arr) => arr?.map((x) => (typeof x === 'string' ? x : x?.text)).filter(Boolean)
-// stable stringify (sorted keys) for round-trip comparison
 const stable = (v) => JSON.stringify(v, (_, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort()) : x))
 
-// ---------------------------------------------------------------------------
-// Per-collection specs
-// ---------------------------------------------------------------------------
 const SPECS = [
   {
     collection: 'pages_translations',
     parent: 'pages',
     groups: [
-      // hero_group takes over the old hero field's visibility (non-about pages;
-      // conditions injected at runtime below, after page ids are resolved)
       group('hero_group', 'Page hero.', { sort: 10, start: 'open' }),
       group('home_valueprops_group', 'Value-prop bento block.', { group: 'home_group', sort: 34 }),
       group('home_beep_group', 'Beep showcase copy.', { group: 'home_group', sort: 35 }),
@@ -144,8 +113,6 @@ const SPECS = [
       input('hero_headline', { group: 'hero_group', sort: 2, width: 'full' }),
       input('hero_accent', { group: 'hero_group', sort: 3, note: 'Substring of the headline rendered in the accent colour.' }),
       text('hero_subheadline', { group: 'hero_group', sort: 4 }),
-      // NB: hero_image is NOT declared here — superseded by hero_image_file
-      // (setup-image-fields.mjs); declaring it would resurrect the column.
       input('hero_cta_label', { group: 'hero_group', sort: 6, note: 'Primary button text.' }),
       input('hero_cta_to', { group: 'hero_group', sort: 7, note: 'Primary button route, e.g. /products.' }),
       input('hero_secondary_cta_label', { group: 'hero_group', sort: 8, note: 'Secondary button text.' }),
@@ -161,8 +128,6 @@ const SPECS = [
       input('beep_expand_lead', { group: 'home_beep_group', sort: 3, width: 'full', note: 'Lead of the expanding headline.' }),
       input('beep_expand_rest', { group: 'home_beep_group', sort: 4, width: 'full', note: 'Rest of the expanding headline.' }),
       input('beep_teaser', { group: 'home_beep_group', sort: 5, width: 'full', note: 'Loyalty teaser under the info bar (may start with an emoji).' }),
-      // Store-badge label; the QR upload beside it is added by
-      // directus/setup-beep-download.mjs (which also back-fills both).
       input('beep_download_label', { group: 'home_beep_group', sort: 6, width: 'full', note: 'Label above the App Store / Google Play badges, e.g. "Апп татах:".' }),
 
       text('fincobiz_subtext', { group: 'home_fincobiz_group', sort: 1 }),
@@ -222,7 +187,6 @@ const SPECS = [
         cards: strip({ request: r.fincobiz_card_request, receivables: r.fincobiz_card_receivables, eligibility: r.fincobiz_card_eligibility }),
       }),
     }),
-    // hero.image is handled by setup-image-fields.mjs' relational field
     normalizeLegacy: (legacy) => {
       const view = {
         hero: legacy.hero ? strip({ ...legacy.hero, image: undefined }) : undefined,
@@ -239,16 +203,10 @@ const SPECS = [
       input('loan_amount', { sort: 60, note: 'Display string, e.g. "300 сая₮ хүртэл".' }),
       input('loan_rate', { sort: 61, note: 'Display string, e.g. "3.3%/сар".' }),
       input('loan_period', { sort: 62, note: 'Display string, e.g. "60 сар хүртэл".' }),
-      // Both superseded by directus/setup-tabs-richtext.mjs, which converts them
-      // to markdown fields on the rich-text editor (run it after this script on
-      // a fresh instance). Left as-is so the legacy `tabs` JSON still explodes
-      // into the shape that migration expects.
       repeater('tabs_requirements', [['text', 'input-multiline', 'text']], { sort: 80, template: '{{text}}', note: 'Rows of the "Requirements" tab.' }),
       text('tabs_other', { sort: 81, note: 'Content of the "Other" tab.' }),
     ],
     legacy: ['loan_terms', 'tabs'],
-    // tabs.info intentionally dropped: every row with info also has body, and
-    // the site renders body when both exist.
     explode: (r) => ({
       loan_amount: r.loan_terms?.amount ?? null,
       loan_rate: r.loan_terms?.rate ?? null,
@@ -260,7 +218,6 @@ const SPECS = [
       loan_terms: strip({ amount: r.loan_amount, rate: r.loan_rate, period: r.loan_period }),
       tabs: strip({ requirements: unwrapText(r.tabs_requirements), other: r.tabs_other }),
     }),
-    // ignore tabs.info in the round-trip diff
     normalizeLegacy: (legacy) => ({
       loan_terms: legacy.loan_terms ?? undefined,
       tabs: legacy.tabs ? strip({ requirements: legacy.tabs.requirements, other: legacy.tabs.other }) : undefined,
@@ -288,7 +245,6 @@ const SPECS = [
   },
 ]
 
-// jobs: in-place — same columns, repeater interface + wrapped rows
 const JOBS_INTERFACES = [
   repeater('requirements', [['text', 'input-multiline', 'text']], { template: '{{text}}', note: 'One row per requirement.' }),
   repeater('responsibilities', [['text', 'input-multiline', 'text']], { template: '{{text}}', note: 'One row per responsibility.' }),
@@ -308,9 +264,6 @@ const JOBS_INTERFACES = [
   ], { template: '{{title}}', note: 'Steps of the application form; each step has its own fields.' }),
 ]
 
-// ---------------------------------------------------------------------------
-// Run
-// ---------------------------------------------------------------------------
 if (!token) {
   const email = process.env.DIRECTUS_ADMIN_EMAIL
   const password = process.env.DIRECTUS_ADMIN_PASSWORD
@@ -322,7 +275,6 @@ if (!token) {
 }
 console.log(`\nJSON-field flattening on ${BASE}\n`)
 
-// hero_group inherits the old hero field's per-page visibility
 const pageId = Object.fromEntries((await api('GET', '/items/pages?limit=-1&fields=id,key')).map((p) => [p.key, p.id]))
 const heroGroup = SPECS[0].groups.find((g) => g.field === 'hero_group')
 heroGroup.meta.hidden = true
@@ -364,8 +316,6 @@ for (const spec of SPECS) {
     }
     const migrated = newFieldNames.some((f) => row[f] != null)
     if (migrated && !FORCE) {
-      // already-migrated fields legitimately evolve past the frozen legacy
-      // JSON (editor changes, later migrations) — don't diff against it
       log('skip', `${label}: already migrated`)
       continue
     }
@@ -392,7 +342,6 @@ for (const spec of SPECS) {
   log('add', `legacy hidden: ${spec.legacy.join(', ')}`)
 }
 
-// jobs: interface upgrades + in-place wrap
 console.log('[jobs_translations]')
 for (const fld of JOBS_INTERFACES) {
   await api('PATCH', `/fields/jobs_translations/${fld.field}`, { meta: { interface: fld.meta.interface, special: fld.meta.special, options: fld.meta.options, note: fld.meta.note } })

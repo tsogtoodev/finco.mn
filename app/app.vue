@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Inject <html lang>, hreflang alternates and canonical per locale.
 const head = useLocaleHead({ dir: true, lang: true, seo: true })
 useHead(() => ({
   htmlAttrs: head.value.htmlAttrs,
@@ -7,10 +6,8 @@ useHead(() => ({
   meta: head.value.meta,
 }))
 
-// Default social share image (bundled template).
 defineOgImageComponent('NuxtSeo', { title: 'finco.design', description: 'Санхүүгийн шийдэл' })
 
-// Site-wide structured data.
 useSchemaOrg([
   defineOrganization({
     name: 'finco.design',

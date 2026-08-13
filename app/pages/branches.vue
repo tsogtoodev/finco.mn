@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-// Branches — interactive: selectable list drives a photo + an animated map.
-// Light/centered header; the nav stays in its SOLID/light mode (page default).
 const { locale, t } = useI18n()
 
 const page = await usePageContent('branches')

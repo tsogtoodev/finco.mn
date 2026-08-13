@@ -1,7 +1,4 @@
 <script setup lang="ts">
-// Feedback popup (Figma 464:10744 form / 464:10952 success state). Opened by
-// clicking the Spline card scene in HomeContactCta. Posts to /api/contact and
-// swaps the form for the quill success illustration in the same dialog.
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ 'update:open': [value: boolean] }>()
 const { t } = useI18n()
@@ -13,20 +10,17 @@ const blank = { name: '', phone: '', email: '', type: '', message: '' }
 const form = reactive({ ...blank })
 const pending = ref(false)
 const done = ref(false)
-const leaving = ref(false) // form playing its exit before the success swap
+const leaving = ref(false)
 const serverError = ref('')
 const formRef = ref<HTMLFormElement | null>(null)
-// Success state inherits the form's measured height so the card doesn't jump.
 const successMinH = ref(0)
 let swapTimer: ReturnType<typeof setTimeout> | null = null
 
-const SWAP_DUR = 150 // keep in sync with .feedback-leave transition
+const SWAP_DUR = 150
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const phoneRe = /^\+?[\d\s().-]{8,20}$/
 
-// Figma keeps the submit at 50% opacity until the form is complete — the
-// disabled state doubles as validation, so no inline error plumbing.
 const valid = computed(() =>
   form.name.trim() !== ''
   && phoneRe.test(form.phone.trim())
@@ -44,8 +38,6 @@ async function submit() {
       method: 'POST',
       body: { name: form.name, email: form.email, phone: form.phone, type: form.type, message: form.message },
     })
-    // Fade the form out (150ms), then mount the success state, which plays
-    // its own keyframe enter.
     successMinH.value = formRef.value?.offsetHeight ?? 0
     leaving.value = true
     swapTimer = setTimeout(() => {
@@ -61,7 +53,6 @@ async function submit() {
   }
 }
 
-// Fresh form on the next open after a successful submission.
 watch(() => props.open, (isOpen) => {
   if (isOpen && done.value) {
     done.value = false
@@ -85,7 +76,6 @@ const fieldClass
     :label-close="t('feedback.close')"
     @update:open="emit('update:open', $event)"
   >
-    <!-- Success state -->
     <div
       v-if="done"
       class="feedback-enter flex min-h-[420px] flex-col items-center justify-center text-center"
@@ -106,7 +96,6 @@ const fieldClass
       </p>
     </div>
 
-    <!-- Form state -->
     <form
       v-else
       ref="formRef"
@@ -180,9 +169,6 @@ const fieldClass
 </template>
 
 <style scoped>
-/* Form → success swap. The form eases out via transition (removed by a JS
-   timer, so frozen-rAF renderers still swap); the success state enters via
-   @keyframes so it plays on mount, like .mega-pop / the old modal enter. */
 .feedback-swap {
   transition:
     opacity 150ms var(--modal-ease),

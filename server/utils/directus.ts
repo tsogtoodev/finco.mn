@@ -1,14 +1,9 @@
-// Server-only Directus REST client (plan §8). The token never reaches the
-// browser — this module must only be imported from server/ code.
-
 export async function directusFetch<T = unknown>(
   path: string,
   query: Record<string, string | number> = {},
   opts: { preview?: boolean } = {},
 ): Promise<T> {
   const config = useRuntimeConfig()
-  // preview: use the draft-capable preview-reader token instead of the
-  // published-only api-reader (plan §7). Both are server-only secrets.
   const token = opts.preview ? config.cmsPreviewToken : config.cmsToken
   if (!config.cmsUrl || !token) {
     throw createError({ statusCode: 503, statusMessage: 'CMS is not configured' })
@@ -18,15 +13,12 @@ export async function directusFetch<T = unknown>(
       baseURL: config.cmsUrl,
       query,
       headers: { Authorization: `Bearer ${token}` },
-      // Strict upstream timeout: a slow CMS must not consume the Worker's
-      // whole request budget (plan §8 caching rules).
       timeout: 5000,
       retry: 0,
     })
     return res.data
   } catch (err: unknown) {
     const status = (err as { statusCode?: number })?.statusCode
-    // Never forward Directus error bodies — they can describe internals.
     throw createError({
       statusCode: status === 403 || status === 401 ? 502 : 504,
       statusMessage: 'CMS upstream error',
@@ -34,8 +26,6 @@ export async function directusFetch<T = unknown>(
   }
 }
 
-/** Public URL for a Directus file. Prefers the R2 media hostname (bytes served
- *  by Cloudflare, never the VPS); falls back to the Directus assets endpoint. */
 export function cmsAssetUrl(
   file: { id: string; filename_disk?: string | null } | null | undefined,
 ): string | undefined {

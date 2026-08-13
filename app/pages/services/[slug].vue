@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-// Trust service detail — PageHero + body + related + FAQ.
 definePageMeta({ transparentHeader: true })
 
 const route = useRoute()
@@ -28,8 +27,6 @@ if (!service.value) {
 const { data: related } = await useAsyncData(
   () => `service-related-${locale.value}-${slug.value}`,
   async () => {
-    // Related = the OTHER trust services, ordered like the catalog, current
-    // one excluded.
     const items =
       provider === 'directus'
         ? await fetchCms<Collections['services'][]>('services', { locale: locale.value })

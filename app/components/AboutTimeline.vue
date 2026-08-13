@@ -8,8 +8,6 @@ const props = defineProps<{
   milestones: Milestone[]
 }>()
 
-// One milestone per row. Tints and dots step from near-white to lavender as
-// the timeline approaches today (Figma node 1127:13336).
 const ROW_TINTS = ['#faf9fe', '#f7f5fd', '#f4f1fc', '#f1edfb', '#ebe7f9', '#e5e1f7'] as const
 const DOT_COLORS = ['#dddbf7', '#ceccf4', '#c1bef1', '#b5b1ee', '#aaa6ec', '#a19cea'] as const
 const rowTint = (i: number) => ROW_TINTS[Math.min(i, ROW_TINTS.length - 1)]

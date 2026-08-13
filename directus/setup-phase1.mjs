@@ -1,20 +1,4 @@
 #!/usr/bin/env node
-/**
- * Phase 1 provisioning for the finco Directus instance.
- * Creates: languages, news, news_translations, Editor/Publisher policies + roles.
- * Idempotent — safe to re-run; existing objects are skipped, never mutated.
- *
- * Usage (from your machine):
- *   DIRECTUS_URL=https://cms.finco.design \
- *   DIRECTUS_TOKEN=<admin static token> \
- *   node directus/setup-phase1.mjs [--with-test-users]
- *
- * Auth: either DIRECTUS_TOKEN (admin user's static token, set in the user's
- * profile -> Token) or DIRECTUS_ADMIN_EMAIL + DIRECTUS_ADMIN_PASSWORD.
- *
- * After it succeeds: run the 10-row permission gate in PHASE1-SETUP.md §5,
- * then snapshot the schema (§6) and commit schema.yaml.
- */
 
 import { randomBytes } from 'node:crypto'
 
@@ -62,9 +46,6 @@ function log(step, msg) {
   console.log(`  ${step === 'skip' ? '=' : '+'} ${msg}`)
 }
 
-// ---------------------------------------------------------------------------
-// Auth
-// ---------------------------------------------------------------------------
 if (!token) {
   const email = process.env.DIRECTUS_ADMIN_EMAIL
   const password = process.env.DIRECTUS_ADMIN_PASSWORD
@@ -77,9 +58,6 @@ if (!token) {
 }
 console.log(`\nProvisioning ${BASE}\n`)
 
-// ---------------------------------------------------------------------------
-// 1. languages
-// ---------------------------------------------------------------------------
 console.log('[1/6] languages collection')
 if (await exists('/collections/languages')) {
   log('skip', 'collection languages exists')
@@ -117,9 +95,6 @@ for (const item of [
   }
 }
 
-// ---------------------------------------------------------------------------
-// 2. news
-// ---------------------------------------------------------------------------
 console.log('[2/6] news collection')
 if (await exists('/collections/news')) {
   log('skip', 'collection news exists')
@@ -218,7 +193,6 @@ if (await exists('/collections/news')) {
   log('add', 'created collection news (status, accountability, versioning on)')
 }
 
-// accountability relations (the app creates these automatically; the API does not)
 for (const field of ['user_created', 'user_updated']) {
   if (await exists(`/relations/news/${field}`)) {
     log('skip', `relation news.${field} exists`)
@@ -233,7 +207,6 @@ for (const field of ['user_created', 'user_updated']) {
   }
 }
 
-// image (single file)
 if (await exists('/fields/news/image')) {
   log('skip', 'field news.image exists')
 } else {
@@ -252,9 +225,6 @@ if (await exists('/fields/news/image')) {
   log('add', 'field news.image + relation to directus_files')
 }
 
-// ---------------------------------------------------------------------------
-// 3. news_translations
-// ---------------------------------------------------------------------------
 console.log('[3/6] news_translations collection')
 if (await exists('/collections/news_translations')) {
   log('skip', 'collection news_translations exists')
@@ -300,7 +270,6 @@ if (await exists('/collections/news_translations')) {
   log('add', 'created collection news_translations')
 }
 
-// translations alias field on news
 if (await exists('/fields/news/translations')) {
   log('skip', 'field news.translations exists')
 } else {
@@ -317,7 +286,6 @@ if (await exists('/fields/news/translations')) {
   log('add', 'field news.translations (translations interface)')
 }
 
-// junction relations
 if (await exists('/relations/news_translations/news_id')) {
   log('skip', 'relation news_translations.news_id exists')
 } else {
@@ -343,19 +311,14 @@ if (await exists('/relations/news_translations/languages_code')) {
   log('add', 'relation news_translations.languages_code -> languages')
 }
 
-// ---------------------------------------------------------------------------
-// 4. Policies + permissions
-// ---------------------------------------------------------------------------
 console.log('[4/6] access policies')
 
-// Field lists: Editor can never write `status` — that is the publishing boundary.
 const NEWS_EDITOR_FIELDS = ['slug', 'published_at', 'image', 'external_url', 'translations']
 
 const POLICIES = {
   'Editor Policy': {
     meta: { icon: 'edit', app_access: true, admin_access: false },
     permissions: [
-      // news: create drafts (status defaults to draft), edit DRAFTS only, never the status field
       { collection: 'news', action: 'create', fields: NEWS_EDITOR_FIELDS, permissions: null },
       { collection: 'news', action: 'read', fields: ['*'], permissions: null },
       {
@@ -364,7 +327,6 @@ const POLICIES = {
         fields: NEWS_EDITOR_FIELDS,
         permissions: { status: { _eq: 'draft' } },
       },
-      // translations: full edit, but only while the parent is a draft
       { collection: 'news_translations', action: 'create', fields: ['*'], permissions: null },
       { collection: 'news_translations', action: 'read', fields: ['*'], permissions: null },
       {
@@ -374,7 +336,6 @@ const POLICIES = {
         permissions: { news_id: { status: { _eq: 'draft' } } },
       },
       { collection: 'languages', action: 'read', fields: ['*'], permissions: null },
-      // media: upload + edit own uploads; no delete
       { collection: 'directus_files', action: 'create', fields: ['*'], permissions: null },
       { collection: 'directus_files', action: 'read', fields: ['*'], permissions: null },
       {
@@ -383,9 +344,6 @@ const POLICIES = {
         fields: ['*'],
         permissions: { uploaded_by: { _eq: '$CURRENT_USER' } },
       },
-      // content versions: create/edit own versions of published items; CANNOT promote
-      // (promote applies the version to the main record, which needs the news update
-      //  permission the draft-only rule above denies for published items)
       { collection: 'directus_versions', action: 'create', fields: ['*'], permissions: null },
       { collection: 'directus_versions', action: 'read', fields: ['*'], permissions: null },
       {
@@ -399,7 +357,6 @@ const POLICIES = {
   'Publisher Policy': {
     meta: { icon: 'published_with_changes', app_access: true, admin_access: false },
     permissions: [
-      // full control of news content INCLUDING status; no hard delete (archive instead)
       { collection: 'news', action: 'create', fields: ['*'], permissions: null },
       { collection: 'news', action: 'read', fields: ['*'], permissions: null },
       { collection: 'news', action: 'update', fields: ['*'], permissions: null },
@@ -445,9 +402,6 @@ for (const [name, def] of Object.entries(POLICIES)) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// 5. Roles
-// ---------------------------------------------------------------------------
 console.log('[5/6] roles')
 const roleIds = {}
 for (const [roleName, policyName, icon] of [
@@ -475,9 +429,6 @@ for (const [roleName, policyName, icon] of [
   }
 }
 
-// ---------------------------------------------------------------------------
-// 6. Optional test users (DELETE before adding real editors — 3-seat limit!)
-// ---------------------------------------------------------------------------
 console.log('[6/6] test users')
 if (!WITH_TEST_USERS) {
   log('skip', 'no --with-test-users flag; skipping')

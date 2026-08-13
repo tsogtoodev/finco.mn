@@ -8,12 +8,9 @@ const route = useRoute()
 const router = useRouter()
 const provider = useCmsProvider()
 
-// i18n route names look like `news-slug___mn`
 const isNewsDetail = computed(() => String(route.name ?? '').startsWith('news-slug'))
 const currentSlug = computed(() => (isNewsDetail.value ? String(route.params.slug ?? '') : ''))
 
-// Newest-first article list (same source as HomeNews / the news index), used
-// to find the article that follows the one being read.
 const { data: articles } = await useAsyncData(
   () => `news-autonext-${locale.value}`,
   () =>
@@ -34,17 +31,16 @@ const next = computed(() => {
   return [...list.slice(idx + 1), ...list.slice(0, idx)].find((n) => !n.to) ?? null
 })
 
-// ── visibility + countdown ──────────────────────────────────────────────────
 const DURATION_MS = 10000
 const TICK_MS = 100
-const END_ZONE_PX = 300 // "near the end" = within this of the document bottom
+const END_ZONE_PX = 300
 
 const isMobile = ref(false)
 
-const visible = ref(false) // flips once the reader first reaches the end zone
-const closed = ref(false) // per-article dismiss ("Хаах")
-const closing = ref(false) // exit animation running (dismiss -> unmount)
-const progress = ref(0) // 0..1 countdown
+const visible = ref(false)
+const closed = ref(false)
+const closing = ref(false)
+const progress = ref(0)
 const reduced = ref(false)
 const inEndZone = ref(false)
 let timer: ReturnType<typeof setInterval> | null = null
@@ -53,21 +49,18 @@ let navigating = false
 const show = computed(() => isNewsDetail.value && !isMobile.value && !!next.value && visible.value && !closed.value)
 
 const open = ref(false)
-const EXIT_MS = 420 // close clock (250ms) + longest exit delay (120ms) + buffer
+const EXIT_MS = 420
 let openTimer: ReturnType<typeof setTimeout> | null = null
 watch(show, (shown) => {
   if (openTimer) clearTimeout(openTimer)
   if (shown) {
     open.value = false
-    // let the initial (hidden) styles commit before opening, so the
-    // transition actually runs instead of jumping to the end state
     openTimer = setTimeout(() => { open.value = true }, 30)
   } else {
     open.value = false
   }
 })
 
-// Dismiss with a graceful exit: transition out, then unmount.
 let closeTimer: ReturnType<typeof setTimeout> | null = null
 function dismiss() {
   if (closing.value) return
@@ -89,8 +82,6 @@ function onScroll() {
   if (inEndZone.value && armed.value && !visible.value && !closing.value) visible.value = true
 }
 
-// Scrolling back up: graceful exit, then hide. Unlike `closed` this re-arms —
-// the overlay reveals again (timer reset) when the reader returns to the end.
 let hideTimer: ReturnType<typeof setTimeout> | null = null
 watch(inEndZone, (inZone) => {
   if (inZone || !show.value || closing.value) return
@@ -103,11 +94,6 @@ watch(inEndZone, (inZone) => {
   }, EXIT_MS)
 })
 
-// The 100ms tick is cheap, but there is no reason for it to keep firing in a
-// backgrounded tab just to return early — so the interval itself is torn down on
-// `visibilitychange` and rebuilt on the way back. The `document.hidden` check
-// stays in `tick` as the guarantee that matters: it is what stops the countdown
-// completing (and NAVIGATING to the next article) while nobody is looking.
 function startTicking() {
   stopTicking()
   if (document.hidden) return
@@ -125,7 +111,6 @@ function onVisibility() {
 }
 
 function tick() {
-  // pause while scrolled back up, tab hidden, or dismissed
   if (!show.value || closing.value || !inEndZone.value || document.hidden || reduced.value) return
   progress.value = Math.min(1, progress.value + TICK_MS / DURATION_MS)
   if (progress.value >= 1 && next.value && !navigating) {
@@ -152,8 +137,6 @@ watch(() => route.fullPath, () => {
   inEndZone.value = false
   armed.value = false
   if (armTimer) clearTimeout(armTimer)
-  // re-run the scroll check on arm: a too-short-to-scroll page emits no
-  // further scroll events, so the reveal must be re-evaluated here
   armTimer = setTimeout(() => {
     armed.value = true
     onScroll()
@@ -193,7 +176,6 @@ onBeforeUnmount(() => {
     class="anx-overlay pointer-events-none fixed inset-x-0 bottom-0 z-40"
     :class="open ? 'anx-open' : ''"
   >
-    <!-- Blurred white fade band behind the pill + card (Figma 663:14450) -->
     <div
       aria-hidden="true"
       class="anx-backdrop absolute inset-x-0 bottom-0 h-[285px] backdrop-blur-[2px]"
@@ -205,7 +187,6 @@ onBeforeUnmount(() => {
     />
 
     <div class="relative mx-auto flex w-full max-w-[1200px] flex-col items-center gap-[18px] px-4 pb-8">
-      <!-- Countdown pill: the violet fill is the auto-advance timer -->
       <div
         class="anx-pill pointer-events-auto relative flex items-center gap-3 overflow-clip rounded-full bg-white px-4 py-2 shadow-[0_0_10px_rgba(0,0,0,0.1)]"
         role="status"
@@ -222,7 +203,6 @@ onBeforeUnmount(() => {
         </span>
       </div>
 
-      <!-- Next-article card -->
       <div class="anx-card pointer-events-auto flex w-fit max-w-full items-center gap-4 rounded-2xl bg-white p-4 drop-shadow-[0_0_5px_rgba(0,0,0,0.1)] sm:gap-[26px]">
         <div class="flex min-w-0 items-center gap-3 sm:w-[412px]">
           <div class="h-[77px] w-[120px] shrink-0 overflow-clip rounded-xl bg-[#f5f5f5]">
@@ -247,7 +227,6 @@ onBeforeUnmount(() => {
           <AppButton variant="secondary" size="lg" pill class="cursor-pointer" @click="dismiss">
             {{ t('newsPage.autoNextClose') }}
           </AppButton>
-          <!-- AppButton runs `to` through localePath itself — raw path here -->
           <AppButton :to="`/news/${next.slug}`" variant="accent" size="lg" pill arrow>
             {{ t('newsPage.autoNextRead') }}
           </AppButton>

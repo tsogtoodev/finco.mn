@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Business loan catalog — renders the shared ProductsListing with audience.
 definePageMeta({ transparentHeader: true })
 
 const { t } = useI18n()

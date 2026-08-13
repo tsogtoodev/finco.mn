@@ -1,6 +1,4 @@
 <script setup lang="ts">
-// Exam login — SEPARATE candidate credential (registry no. + password), NOT the
-// Firebase user session. Backend endpoint stubbed in P7.5.
 definePageMeta({ layout: 'minimal' })
 
 const { t } = useI18n()
@@ -17,7 +15,6 @@ async function submit() {
       method: 'POST',
       body: { registryNo: registryNo.value, password: password.value },
     })
-    // navigateTo to the exam start on success (wired in P7.5)
   }
   catch {
     error.value = t('exam.error')
@@ -37,7 +34,6 @@ useSeoMeta({ title: () => t('exam.title'), robots: 'noindex' })
       :breadcrumb="[{ label: t('nav.home'), to: '/' }, { label: t('nav.careers'), to: '/careers' }]"
     />
     <div class="grid items-start gap-12 lg:grid-cols-2">
-      <!-- Intro + duration -->
       <div class="pt-2">
         <h1 class="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           {{ t('exam.headline') }} <span class="text-accent">{{ t('exam.headlineAccent') }}</span>
@@ -55,7 +51,6 @@ useSeoMeta({ title: () => t('exam.title'), robots: 'noindex' })
         </div>
       </div>
 
-      <!-- Login card -->
       <div class="rounded-[1.25rem] bg-secondary p-6 ring-1 ring-black/5 sm:p-8">
         <p class="text-sm text-muted-foreground">{{ t('exam.prompt') }}</p>
         <form class="mt-5 space-y-3" @submit.prevent="submit">

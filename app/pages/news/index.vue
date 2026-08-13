@@ -19,11 +19,6 @@ const { data: news } = await useAsyncData(
 
 useSeoMeta({ title: () => t('nav.news') })
 
-// The "Онцлох" block prefers CMS-flagged articles (news.featured —
-// directus/setup-news-featured.mjs), newest-first, then backfills with the
-// latest unflagged ones so it always fills its three cards. Flag nothing and it
-// renders exactly what it did before the flag existed; flag more than three and
-// the newest three win. Both providers already return newest-first.
 const FEATURED_COUNT = 3
 const featured = computed(() => {
   const all = news.value ?? []
@@ -126,7 +121,6 @@ function fmtDate(d?: string) {
       </div>
     </section>
 
-    <!-- Featured -->
     <section v-if="featured.length" ref="featuredEl" class="news-featured px-6 py-14 sm:py-20">
       <div class="mx-auto flex w-full max-w-[1200px] flex-col gap-8 sm:gap-12">
         <h2 class="font-display text-2xl font-medium tracking-[0.01em] text-black/80 sm:text-[28px]">
@@ -145,7 +139,6 @@ function fmtDate(d?: string) {
       </div>
     </section>
 
-    <!-- Recently added -->
     <section v-if="listAll.length" ref="listEl" class="scroll-mt-24 px-6 pb-20 pt-14 sm:pb-30 sm:pt-20">
       <div class="mx-auto flex w-full max-w-[1200px] flex-col">
         <h2 class="font-display text-2xl font-medium tracking-[0.01em] text-[#323232] sm:text-[28px]">
@@ -184,11 +177,6 @@ function fmtDate(d?: string) {
           </li>
         </ul>
 
-        <!-- Pagination -->
-        <!-- flex-wrap + shrink-0: the widest window is 8 page controls plus 2 arrows =
-             400px against 327px of usable width at 375. Without these the row does
-             not overflow — it squeezes every control to ~32px with zero gap between
-             neighbours, which is under the touch minimum and touching. -->
         <nav v-if="totalPages > 1" class="mt-12 flex flex-wrap items-center justify-center gap-1 sm:mt-20" aria-label="Pagination">
           <template v-for="(p, i) in pageNumbers" :key="`${p}-${i}`">
             <span v-if="p === '…'" class="grid size-10 shrink-0 place-items-center text-black/60">

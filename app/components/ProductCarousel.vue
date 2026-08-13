@@ -1,7 +1,4 @@
 <script setup lang="ts">
-// Generic horizontal carousel (Figma 1:14210 / 1:14341): scroll-snap track of
-// slides (default slot) + prev/next IconButtons + a scrollbar-thumb progress bar.
-// Supports keyboard (←/→ when focused), drag-to-scroll and reduced motion.
 const props = withDefaults(
   defineProps<{ tone?: 'dark' | 'light'; label?: string }>(),
   { tone: 'light' },
@@ -34,7 +31,6 @@ function page(dir: 1 | -1) {
   el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: reduced() ? 'auto' : 'smooth' })
 }
 
-// Drag-to-scroll
 let dragging = false
 let startX = 0
 let startScroll = 0
@@ -58,7 +54,6 @@ function onPointerMove(e: PointerEvent) {
 function onPointerUp() {
   dragging = false
 }
-// Suppress click after a drag so cards don't navigate on drag-release.
 function onClickCapture(e: MouseEvent) {
   if (moved) {
     e.preventDefault()

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-// Job detail + data-driven application form.
 definePageMeta({ transparentHeader: true })
 
 const route = useRoute()
@@ -42,7 +41,6 @@ useSeoMeta({
     />
 
     <div class="mx-auto grid max-w-5xl gap-12 px-4 py-16 lg:grid-cols-2">
-      <!-- Job info -->
       <div class="space-y-8">
         <div v-if="job.responsibilities?.length">
           <h2 class="font-display text-lg font-semibold text-foreground">{{ t('tabs.info') }}</h2>
@@ -58,7 +56,6 @@ useSeoMeta({
         </div>
       </div>
 
-      <!-- Application -->
       <div>
         <h2 class="font-display text-lg font-semibold text-foreground">{{ t('careers.apply') }}</h2>
         <div class="mt-4">

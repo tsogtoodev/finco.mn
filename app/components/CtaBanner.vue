@@ -7,7 +7,6 @@ defineProps<{ cta?: Collections['pages']['cta'] }>()
 <template>
   <section v-if="cta" class="mx-auto max-w-7xl px-4 py-16">
     <MotionReveal class="relative overflow-hidden rounded-[1.5rem] bg-dark px-8 py-16 text-white sm:px-16">
-      <!-- Glass bars motif -->
       <div class="pointer-events-none absolute inset-0 flex justify-end opacity-30">
         <div v-for="n in 12" :key="n" class="h-full w-6 bg-gradient-to-b from-primary/0 via-accent/40 to-teal/0" :style="{ marginLeft: '8px' }" />
       </div>

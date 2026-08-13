@@ -1,10 +1,4 @@
 <script setup lang="ts">
-// Contact — Бидэнтэй холбогдох. Light centered hero matching news/index.vue
-// (Figma 663:16826 pattern), a ghost back button, contact details card (footer
-// block 1:14377) + feedback form, then a static map.
-//
-// No `transparentHeader` here: that overlays the nav in white for a DARK hero,
-// which this no longer is. The header stays solid, as on the news index.
 const { t } = useI18n()
 const localePath = useLocalePath()
 
@@ -13,9 +7,6 @@ function goBack() {
   else navigateTo(localePath('/'))
 }
 
-// Finco Capital head office — Soyol Amralt, Sukhbaatar District, Ulaanbaatar.
-// Mirrors the `hq` branch entry (content/branches/*/hq.yml); MapEmbed needs the
-// base raster and pin as well as the coords, or it renders an empty gradient.
 const office = {
   lat: 47.918017,
   lng: 106.917565,
@@ -31,10 +22,6 @@ useSeoMeta({
 
 <template>
   <div class="bg-white">
-    <!-- Hero — light and centered, mirroring news/index.vue: BlurText word-reveal
-         on the title and subtitle, 1200px column, no breadcrumb. The back button
-         sits above the centered block rather than in it, so the title stays
-         optically centred on the column. -->
     <section class="px-6 lg:px-0 py-14">
       <div class="relative mx-auto flex w-full max-w-7xl flex-1 flex-col px-6 py-0">
         <div class="hero-rise">

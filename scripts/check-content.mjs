@@ -1,13 +1,4 @@
 #!/usr/bin/env node
-// Content sanity check — run standalone (`npm run check:content`) and before
-// `nuxt build`. Guards the invariants the app relies on:
-//   1. Locale parity: every doc exists in BOTH mn/ and en/ (a doc added in one
-//      locale only silently 404s / vanishes from lists in the other).
-//   2. The `locale:` frontmatter matches the folder it lives in (a mismatch
-//      makes the doc invisible to every locale-filtered query).
-//   3. The `slug:` matches the filename (detail routes look up by slug).
-//   4. Product docs carry `audience` + numeric `order` (menus/grids/carousel
-//      filter + sort on them).
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, basename, extname } from 'node:path'
 import { parse as parseYaml } from 'yaml'
@@ -15,10 +6,6 @@ import { parse as parseYaml } from 'yaml'
 const ROOT = new URL('..', import.meta.url).pathname
 const CONTENT = join(ROOT, 'content')
 const LOCALES = ['mn', 'en']
-// Collections with no mn/ en/ split, and so nothing for the parity and
-// locale-matches-folder rules below to check. `configuration` holds key/value
-// site settings (a phone number, a Facebook URL) that read the same in every
-// language — see directus/setup-configuration.mjs for why it isn't translated.
 const LOCALE_FREE = new Set(['configuration'])
 const errors = []
 
@@ -48,7 +35,6 @@ for (const collection of readdirSync(CONTENT)) {
     byLocale[locale] = new Map(files.map((f) => [f.replace(/\.(md|ya?ml)$/, ''), f]))
   }
 
-  // 1. parity
   for (const [a, b] of [
     ['mn', 'en'],
     ['en', 'mn'],
@@ -59,7 +45,6 @@ for (const collection of readdirSync(CONTENT)) {
     }
   }
 
-  // 2–4. per-file frontmatter checks
   for (const locale of LOCALES) {
     for (const [name, file] of byLocale[locale] ?? []) {
       const path = join(colDir, locale, file)
@@ -83,9 +68,6 @@ for (const collection of readdirSync(CONTENT)) {
         if (typeof fm.order !== 'number') errors.push(`products/${locale}/${file}: missing numeric order`)
       }
       if (collection === 'news') {
-        // Cards/sorting rely on these. The teaser field is `summary`:
-        // `excerpt` and `description` are RESERVED page-type fields that
-        // @nuxt/content overrides, so a frontmatter string there is lost.
         if (!fm.summary)
           errors.push(
             `news/${locale}/${file}: missing summary${fm.excerpt || fm.description ? ' (found reserved `excerpt`/`description` — rename to summary)' : ''}`,

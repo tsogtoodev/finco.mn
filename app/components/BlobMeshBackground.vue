@@ -1,32 +1,16 @@
 <script setup lang="ts">
-// Animated "blob mesh" background, reverse engineered from amplemarket.com's
-// pillars section (see exp/finco/amplemarket-background-blob-mesh for the
-// standalone study). A WebGL fragment shader draws three domain-warped color
-// blobs over a flat background color; an SVG trapezoid mask with a gaussian
-// blur and a vertical fade gradient clips the canvas into a soft "beam of
-// light". Fills its parent — position the wrapper yourself.
 const props = withDefaults(defineProps<{
-  /** Flat canvas color visible through the shader's transparent pixels. */
   bgColor?: string
-  /** Blob colors as "r,g,b" triplets (0-255). */
   color1?: string
   color2?: string
   color3?: string
-  /** Width of the trapezoid's top edge as a fraction of the box (centered). */
   topWidth?: number
-  /** Width of the trapezoid's bottom edge; > 1 bleeds past the box sides. */
   bottomWidth?: number
-  /** Height of the fully-visible vertical band as a fraction (centered). */
   band?: number
-  /** Length of the fade above and below the band, as a fraction. */
   feather?: number
-  /** Horizontal center of the trapezoid as a fraction of the box width. */
   centerX?: number
-  /** Vertical center of the visible band as a fraction of the box height. */
   centerY?: number
-  /** Animation speed multiplier; 1 matches the amplemarket original. */
   speed?: number
-  /** Overall opacity once loaded: 0-1, or a percentage if > 1 (e.g. 80). */
   opacity?: number
 }>(), {
   bgColor: '#99FFF9',
@@ -43,8 +27,6 @@ const props = withDefaults(defineProps<{
   opacity: 1,
 })
 
-// Numeric props coerced: template usage without `:` (e.g. band="0.5") passes
-// strings, and string + number silently concatenates instead of adding.
 const geom = computed(() => ({
   topWidth: Number(props.topWidth),
   bottomWidth: Number(props.bottomWidth),
@@ -59,8 +41,6 @@ const geom = computed(() => ({
   })(),
 }))
 
-// Vertical fade stops around centerY: opaque across `band`, fading out over
-// `feather` on each side.
 const fadeStops = computed(() => {
   const { band, feather, centerY } = geom.value
   const half = band / 2
@@ -203,8 +183,6 @@ onMounted(() => {
   const col2 = props.color2.split(',').map(Number)
   const col3 = props.color3.split(',').map(Number)
 
-  // Trapezoid "beam" mask sized to the canvas, edges centered on centerX per
-  // topWidth / bottomWidth, with amplemarket's 4.6% vertical inset.
   function updateMask() {
     const rect = canvas!.getBoundingClientRect()
     const w = rect.width
@@ -220,8 +198,6 @@ onMounted(() => {
     )
   }
 
-  // Keep the mask live when geometry props change (the gradient stops are
-  // template-bound and update on their own).
   watch(geom, updateMask)
 
   const gl
@@ -331,7 +307,6 @@ onMounted(() => {
     return
   }
 
-  // Animate only while near the viewport, and pause in background tabs.
   observer = new IntersectionObserver(
     (entries) => {
       const visible = entries[entries.length - 1]?.isIntersecting ?? false
@@ -401,9 +376,6 @@ onBeforeUnmount(() => {
         <filter :id="`${uid}-blur`" x="-10%" y="-10%" width="120%" height="120%">
           <feGaussianBlur stdDeviation="20" />
         </filter>
-        <!-- Opaque band symmetric around 50% (per `band`/`feather`) so the
-             visible beam sits at the vertical center; the amplemarket
-             original biases it to the top with 5/20/40/70 stops. -->
         <linearGradient :id="`${uid}-fade`" x1="50%" y1="0%" x2="50%" y2="100%" gradientUnits="userSpaceOnUse">
           <stop :offset="fadeStops.in" stop-color="#737373" stop-opacity="0" />
           <stop :offset="fadeStops.solidTop" stop-color="#D9D9D9" stop-opacity="1" />
@@ -441,8 +413,6 @@ onBeforeUnmount(() => {
   opacity: var(--mesh-opacity, 1);
 }
 
-/* Full-size so the fade gradient's userSpaceOnUse percentages resolve against
-   the element box (a 0x0 svg degenerates the gradient and blanks the mask). */
 .blob-mesh__defs {
   position: absolute;
   top: 0;

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-// Product detail — (locale, slug) query + batched related lookup.
 definePageMeta({ transparentHeader: true })
 
 const route = useRoute()
@@ -30,8 +29,6 @@ const { data: related } = await useAsyncData(
   async () => {
     const audience = product.value?.audience
     if (!audience) return []
-    // Related = other products of the SAME audience (business ↔ business,
-    // individual ↔ individual), ordered like the catalog, current one excluded.
     const items =
       provider === 'directus'
         ? (await fetchCms<Collections['products'][]>('products', { locale: locale.value })).filter(

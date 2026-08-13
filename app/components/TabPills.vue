@@ -1,9 +1,4 @@
 <script setup lang="ts">
-// Sliding-pill tabs. The pill tweens between the measured offsetLeft/offsetWidth
-// of the active tab; on first paint / font-load / resize it SNAPS (transition
-// suspended + reflow) so it never animates from a stale position. Reduced motion
-// disables the tween (CSS). Fully themeable via the --tabs-* custom properties —
-// override them with an inline `style` on the component to match each surface.
 const props = defineProps<{
   modelValue: string
   tabs: { value: string; label: string }[]
@@ -27,7 +22,7 @@ function position(animate: boolean) {
   p.style.transform = `translateX(${el.offsetLeft}px)`
   p.style.width = `${el.offsetWidth}px`
   if (!animate) {
-    void p.offsetWidth // force a reflow so the snap can't tween
+    void p.offsetWidth
     p.style.transition = ''
   }
 }
@@ -39,14 +34,10 @@ function select(value: string) {
 }
 
 watch(() => props.modelValue, () => position(true))
-// Re-snap only when the tab SET actually changes (a stable key, not the array
-// ref — consumers often pass a freshly-mapped array each render, which must NOT
-// trigger a snap or it would cancel the click animation).
 watch(() => props.tabs.map(t => `${t.value}:${t.label}`).join('|'), () => nextTick(snap))
 
 onMounted(() => {
   nextTick(snap)
-  // Label widths can shift once the web font loads — re-snap then.
   if (typeof document !== 'undefined' && document.fonts?.ready) {
     document.fonts.ready.then(snap).catch(() => {})
   }
@@ -75,12 +66,11 @@ onBeforeUnmount(() => window.removeEventListener('resize', snap))
 
 <style scoped>
 .t-tabs {
-  /* Theme tokens — override via inline style on <TabPills>. Defaults: dark pill. */
   --tabs-dur: 250ms;
   --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --tabs-text-muted: rgba(193, 193, 193, 0.8);
   --tabs-text-active: #ffffff;
-  --tabs-text-hover: var(--tabs-text-active); /* unselected hover; override on light bars */
+  --tabs-text-hover: var(--tabs-text-active);
   --tabs-bar-bg: #202020;
   --tabs-pill-bg: #454545;
   --tabs-radius: 48px;

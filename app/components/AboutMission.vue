@@ -8,11 +8,10 @@ defineProps<{ blocks: BadgeBlock[] }>()
 const trackEl = ref<HTMLElement | null>(null)
 const innerEl = ref<HTMLElement | null>(null)
 
-// Live scene on capable devices, the static torus raster everywhere else.
 const splineEnabled = useSplineEnabled()
 
-const enabled = ref(false) // mounted + motion allowed → pinned layout
-const travel = ref(0) // px the column travels across the pin
+const enabled = ref(false)
+const travel = ref(0)
 const offset = ref(0)
 
 const blockTops = ref<number[]>([])
@@ -47,9 +46,6 @@ function syncOffset() {
   })
 }
 
-// Bound to the smooth-scroll layer rather than the native `scroll` event, so the
-// pinned column moves in the same frame as the page instead of trailing it by one.
-// The pin is desktop + motion-allowed only, hence the `enabled` gate.
 const pinScroll = useScrollSync(() => {
   if (!enabled.value) return
   syncOffset()
@@ -66,7 +62,6 @@ const PIN_MQ = '(min-width: 1024px)'
 let pinMql: MediaQueryList | null = null
 let reduceMql: MediaQueryList | null = null
 
-// Also gates the decorative Spline slot — see the template.
 const isDesktop = ref(false)
 
 function applyPin() {
@@ -74,7 +69,6 @@ function applyPin() {
   const on = isDesktop.value && !reduceMql?.matches
   enabled.value = on
   if (!on) {
-    // Drop the transform and the track's extra height so the static flow is clean.
     offset.value = 0
     travel.value = 0
     return
@@ -89,8 +83,6 @@ onMounted(() => {
   pinMql.addEventListener('change', applyPin)
   reduceMql.addEventListener('change', applyPin)
   pinScroll.start()
-  // Separate from pinScroll's own resize hook: this one re-measures the block
-  // offsets, which a plain syncOffset does not do.
   window.addEventListener('resize', measure, { passive: true })
   if (typeof ResizeObserver !== 'undefined' && innerEl.value) {
     resizeObserver = new ResizeObserver(measure)
@@ -103,7 +95,6 @@ onBeforeUnmount(() => {
   reduceMql?.removeEventListener('change', applyPin)
   window.removeEventListener('resize', measure)
   resizeObserver?.disconnect()
-  // pinScroll detaches itself on unmount.
 })
 </script>
 
@@ -182,35 +173,6 @@ onBeforeUnmount(() => {
             />
             <img v-else :src="torus" alt="" class="size-full object-cover">
           </div>
-
-          <!-- Top-right gradient for the scene -->
-          <!-- <div
-            aria-hidden="true"
-            class="pointer-events-none absolute right-0 top-0 h-[45%] w-[45%]"
-            :style="{
-              backgroundImage: `linear-gradient(to bottom left,
-                #080A12 0%,
-                #080A12 26%,
-                rgba(8,10,18,0.82) 46%,
-                rgba(8,10,18,0.45) 68%,
-                rgba(8,10,18,0.15) 86%,
-                rgba(8,10,18,0) 100%)`,
-            }"
-          /> -->
-          <!-- Bottom gradient for the scene -->
-          <!-- <div
-            aria-hidden="true"
-            class="pointer-events-none absolute inset-x-0 bottom-0 h-[28%]"
-            :style="{
-              backgroundImage: `linear-gradient(to top,
-                #080A12 0%,
-                #080A12 26%,
-                rgba(8,10,18,0.82) 46%,
-                rgba(8,10,18,0.45) 68%,
-                rgba(8,10,18,0.15) 86%,
-                rgba(8,10,18,0) 100%)`,
-            }"
-          /> -->
         </div>
       </div>
     </div>

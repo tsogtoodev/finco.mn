@@ -12,11 +12,11 @@ type Anchor = keyof typeof TX
 const depts = computed(() =>
   (
     [
-      { x: 472, y: 256, anchor: 'right' }, // 0 mid-left
-      { x: 968, y: 256, anchor: 'left' }, // 1 mid-right
-      { x: 472, y: 358, anchor: 'right' }, // 2 low-left
-      { x: 720, y: 358, anchor: 'center' }, // 3 low-centre
-      { x: 968, y: 358, anchor: 'left' }, // 4 low-right
+      { x: 472, y: 256, anchor: 'right' },
+      { x: 968, y: 256, anchor: 'left' },
+      { x: 472, y: 358, anchor: 'right' },
+      { x: 720, y: 358, anchor: 'center' },
+      { x: 968, y: 358, anchor: 'left' },
     ] satisfies { x: number; y: number; anchor: Anchor }[]
   ).map((p, i) => ({ ...p, label: props.org.departments[i] ?? '' })),
 )
@@ -27,12 +27,12 @@ const nodeStyle = (x: number, y: number, anchor: Anchor) => ({
 })
 
 const connectors = [
-  { d: 'M720,121 L720,190', g: 'oc-root' }, // ТУЗ → CEO
-  { d: 'M720,250 L720,332', g: 'oc-center' }, // CEO → centre dept
-  { d: 'M596,224 C534,224 534,256 472,256', g: 'oc-ml' }, // CEO → mid-left
-  { d: 'M844,224 C906,224 906,256 968,256', g: 'oc-mr' }, // CEO → mid-right
-  { d: 'M643,250 C643,330 540,358 472,358', g: 'oc-ll' }, // CEO → low-left
-  { d: 'M797,250 C797,330 900,358 968,358', g: 'oc-lr' }, // CEO → low-right
+  { d: 'M720,121 L720,190', g: 'oc-root' },
+  { d: 'M720,250 L720,332', g: 'oc-center' },
+  { d: 'M596,224 C534,224 534,256 472,256', g: 'oc-ml' },
+  { d: 'M844,224 C906,224 906,256 968,256', g: 'oc-mr' },
+  { d: 'M643,250 C643,330 540,358 472,358', g: 'oc-ll' },
+  { d: 'M797,250 C797,330 900,358 968,358', g: 'oc-lr' },
 ]
 
 const ceoGlow =
@@ -56,7 +56,6 @@ const tuzGlow = 'background: linear-gradient(125deg, #ffa6e9 0%, #b89bf1 55%, #8
         </p>
       </div>
 
-      <!-- Desktop diagram -->
       <figure
         class="org-diagram hero-rise relative mx-auto mt-14 hidden aspect-[1440/450] w-full lg:mt-16 lg:block"
         style="animation-delay: 0.1s"
@@ -65,7 +64,6 @@ const tuzGlow = 'background: linear-gradient(125deg, #ffa6e9 0%, #b89bf1 55%, #8
           {{ org.root }} → {{ org.ceo }} → {{ org.departments.join(', ') }}
         </figcaption>
 
-        <!-- connectors -->
         <svg
           class="absolute inset-0 size-full"
           :viewBox="`0 0 ${VB.w} ${VB.h}`"
@@ -109,7 +107,6 @@ const tuzGlow = 'background: linear-gradient(125deg, #ffa6e9 0%, #b89bf1 55%, #8
           />
         </svg>
 
-        <!-- root (ТУЗ) -->
         <div class="absolute" :style="nodeStyle(720, 91, 'center')">
           <div class="relative">
             <span aria-hidden="true" class="org-glow org-glow--tuz" :style="tuzGlow" />
@@ -119,7 +116,6 @@ const tuzGlow = 'background: linear-gradient(125deg, #ffa6e9 0%, #b89bf1 55%, #8
           </div>
         </div>
 
-        <!-- CEO -->
         <div class="absolute" :style="nodeStyle(720, 219.5, 'center')">
           <div class="relative">
             <span aria-hidden="true" class="org-glow" :style="ceoGlow" />
@@ -129,7 +125,6 @@ const tuzGlow = 'background: linear-gradient(125deg, #ffa6e9 0%, #b89bf1 55%, #8
           </div>
         </div>
 
-        <!-- departments -->
         <div v-for="(d, i) in depts" :key="i" class="absolute" :style="nodeStyle(d.x, d.y, d.anchor)">
           <span class="org-pill bg-[rgba(45,224,198,0.2)] font-light text-[rgba(0,0,0,0.6)]">
             {{ d.label }}
@@ -137,7 +132,6 @@ const tuzGlow = 'background: linear-gradient(125deg, #ffa6e9 0%, #b89bf1 55%, #8
         </div>
       </figure>
 
-      <!-- Mobile stacked tree -->
       <div class="mt-12 flex flex-col items-center lg:hidden">
         <div class="relative">
           <span aria-hidden="true" class="absolute -inset-[5px] rounded-[26px] opacity-80 blur-[9px]" :style="tuzGlow" />
@@ -166,8 +160,6 @@ const tuzGlow = 'background: linear-gradient(125deg, #ffa6e9 0%, #b89bf1 55%, #8
 </template>
 
 <style scoped>
-/* The figure is the query container; pills scale with its inline (width) size so
-   the 18px / 32px / 24px Figma metrics stay proportional at any viewport. */
 .org-diagram {
   container-type: inline-size;
 }
@@ -175,17 +167,17 @@ const tuzGlow = 'background: linear-gradient(125deg, #ffa6e9 0%, #b89bf1 55%, #8
   display: block;
   white-space: nowrap;
   text-align: center;
-  font-size: 1.25cqw; /* 18px @1440 */
-  line-height: 1.9444cqw; /* 28px */
-  padding: 0.8333cqw 2.2222cqw; /* 12px 32px */
-  border-radius: 1.6667cqw; /* 24px */
+  font-size: 1.25cqw;
+  line-height: 1.9444cqw;
+  padding: 0.8333cqw 2.2222cqw;
+  border-radius: 1.6667cqw;
 }
 .org-pill--ceo {
-  width: 17.222cqw; /* 248px fixed (connector edges land at x=596 / 844) */
+  width: 17.222cqw;
   box-shadow: 0 0.7cqw 1.9cqw -1cqw rgba(76, 65, 216, 0.45);
 }
 .org-pill--tuz {
-  width: 8.125cqw; /* 117px fixed */
+  width: 8.125cqw;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 0.55cqw 1.5cqw -0.7cqw rgba(76, 65, 216, 0.6);
 }

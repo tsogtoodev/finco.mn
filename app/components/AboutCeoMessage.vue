@@ -7,7 +7,6 @@ defineProps<{ ceo: AboutContent['ceo'] }>()
 
 <template>
   <section class="relative overflow-hidden bg-[#fbfbfb]">
-    <!-- purple swirl decoration, upper-right -->
     <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-0">
       <div class="absolute -right-32 -top-32 size-[640px] rounded-full bg-[#a78bfa]/20 blur-[140px]" />
       <div class="absolute -left-40 top-1/3 size-[420px] rounded-full bg-[#c4b5fd]/20 blur-[130px]" />
@@ -18,13 +17,9 @@ defineProps<{ ceo: AboutContent['ceo'] }>()
         <h2 class="font-display text-3xl font-normal leading-tight text-[#141414] sm:text-[28px]">
           {{ ceo.headingLead }}<span class="text-[#4c41d8]">{{ ceo.headingAccent }}</span>
         </h2>
-        <!-- <p class="mt-6 max-w-4xl text-lg font-extralight leading-7 text-[rgba(0,0,0,0.6)] sm:text-[18px]">
-          {{ ceo.subheading }}
-        </p> -->
       </MotionReveal>
 
       <div class="mt-12 lg:mt-20 lg:flex lg:items-stretch lg:items-center lg:justify-center">
-        <!-- Portrait -->
         <MotionReveal
           class="relative aspect-[4/5] w-full overflow-hidden rounded-[2rem] bg-[#f9f9f9] sm:aspect-[3/2] lg:aspect-auto lg:w-[50%] lg:shrink-0"
         >

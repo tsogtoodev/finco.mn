@@ -16,7 +16,6 @@ defineProps<{ value?: Collections['pages']['valueProps'] }>()
       </p>
     </MotionReveal>
 
-    <!-- Bento: tall lead card + two stacked -->
     <div class="mt-14 grid gap-5 lg:grid-cols-3">
       <MotionReveal
         v-for="(item, i) in value.items"
@@ -25,7 +24,6 @@ defineProps<{ value?: Collections['pages']['valueProps'] }>()
         :class="i === 0 ? 'lg:row-span-2' : ''"
         class="group relative flex flex-col justify-end overflow-hidden rounded-[var(--radius)] bg-secondary p-7 ring-1 ring-black/5"
       >
-        <!-- gradient blob -->
         <div class="pointer-events-none absolute -right-10 -top-10 size-56 rounded-full bg-gradient-to-br from-accent/40 via-primary/30 to-teal/30 blur-2xl transition-transform duration-500 group-hover:scale-110" />
         <div class="relative">
           <div class="flex size-12 items-center justify-center rounded-full bg-white text-accent shadow-2xs ring-1 ring-black/5">

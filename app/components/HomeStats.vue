@@ -8,13 +8,12 @@ const videoEnabled = ref(false)
 
 let frame: number | null = null
 
-/** Start buffering this far before the wave scrolls in; the poster covers the gap. */
 const PREROLL_PX = 600
 
 function shouldPlay(el: HTMLVideoElement) {
   if (document.hidden) return false
   const r = el.getBoundingClientRect()
-  if (!r.width || !r.height) return false // `hidden sm:block` wrapper on mobile
+  if (!r.width || !r.height) return false
   if (r.bottom < -PREROLL_PX || r.top > window.innerHeight + PREROLL_PX) return false
 
   const top = Math.max(r.top, 0)
@@ -28,7 +27,6 @@ function shouldPlay(el: HTMLVideoElement) {
 }
 
 function sync() {
-  // Safe to call directly as well as from the scheduled frame.
   if (frame !== null) {
     cancelAnimationFrame(frame)
     frame = null
@@ -36,7 +34,6 @@ function sync() {
   const el = videoEl.value
   if (!el) return
   if (shouldPlay(el)) {
-    // A rejected autoplay is not an error worth surfacing — the poster stands in.
     if (el.paused) void el.play().catch(() => {})
   }
   else if (!el.paused) {
@@ -48,31 +45,14 @@ function schedule() {
   if (frame === null) frame = requestAnimationFrame(sync)
 }
 
-// --- loop seam ---------------------------------------------------------------
-// The clip's last frame and its first frame don't match, so the wrap reads as a
-// hard cut. Dip the opacity to 0 over the tail, let the wrap happen behind that,
-// and bring it back — the cut lands while there is nothing to see.
-
-/** Fade length each way. Long enough to hide the cut, short enough not to read as a pulse. */
 const FADE_MS = 550
-/** Restore this long after the predicted wrap, so an early timer can't reveal the last frame. */
 const WRAP_GUARD_MS = 60
 
 const faded = ref(false)
-// Incremented once per wrap. <StatCounter> watches it and re-runs its count-up,
-// so the numbers re-reveal on the same beat as the loop instead of animating
-// once and then sitting still under a moving background.
 const cycle = ref(0)
 let fadeTimer: ReturnType<typeof setTimeout> | null = null
-// True while inside the tail dip. COMING OUT of the dip is the wrap, and that
-// transition is what bumps `cycle` — not any particular timer. `timeupdate`
-// clears the pending timer every ~250ms, so an increment that lived inside a
-// timer callback was dropped whenever a tick landed in the guard window.
 let dipped = false
 
-// Re-armed on every `timeupdate` (~4/s) rather than trusted once: the media
-// clock and setTimeout drift apart, and re-deriving the deadline from
-// currentTime each tick keeps the dip pinned to the actual seam.
 function armFade() {
   const el = videoEl.value
   if (fadeTimer !== null) clearTimeout(fadeTimer)
@@ -83,7 +63,6 @@ function armFade() {
   if (remaining <= FADE_MS) {
     faded.value = true
     dipped = true
-    // Wake just past the wrap in case `timeupdate` is slow coming back.
     fadeTimer = setTimeout(armFade, remaining + WRAP_GUARD_MS)
   }
   else {
@@ -96,8 +75,6 @@ function armFade() {
   }
 }
 
-// Pausing mid-dip would strand the wave invisible (the gate pauses it whenever
-// it scrolls off or gets covered), so drop the fade with the playback.
 function cancelFade() {
   if (fadeTimer !== null) clearTimeout(fadeTimer)
   fadeTimer = null
@@ -105,12 +82,6 @@ function cancelFade() {
   faded.value = false
 }
 
-// --- depth blur --------------------------------------------------------------
-// index.vue pins this section `lg:motion-safe:sticky top-0` and scrolls
-// #home-products up over it. Blur it in step with that coverage so it recedes
-// behind the incoming section instead of sitting sharp underneath it.
-
-/** Blur at full coverage. */
 const MAX_BLUR_PX = 20
 
 const sectionEl = useTemplateRef<HTMLElement>('sectionEl')
@@ -123,20 +94,13 @@ function measureCoverage() {
     coverage.value = 0
     return
   }
-  // Against the on-screen slice of the section, so the ratio stays meaningful
-  // while it is pinned and the products section eats into it from the bottom.
   const r = el.getBoundingClientRect()
   const top = Math.max(r.top, 0)
   const bottom = Math.min(r.bottom, window.innerHeight)
   const visible = bottom - top
-  // Below `lg`, and for reduced motion, nothing is sticky: the products section
-  // starts exactly at this one's bottom edge, so this lands on 0 by itself.
   coverage.value = visible > 0 ? Math.min(Math.max((bottom - cover.top) / visible, 0), 1) : 0
 }
 
-// Bound to the smooth-scroll layer, not the native event: with Lenis driving,
-// a native `scroll` handler lands a frame late and the blur visibly trails the
-// section sliding over it.
 const coverageScroll = useScrollSync(measureCoverage)
 
 onMounted(async () => {
@@ -210,13 +174,6 @@ const MASKS = ['mask-1', 'mask-2', 'mask-3']
         disablepictureinpicture
         preload="none"
       />
-      <!-- <NuxtImg
-        v-else
-        src="/images/home/stats-wave.png"
-        alt=""
-        aria-hidden="true"
-        class="size-full object-cover"
-      /> -->
     </div>
     <NuxtImg
       src="/images/home/stats-wave.png"

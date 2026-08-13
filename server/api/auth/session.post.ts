@@ -1,8 +1,5 @@
 import { createRemoteJWKSet, jwtVerify } from 'jose'
 
-// Firebase ID tokens are RS256 JWTs signed by Google's securetoken service.
-// createRemoteJWKSet fetches + caches the public keys in-memory (Workers-safe,
-// no firebase-admin needed). Module scope = cached across requests per isolate.
 const JWKS = createRemoteJWKSet(
   new URL(
     'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com',

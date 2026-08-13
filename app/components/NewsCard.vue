@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-// News card (Figma 1:14243): image with a signature large top-right radius,
-// then title + excerpt. Accepts a `news` collection doc or explicit fields.
-// `compact` = the news-index featured card (Figma 663:16907): shorter 184px
-// image, 8px radius, two-line title instead of one.
 const props = defineProps<{
   item?: Collections['news']
   title?: string
@@ -15,15 +11,10 @@ const props = defineProps<{
 }>()
 
 const localePath = useLocalePath()
-// `:is="'NuxtLink'"` (string) renders a literal, non-navigating <nuxt-link>
-// element — resolve the real component so linked cards become real anchors.
 const NuxtLink = resolveComponent('NuxtLink')
 const title = computed(() => props.title ?? props.item?.title ?? '')
-// Doc field is `summary` (NOT `excerpt` — that's a reserved page-type field
-// that @nuxt/content nulls); the display prop keeps the `excerpt` name.
 const excerpt = computed(() => props.excerpt ?? props.item?.summary)
 const image = computed(() => props.image ?? props.item?.image)
-// Cards link to the article page by default; `to` (prop or doc field) overrides.
 const to = computed(
   () => props.to ?? props.item?.to ?? (props.item?.slug ? `/news/${props.item.slug}` : undefined),
 )

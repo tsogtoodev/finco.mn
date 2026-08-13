@@ -14,14 +14,6 @@ const cards = [
   { id: 'request' as CardId, dot: '#f7b23b', bar: '#f7b23b', img: 2, art: '60.76%', w: 1400 },
 ]
 
-// Every card is CMS-editable: tab, heading and body each come from the card's
-// own field, with i18n as the fallback for anything an editor leaves blank.
-//
-// `cards[id]` accepts two shapes. The object form is current. The bare string is
-// the legacy shape — it only ever held the tab label, which is why the deck's
-// headings/bodies used to be i18n-only (the `request` card excepted, since it
-// borrowed the section-level callout fields). Reading both means the component
-// works whether or not the Directus migration has run yet.
 function cardCopy(id: CardId) {
   const cms = page.value?.fincobiz
   const card = cms?.cards?.[id]
@@ -30,15 +22,11 @@ function cardCopy(id: CardId) {
 
   return {
     tab: field('tab') || t(`home.fincobiz.cards.${id}.tab`),
-    // The callout fallback is kept for `request` alone: those two fields are
-    // what that card rendered before it had its own, so dropping them would
-    // silently revert live copy to the i18n default.
     heading: field('heading') || (id === 'request' ? cms?.calloutHeading : undefined) || t(`home.fincobiz.cards.${id}.heading`),
     body: field('body') || (id === 'request' ? cms?.calloutSubtext : undefined) || t(`home.fincobiz.cards.${id}.body`),
   }
 }
 
-// Front-first stacking order; depth 0 = front, 2 = back (matches the mockup).
 const order = ref<CardId[]>(['request', 'receivables', 'eligibility'])
 const depth = (id: CardId) => order.value.indexOf(id)
 function promote(id: CardId) {
@@ -46,25 +34,6 @@ function promote(id: CardId) {
   order.value = [id, ...order.value.filter((c) => c !== id)]
 }
 
-// Auto-advance: every 5s bring the back card forward so the deck cycles on its
-// own. Any manual click restarts the timer; pointer hover pauses it so users can
-// read the peeked card.
-//
-// It also only runs while the deck is on screen in a foregrounded tab — matching
-// the three real carousels (HomeProducts / HomeNews / Branches), which have had
-// both gates all along. This one had neither, despite the comment here claiming
-// it "stops entirely off-screen": there was no observer, so the deck kept
-// re-ordering (and re-rendering three transformed cards) every 5s for the whole
-// page lifetime, wherever the visitor was and whether or not the tab was even
-// in front.
-//
-// Skipped for prefers-reduced-motion, same as those three. The stylesheet below
-// already cuts `.biz-card`'s transition to 0.01ms for that preference, but nothing
-// stopped the timer driving it — so a reduced-motion visitor got the deck HARD
-// CUTTING to a new order every 5s instead of sliding, which is the unprompted
-// movement the preference exists to prevent, just delivered as a jump. The 0.01ms
-// rule deliberately stays: a card promoted by an actual CLICK should respond
-// instantly, and that motion is user-initiated.
 const AUTO_MS = 5000
 let timer: ReturnType<typeof setInterval> | null = null
 let autoObserver: IntersectionObserver | null = null
@@ -73,21 +42,10 @@ let onScreen = false
 
 const rootEl = ref<HTMLElement | null>(null)
 
-// Staggered card reveal, same contract as the three carousels: SSR/no-JS renders
-// the cards visible; after hydration they hide (`hydrated`) until the deck enters
-// the viewport, then rise in one by one via inline animation-delay. Reuses the
-// shared `.carousel-reveal` / `.carousel-pre` pair in main.css so the timing,
-// easing and reduced-motion handling stay in one place — the classes are named
-// for their first caller, not restricted to carousels.
 const hydrated = ref(false)
 const revealed = ref(false)
 let revealObserver: IntersectionObserver | null = null
 
-// Front card first, then the two peeking behind it. Deliberately NOT the v-for
-// index (which is back-to-front) and deliberately NOT live `depth()`: the deck
-// auto-advances every 5s, so a reactive delay could renumber the cards midway
-// through their own reveal. This order is fixed and matches `order`'s initial
-// value, so at reveal time it IS the visual front-to-back order.
 const REVEAL_ORDER: CardId[] = ['request', 'receivables', 'eligibility']
 const revealDelay = (id: CardId) => `${REVEAL_ORDER.indexOf(id) * 80}ms`
 
@@ -127,7 +85,6 @@ function onPromote(id: CardId) {
 onMounted(() => {
   document.addEventListener('visibilitychange', onVisibility)
   if (!('IntersectionObserver' in window)) {
-    // No IO to gate on — fall back to always-on rather than never-on.
     onScreen = true
     revealed.value = true
     startAuto()
@@ -141,9 +98,6 @@ onMounted(() => {
   }, { threshold: 0.2 })
   if (rootEl.value) autoObserver.observe(rootEl.value)
 
-  // Separate from autoObserver: this one disconnects after the first reveal and
-  // so can't double as the auto-advance gate, which has to keep tracking the
-  // deck leaving the viewport again.
   revealObserver = new IntersectionObserver((entries) => {
     if (entries.some((e) => e.isIntersecting)) {
       revealed.value = true
@@ -294,10 +248,6 @@ onBeforeUnmount(() => {
 .biz-card {
   transform: translateY(calc(var(--depth) * var(--peek) * -1)) scale(calc(1 - var(--depth) * 0.04));
   transform-origin: top center;
-  /* box-shadow:
-    0 1px 2px rgba(23, 16, 84, 0.05),
-    0 10px 22px -8px rgba(23, 16, 84, 0.16),
-    0 34px 64px -26px rgba(23, 16, 84, 0.28); */
   transition:
     transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.6s ease,
@@ -315,15 +265,12 @@ onBeforeUnmount(() => {
   cursor: default;
 }
 
-/* Per-card artwork width (set inline as --art-w); only applies once the body
-   switches to the side-by-side desktop layout. */
 @media (min-width: 1024px) {
   .biz-card img {
     width: var(--art-w);
   }
 }
 
-/* organic pebble, like the baked tab dots */
 .biz-dot {
   width: 15px;
   height: 15px;

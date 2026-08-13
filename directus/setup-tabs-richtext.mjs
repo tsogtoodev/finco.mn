@@ -1,28 +1,4 @@
 #!/usr/bin/env node
-/**
- * Product detail tabs -> rich text.
- *
- * Only the first tab ("Үйлчилгээний нөхцөл") had an editor: it is the `body`
- * markdown field. The other two were plain controls —
- *
- *   tabs_requirements  json repeater of { text }   (interface: list)
- *   tabs_other         plain textarea              (interface: input-multiline)
- *
- * — so editors could not bold a word, add a link, or build a table there. Both
- * become markdown fields on the same `input-rich-text-md` editor `body` uses.
- * The repeater rows fold into an ordered list, which is exactly what the site
- * rendered before (numbered rows with hairline dividers — DetailTabs styles
- * `ol` to keep that look), so nothing changes visually.
- *
- * Mirrored by scripts/directus-seed.mjs and server/utils/cms-normalizers.ts,
- * and supersedes the tabs_* part of setup-flatten-json.mjs — keep them in sync.
- *
- * Order matters: the field type is altered BEFORE any row is written, so a
- * failed ALTER leaves the data untouched. Every pre-migration value is dumped
- * to directus/backups/ first regardless.
- *
- * Usage:  DIRECTUS_URL=... DIRECTUS_TOKEN=<admin> node directus/setup-tabs-richtext.mjs [--dry-run]
- */
 
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -55,17 +31,12 @@ async function api(method, path, body) {
 }
 const log = (step, msg) => console.log(`  ${step === 'skip' ? '=' : '+'} ${msg}`)
 
-/**
- * Repeater rows -> markdown. Accepts what the column can actually hold at this
- * point in the migration: real arrays, the JSON string a text column returns
- * once the type has already been altered, and markdown that is already done.
- */
 function toMarkdown(value) {
   if (value == null || value === '') return null
   let rows = value
   if (typeof rows === 'string') {
     const s = rows.trim()
-    if (!s.startsWith('[')) return rows // already markdown
+    if (!s.startsWith('[')) return rows
     try {
       rows = JSON.parse(s)
     } catch {
@@ -78,14 +49,9 @@ function toMarkdown(value) {
     .filter((s) => typeof s === 'string' && s.trim())
     .map((s) => s.trim())
   if (!items.length) return null
-  // Ordered list: `1.` on every row is valid markdown and renumbers itself, but
-  // real numbers keep the CMS editor's source readable.
   return items.map((s, i) => `${i + 1}. ${s.replace(/\n+/g, ' ')}`).join('\n')
 }
 
-// ---------------------------------------------------------------------------
-// Run
-// ---------------------------------------------------------------------------
 if (!token) {
   const email = process.env.DIRECTUS_ADMIN_EMAIL
   const password = process.env.DIRECTUS_ADMIN_PASSWORD
@@ -107,7 +73,6 @@ const planned = rows
   .map((r) => ({ id: r.id, from: r.tabs_requirements, to: toMarkdown(r.tabs_requirements) }))
   .filter((p) => p.to !== null && JSON.stringify(p.from) !== JSON.stringify(p.to))
 
-// ── fields ──────────────────────────────────────────────────────────────────
 const fields = Object.fromEntries(
   (await api('GET', `/fields/${COLLECTION}`)).map((f) => [f.field, f]),
 )
@@ -115,8 +80,6 @@ const fields = Object.fromEntries(
 const FIELD_PATCHES = [
   {
     field: 'tabs_requirements',
-    // json repeater -> text. `special` must be cleared too: cast-json would keep
-    // parsing the column, and the markdown string is not JSON.
     body: {
       type: 'text',
       schema: { data_type: 'text' },
@@ -160,7 +123,6 @@ for (const { field, body } of FIELD_PATCHES) {
   log('add', `${field}: ${current.type}/${current.meta?.interface} -> text/${RICH_TEXT}`)
 }
 
-// ── data ────────────────────────────────────────────────────────────────────
 if (!planned.length) log('skip', 'no repeater rows left to fold into markdown')
 for (const p of planned) {
   if (DRY) {
@@ -171,7 +133,6 @@ for (const p of planned) {
   log('add', `#${p.id}: ${Array.isArray(p.from) ? p.from.length : '?'} rows -> markdown`)
 }
 
-// ── verify ──────────────────────────────────────────────────────────────────
 if (!DRY) {
   const after = await api('GET', `/items/${COLLECTION}?limit=-1&fields=id,tabs_requirements`)
   const bad = after.filter((r) => r.tabs_requirements != null && typeof r.tabs_requirements !== 'string')

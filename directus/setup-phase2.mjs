@@ -1,23 +1,4 @@
 #!/usr/bin/env node
-/**
- * Phase 2 provisioning: the remaining collections + permissions.
- * Mirrors content.config.ts. Idempotent — safe to re-run.
- *
- * Creates (14 new, → 17 total custom with phase 1's 3):
- *   products, products_translations, products_related (m2m junction)
- *   services, services_translations, services_related (junction → products)
- *   branches, branches_translations
- *   jobs, jobs_translations
- *   legal, legal_translations
- *   pages, pages_translations
- * plus Editor/Publisher permissions for all of them.
- *
- * Shape rules (so the frontend adapter + seed stay simple):
- *   - object-arrays (faq, stats, timeline, …) -> list repeater (same JSON shape, good UX)
- *   - nested objects & string-arrays (tabs, about, requirements, …) -> raw JSON field (exact shape)
- *
- * Usage:  DIRECTUS_URL=... DIRECTUS_TOKEN=... node directus/setup-phase2.mjs
- */
 
 const BASE = (process.env.DIRECTUS_URL ?? 'https://cms.finco.design').replace(/\/$/, '')
 let token = process.env.DIRECTUS_TOKEN ?? null
@@ -58,9 +39,6 @@ function log(step, msg) {
   console.log(`  ${step === 'skip' ? '=' : '+'} ${msg}`)
 }
 
-// ---------------------------------------------------------------------------
-// Field builders
-// ---------------------------------------------------------------------------
 const f = {
   uuidPk: () => ({
     field: 'id',
@@ -181,16 +159,12 @@ const f = {
 const faqRepeater = () =>
   f.repeater('faq', [['question', 'input'], ['answer', 'input-multiline', 'text']], { template: '{{question}}' })
 
-// file fields need a follow-up relation; declared separately
 const FILE_FIELDS = {
   products: ['hero_image', 'card_image'],
   services: ['hero_image'],
   branches: ['photo', 'map_image'],
 }
 
-// ---------------------------------------------------------------------------
-// Collection definitions (mirrors content.config.ts)
-// ---------------------------------------------------------------------------
 const COLLECTIONS = {
   products: {
     icon: 'shopping_bag',
@@ -288,8 +262,6 @@ const COLLECTIONS = {
       f.repeater('stats', [['value', 'input', 'integer'], ['prefix'], ['suffix'], ['label']], { template: '{{label}}' }),
       f.input('stats_heading', { width: 'full' }),
       f.json('value_props', { note: 'Bento value-prop block (heading/accent/subheading/items).' }),
-      // `image` is a file picker storing a uuid in the JSON (see
-      // directus/setup-hero-slide-images.mjs, which back-fills existing rows).
       f.repeater('hero_slides', [['key'], ['tab'], ['headline'], ['subtext', 'input-multiline', 'text'], ['image', 'file', 'uuid']], { template: '{{key}}: {{headline}}' }),
       f.json('beep', { note: 'Beep showcase copy.' }),
       f.json('fincobiz', { note: 'FincoBiz showcase copy incl. card-deck tab titles.' }),
@@ -306,9 +278,6 @@ const COLLECTIONS = {
   },
 }
 
-// ---------------------------------------------------------------------------
-// Generic creators
-// ---------------------------------------------------------------------------
 async function ensureCollection(name, payload) {
   if (await exists(`/collections/${name}`)) {
     log('skip', `collection ${name} exists`)
@@ -338,9 +307,6 @@ async function ensureField(collection, payload) {
   return true
 }
 
-// ---------------------------------------------------------------------------
-// Auth
-// ---------------------------------------------------------------------------
 if (!token) {
   const email = process.env.DIRECTUS_ADMIN_EMAIL
   const password = process.env.DIRECTUS_ADMIN_PASSWORD
@@ -352,9 +318,6 @@ if (!token) {
 }
 console.log(`\nProvisioning Phase 2 on ${BASE}\n`)
 
-// ---------------------------------------------------------------------------
-// Collections, translations, relations
-// ---------------------------------------------------------------------------
 for (const [name, def] of Object.entries(COLLECTIONS)) {
   console.log(`[${name}]`)
 
@@ -379,7 +342,6 @@ for (const [name, def] of Object.entries(COLLECTIONS)) {
     await ensureRelation(name, field, { related_collection: 'directus_users', schema: { on_delete: 'NO ACTION' } })
   }
 
-  // single-file image fields
   for (const fileField of FILE_FIELDS[name] ?? []) {
     const created = await ensureField(name, {
       field: fileField,
@@ -392,7 +354,6 @@ for (const [name, def] of Object.entries(COLLECTIONS)) {
     }
   }
 
-  // translations
   const tName = `${name}_translations`
   await ensureCollection(tName, {
     collection: tName,
@@ -405,7 +366,6 @@ for (const [name, def] of Object.entries(COLLECTIONS)) {
       ...def.translations,
     ],
   })
-  // self-heal: add any translation fields introduced after the collection was created
   for (const fld of def.translations) await ensureField(tName, fld)
   await ensureField(name, {
     field: 'translations',
@@ -423,7 +383,6 @@ for (const [name, def] of Object.entries(COLLECTIONS)) {
     schema: { on_delete: 'CASCADE' },
   })
 
-  // m2m related
   if (def.m2m) {
     const { field, junction, junctionFields, related } = def.m2m
     const [ownField, otherField] = junctionFields
@@ -455,9 +414,6 @@ for (const [name, def] of Object.entries(COLLECTIONS)) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Permissions for both policies
-// ---------------------------------------------------------------------------
 console.log('[permissions]')
 const editorPolicy = await findOne('/policies', { name: 'Editor Policy' })
 const publisherPolicy = await findOne('/policies', { name: 'Publisher Policy' })
@@ -488,7 +444,6 @@ for (const [name, def] of Object.entries(COLLECTIONS)) {
     ...(def.m2m ? [def.m2m.field] : []),
   ]
 
-  // Editor: draft-only, never status
   await ensurePermission(editorPolicy.id, { collection: name, action: 'create', fields: editorFields, permissions: null })
   await ensurePermission(editorPolicy.id, { collection: name, action: 'read', fields: ['*'], permissions: null })
   await ensurePermission(editorPolicy.id, { collection: name, action: 'update', fields: editorFields, permissions: { status: { _eq: 'draft' } } })
@@ -496,7 +451,6 @@ for (const [name, def] of Object.entries(COLLECTIONS)) {
   await ensurePermission(editorPolicy.id, { collection: tName, action: 'read', fields: ['*'], permissions: null })
   await ensurePermission(editorPolicy.id, { collection: tName, action: 'update', fields: ['*'], permissions: { [`${name}_id`]: { status: { _eq: 'draft' } } } })
 
-  // Publisher: full CRU on base (no hard delete — archive), full on translations
   await ensurePermission(publisherPolicy.id, { collection: name, action: 'create', fields: ['*'], permissions: null })
   await ensurePermission(publisherPolicy.id, { collection: name, action: 'read', fields: ['*'], permissions: null })
   await ensurePermission(publisherPolicy.id, { collection: name, action: 'update', fields: ['*'], permissions: null })
@@ -505,7 +459,6 @@ for (const [name, def] of Object.entries(COLLECTIONS)) {
   await ensurePermission(publisherPolicy.id, { collection: tName, action: 'update', fields: ['*'], permissions: null })
   await ensurePermission(publisherPolicy.id, { collection: tName, action: 'delete', fields: ['*'], permissions: null })
 
-  // junction permissions (adding/removing related products)
   if (def.m2m) {
     const j = def.m2m.junction
     const parentDraftRule = { [def.m2m.junctionFields[0]]: { status: { _eq: 'draft' } } }

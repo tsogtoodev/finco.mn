@@ -1,14 +1,4 @@
 <script setup lang="ts">
-// Language switcher: a pill (globe + the active locale's code) that toggles to
-// the *other* locale on click. Hovering reveals a dropdown listing both
-// locales; clicking an item switches straight to it. Switching preserves the
-// current route via i18n's resolver.
-// `variant` restyles the trigger for the white-on-dark overlay nav vs the
-// dark-on-light solid nav (Figma nodes 1:2623 / 1:13509). The dropdown panel
-// is always solid white so it stays readable over either nav.
-// Hover reveal is pure CSS (group-hover) rather than motion-v / Vue
-// <Transition>: rAF-driven presence animations strand on hydrated/teleported
-// nodes here (see .mega-pop in main.css).
 withDefaults(defineProps<{ variant?: 'solid' | 'overlay' }>(), {
   variant: 'solid',
 })
@@ -18,13 +8,11 @@ const { locale, locales, setLocale } = useI18n()
 type LocaleItem = { code: string; name?: string }
 const items = computed(() => locales.value as LocaleItem[])
 
-// Only two locales, so "other" is the single target the trigger toggles to.
 const other = computed(() => items.value.find((l) => l.code !== locale.value))
 </script>
 
 <template>
   <div class="group relative t-resize">
-    <!-- trigger: shows the active locale, click toggles to the other -->
     <button
       v-if="other"
       :key="locale"
@@ -50,8 +38,6 @@ const other = computed(() => items.value.find((l) => l.code !== locale.value))
       </span>
     </button>
 
-    <!-- hover dropdown: both locales; each switches straight to itself.
-         pt-2 keeps a hover bridge so the cursor doesn't drop out mid-move. -->
     <div
       class="t-dropdown absolute right-0 top-full z-50 pt-2"
       data-origin="top-right"
@@ -86,10 +72,6 @@ const other = computed(() => items.value.find((l) => l.code !== locale.value))
 </template>
 
 <style scoped>
-/* Locale-change transition. The trigger button is keyed by `locale`, so it
-   re-mounts only on an actual switch — these enter animations then play. The
-   pill scales (no opacity, so it never blinks out) while the label fades and
-   slides in, reading as the code smoothly swapping. */
 .locale-pill {
   animation: locale-pill-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }

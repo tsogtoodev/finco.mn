@@ -1,8 +1,4 @@
 <script setup lang="ts">
-// Promo card inside a NavMegaMenu (Figma 1:11994 Beep / 1:11855 FincoBiz).
-// Two variants share one shell: a rounded card with a brand gradient, a logo +
-// tagline at the top and a CTA pill at the bottom, plus a variant-specific photo
-// (Beep lifestyle shot) or product mockup (FincoBiz platform UI).
 const props = defineProps<{
   variant: 'beep' | 'fincobiz'
   logo: string
@@ -26,7 +22,6 @@ const localePath = useLocalePath()
     "
     :aria-label="logoAlt"
   >
-    <!-- Beep: green dot-wave + lifestyle photo -->
     <template v-if="variant === 'beep'">
       <NuxtImg
         src="/images/nav/beep-dots.png"
@@ -46,14 +41,12 @@ const localePath = useLocalePath()
         sizes="320px"
         class="pointer-events-none absolute bottom-0 right-0 h-[94%] w-auto max-w-none object-contain object-bottom transition-transform duration-500 group-hover:scale-[1.03]"
       />
-      <!-- bottom scrim so the CTA reads over the photo -->
       <div
         aria-hidden="true"
         class="pointer-events-none absolute inset-x-0 bottom-0 h-[38%] bg-gradient-to-b from-transparent to-[#001f16]"
       />
     </template>
 
-    <!-- FincoBiz: laptop render + dark-blue base -->
     <template v-else>
       <NuxtImg
         src="/images/nav/fincobiz-laptop.png"
@@ -70,7 +63,6 @@ const localePath = useLocalePath()
       />
     </template>
 
-    <!-- foreground: logo + tagline (top) and CTA (bottom) -->
     <div class="relative flex h-full min-h-[448px] flex-col justify-between p-5">
       <div class="flex flex-col gap-3">
         <NuxtImg

@@ -1,8 +1,4 @@
 <script setup lang="ts">
-// Home news carousel — full-bleed carousel of uniform-width cards that steps one
-// at a time; the active card is pinned to the first-item slot with blurred peeks
-// on either side. (Mirrors HomeProductsCarousel's layout/interaction, without the
-// size ramp — every card is the same size.)
 const props = defineProps<{
   items: { slug: string; title: string; excerpt?: string; image?: string; to?: string }[]
   label?: string
@@ -10,68 +6,45 @@ const props = defineProps<{
 const { t } = useI18n()
 
 const GAP = 40
-const CARD_W_MAX = 408 // design width; the card never grows past it
+const CARD_W_MAX = 408
 const CARD_H = 420
-// Smallest sliver of the next card left visible at the right edge, so the track
-// still reads as scrollable once the active card has been shrunk to fit.
 const PEEK_MIN = 24
 
-// Viewport metrics behind the travel bounds and the peeks (set by `measure()`).
 const rootW = ref(0)
 const edgePad = ref(0)
 
-// The design's 408px card is wider than a phone: at 375 the edge pad is 24, so a
-// fixed card ran x = 24 -> 432 inside a 375px `overflow-hidden` root and ~57px of
-// EVERY card was clipped — cropped image, excerpt cut mid-word — permanently, at
-// every index. Unlike the products carousel there is no size ramp to recover it.
-// Card HEIGHT stays fixed: the title is `truncate` and the excerpt `line-clamp-3`,
-// so the text block is the same height at any width and nothing reflows.
 const cardW = computed(() => {
-  if (!rootW.value) return CARD_W_MAX // SSR / pre-measure: keep the design width
+  if (!rootW.value) return CARD_W_MAX
   return Math.min(CARD_W_MAX, Math.max(240, rootW.value - edgePad.value - PEEK_MIN))
 })
 
 const active = ref(0)
-// Snap back to the first card whenever the list changes (locale switch).
 watch(() => props.items.map((n) => n.slug).join('|'), () => { active.value = 0 })
 
 const count = computed(() => props.items.length)
 const atStart = computed(() => active.value <= 0)
 
-// Right edge of the last card when `a` is active, measured from the track's
-// left edge. Strictly decreasing in `a` (each step drops one card).
 const rightExtent = (a: number) => {
   const visible = count.value - a
   return edgePad.value + visible * cardW.value + (visible - 1) * GAP
 }
-// Travel stops at the first index where every remaining card fits on screen —
-// stepping past it would only pull dead space in on the right.
 const maxActive = computed(() => {
   const last = Math.max(0, count.value - 1)
-  if (!rootW.value) return last // pre-measure: keep the plain index behaviour
+  if (!rootW.value) return last
   for (let a = 0; a <= last; a++) {
     if (rightExtent(a) <= rootW.value) return a
   }
   return last
 })
-// A widening viewport can pull the bound below the current index.
 watch(maxActive, (m) => { if (active.value > m) active.value = m })
 
 const atEnd = computed(() => active.value >= maxActive.value)
 const clamp = (n: number) => Math.min(Math.max(n, 0), maxActive.value)
 function go(dir: 1 | -1) {
   active.value = clamp(active.value + dir)
-  startAuto() // restart the countdown so it never steps right after a manual one
+  startAuto()
 }
 
-// Auto-advance: step forward every 5s, wrapping back to the first card at the
-// end (`go` clamps, so the wrap is done here rather than through it). It only
-// runs while the carousel is actually on screen (`onScreen`, driven by
-// autoObserver below) so it never burns cycles — or silently skips past cards —
-// while parked elsewhere on the page. Hover pauses so a card can be read, a
-// backgrounded tab suspends it, and any manual step restarts the countdown.
-// Skipped for prefers-reduced-motion — an unprompted 600ms slide is exactly the
-// motion that setting opts out of.
 const AUTO_MS = 5000
 let autoTimer: ReturnType<typeof setInterval> | null = null
 let autoObserver: IntersectionObserver | null = null
@@ -89,7 +62,6 @@ function stopAuto() {
 }
 function startAuto() {
   stopAuto()
-  // maxActive 0 = every card already fits; there is nothing to advance to.
   if (!onScreen || hovering || maxActive.value <= 0) return
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   autoTimer = setInterval(advance, AUTO_MS)
@@ -107,21 +79,14 @@ function onVisibility() {
   else startAuto()
 }
 
-// Shift the track left so the active card's leading edge lands on the main slot
-// (the track's padding-left = --carousel-edge places that slot).
 const trackOffset = computed(() => -active.value * (cardW.value + GAP))
 
-// Pointer drag with deferred capture: a press alone does nothing — we only
-// engage drag (and capture the pointer, disabling the snap transition) once the
-// finger crosses DRAG_THRESHOLD. So a tap never becomes a drag and flows through
-// as a normal click that navigates the card link; only a real drag suppresses
-// that trailing click and steps by however many card-widths were dragged.
 const DRAG_THRESHOLD = 8
-const step = () => cardW.value + GAP // one card width
-const dragging = ref(false) // past threshold: track follows the finger
+const step = () => cardW.value + GAP
+const dragging = ref(false)
 const dragX = ref(0)
-let pressing = false // pointer down, not yet (maybe never) a drag
-let suppressClick = false // last gesture was a drag → cancel its click
+let pressing = false
+let suppressClick = false
 let startX = 0
 let pointerId: number | null = null
 
@@ -138,10 +103,10 @@ function onPointerMove(e: PointerEvent) {
   if (!pressing) return
   const dx = e.clientX - startX
   if (!dragging.value) {
-    if (Math.abs(dx) < DRAG_THRESHOLD) return // still within tap tolerance
+    if (Math.abs(dx) < DRAG_THRESHOLD) return
     dragging.value = true
     if (pointerId != null) {
-      try { (e.currentTarget as HTMLElement).setPointerCapture(pointerId) } catch { /* synthetic/invalid pointer */ }
+      try { (e.currentTarget as HTMLElement).setPointerCapture(pointerId) } catch {}
     }
   }
   dragX.value = dx
@@ -154,14 +119,14 @@ function onPointerUp(e: PointerEvent) {
   dragging.value = false
   dragX.value = 0
   if (pointerId != null) {
-    try { (e.currentTarget as HTMLElement).releasePointerCapture(pointerId) } catch { /* not captured */ }
+    try { (e.currentTarget as HTMLElement).releasePointerCapture(pointerId) } catch {}
     pointerId = null
   }
   if (!wasDragging) {
-    startAuto() // a tap — let the click navigate the card
+    startAuto()
     return
   }
-  suppressClick = true // a drag — cancel the click that follows
+  suppressClick = true
   const steps = Math.round(-dx / step())
   if (steps !== 0) active.value = clamp(active.value + steps)
   else if (Math.abs(dx) > 60) active.value = clamp(active.value + (dx < 0 ? 1 : -1))
@@ -177,10 +142,6 @@ function onClickCapture(e: MouseEvent) {
 
 const progress = computed(() => (maxActive.value <= 0 ? 1 : active.value / maxActive.value))
 
-// Peeks/floating nav only make sense while cards are actually cut off at that
-// edge — near the end the remaining cards may fit entirely on screen, and a
-// frosted button would float over blank background. Extents are derived from
-// the fixed card size (not the DOM) so mid-transition animation can't skew them.
 const rootEl = ref<HTMLElement | null>(null)
 const trackEl = ref<HTMLElement | null>(null)
 let resizeObserver: ResizeObserver | null = null
@@ -189,9 +150,6 @@ function measure() {
   rootW.value = rootEl.value.clientWidth
   edgePad.value = Number.parseFloat(getComputedStyle(trackEl.value).paddingLeft) || 0
 }
-// Staggered card reveal (see .carousel-reveal in main.css): SSR/no-JS renders
-// the cards visible; after hydration they hide (`hydrated`) until the carousel
-// enters the viewport, then rise in one by one via inline animation-delay.
 const hydrated = ref(false)
 const revealed = ref(false)
 let revealObserver: IntersectionObserver | null = null
@@ -206,14 +164,12 @@ onMounted(() => {
 
   if (!('IntersectionObserver' in window)) {
     revealed.value = true
-    onScreen = true // no IO to gate on — fall back to always-on, never never-on
+    onScreen = true
     startAuto()
     return
   }
   hydrated.value = true
 
-  // Viewport gate for the auto-advance. Separate from revealObserver below,
-  // which disconnects after the first reveal and so can't track leaving again.
   autoObserver = new IntersectionObserver((entries) => {
     onScreen = entries[entries.length - 1]?.isIntersecting ?? false
     if (onScreen) startAuto()
@@ -237,15 +193,11 @@ onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', onVisibility)
 })
 
-// Before mount (rootW=0) fall back to the plain index checks so SSR matches
-// the common case.
 const overflowsLeft = computed(() => {
   if (atStart.value) return false
   if (!rootW.value) return true
   return active.value * (cardW.value + GAP) > edgePad.value
 })
-// Cards overflow right exactly while the track can still travel — `maxActive`
-// is defined as the first index where they stop overflowing.
 const overflowsRight = computed(() => active.value < maxActive.value)
 
 const MASK_R = 'linear-gradient(to right, transparent, #000 60%)'
@@ -291,7 +243,6 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
         />
       </div>
 
-      <!-- Blurred peeks — previous cards on the left, upcoming on the right. -->
       <div
         v-show="overflowsLeft"
         aria-hidden="true"
@@ -319,7 +270,6 @@ const MASK_L = 'linear-gradient(to left, transparent, #000 60%)'
       </div>
     </div>
 
-    <!-- Controls (stay aligned to the heading column) -->
     <div class="mt-8 flex items-center gap-8 px-[var(--carousel-edge,1.5rem)]">
       <div class="flex shrink-0 gap-6">
         <IconButton tone="light" direction="prev" :disabled="atStart" :label="t('common.prev')" @click="go(-1)" />

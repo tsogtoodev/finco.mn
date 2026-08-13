@@ -1,8 +1,4 @@
 {
-  // Cloudflare Workers config for direct deploy (NuxtHub v0.10, no NuxtHub Admin).
-  // Nuxt's nitro `cloudflare-module` preset (with compatibilityDate ≥ 2024-09-19)
-  // emits modern Workers Static Assets: worker entry at .output/server/index.mjs
-  // + static files in .output/public served via the ASSETS binding.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "finco-mn",
   "main": ".output/server/index.mjs",
@@ -16,11 +12,6 @@
     "enabled": true
   },
 
-  // Public env (NUXT_PUBLIC_*) — safe to commit: the Firebase web config is
-  // public by design and ships to the browser via the SSR payload. nitro reads
-  // these from the Worker env at runtime and overrides runtimeConfig.public.
-  // SECRET: NUXT_SESSION_PASSWORD is NOT here — set it as a Wrangler secret:
-  //   npx wrangler secret put NUXT_SESSION_PASSWORD
   "vars": {
     "NUXT_PUBLIC_SITE_URL": "https://finco.design",
     "NUXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyAPLipthP1LNINpOxdReNXO6OSl-PbTR1E",
@@ -34,7 +25,6 @@
     "NUXT_PUBLIC_CMS_PROVIDER": "directus"
   },
 
-  // Raw D1 binding queried by @nuxt/content (content.database.bindingName: 'DB').
   "d1_databases": [
     {
       "binding": "DB",
@@ -43,9 +33,6 @@
     }
   ],
 
-  // Shared nitro cache storage (hub.cache) — the CMS endpoint's 60s cache and
-  // the revalidate webhook's purge both live here. Per-isolate memory is NOT
-  // acceptable: SWR dies on isolate suspension and purges wouldn't be global.
   "kv_namespaces": [
     {
       "binding": "CACHE",

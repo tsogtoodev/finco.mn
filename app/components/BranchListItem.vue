@@ -6,7 +6,6 @@ defineEmits<{ select: [] }>()
 
 const { t } = useI18n()
 const detailsId = computed(() => `branch-details-${props.branch.slug}`)
-// tel: links want digits only (keep a leading +)
 const telHref = computed(() => props.branch.phone?.replace(/[^\d+]/g, ''))
 </script>
 
@@ -15,7 +14,6 @@ const telHref = computed(() => props.branch.phone?.replace(/[^\d+]/g, ''))
     class="relative rounded-[24px] border border-[#8a5df2]/20 bg-white p-6 transition-[border-color,box-shadow] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none"
     :class="active ? 'shadow-[0_8px_24px_-12px_rgba(76,65,216,0.25)]' : 'hover:border-[#8a5df2]/40'"
   >
-    <!-- Stretched select button (sits under the content so the whole card is clickable) -->
     <button
       type="button"
       class="absolute inset-0 z-0 rounded-[24px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
@@ -36,9 +34,6 @@ const telHref = computed(() => props.branch.phone?.replace(/[^\d+]/g, ''))
           {{ branch.name }}
         </p>
 
-        <!-- grid-rows 0fr→1fr animates the card height smoothly (no layout jump);
-             inner opacity fades the content; `inert` keeps the collapsed panel
-             out of tab order / a11y tree. -->
         <div
           class="grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none"
           :class="active ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"

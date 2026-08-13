@@ -1,37 +1,21 @@
-# Nuxt dev/build outputs
 .output
 .data
 .nuxt
 .nitro
 .cache
 dist
-
-# NuxtHub / Cloudflare local
 .wrangler
 .nuxthub
-
-# Node dependencies
 node_modules
-
-# Logs
 logs
 *.log
-
-# Misc
 .DS_Store
 .fleet
 .idea
-
-# Raw video masters — heavy source files. Optimized web-ready encodes live in
-# public/videos/ (committed); nothing imports from here at build time.
 app/assets/videos/
-
-# Local env files
 .env
 .env.*
 !.env.example
-
-# Scripts
 Makefile
 .make.env
 .omx

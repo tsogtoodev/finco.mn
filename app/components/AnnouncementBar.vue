@@ -1,24 +1,12 @@
 <script setup lang="ts">
-// Dismissible promo strip above the nav (Figma node 1:12280). Full-bleed, 36px,
-// near-black bg, centered teal bolt + message + teal CTA, dismiss ✕ pinned right.
-// Not sticky — it scrolls away with the page; only the nav row sticks. When
-// dismissed it is removed from the flow, so the sticky nav sits flush at top:0.
-//
-// Dismissal persists for the browser session via a cookie. useCookie is read on
-// the server, so a dismissed bar never flashes in before hydration.
 const { t } = useI18n()
 const localePath = useLocalePath()
 
 const dismissed = useCookie<boolean>('finco_announcement_dismissed', {
   default: () => false,
   sameSite: 'lax',
-  // No maxAge → session cookie: cleared when the browser closes, kept across reloads.
 })
 
-// Dismiss is a two-phase exit so the nav slides up instead of jumping: flip
-// `collapsing` (adds .is-collapsing → CSS eases --announcement-h, and thus the
-// bar's height + the nav's flow position, to 0), then unmount once it settles.
-// COLLAPSE_MS must match the --announcement-h transition in main.css.
 const COLLAPSE_MS = 420
 const collapsing = ref(false)
 let collapseTimer: ReturnType<typeof setTimeout> | undefined
@@ -27,7 +15,7 @@ function dismiss() {
   if (collapsing.value) return
   collapsing.value = true
   collapseTimer = setTimeout(() => {
-    dismissed.value = true // persists the cookie + drops the bar from the DOM
+    dismissed.value = true
   }, COLLAPSE_MS)
 }
 

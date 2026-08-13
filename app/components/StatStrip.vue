@@ -6,7 +6,6 @@ defineProps<{ heading?: string; stats?: Collections['pages']['stats'] }>()
 
 <template>
   <section v-if="stats?.length" class="relative overflow-hidden bg-dark py-20 text-white">
-    <!-- Aurora wave backdrop (approximation of the Figma graphic) -->
     <div class="pointer-events-none absolute inset-x-0 top-0 h-64 opacity-80">
       <div class="absolute left-1/4 top-6 h-40 w-1/2 -translate-x-1/2 rounded-[100%] bg-gradient-to-r from-primary via-accent to-teal blur-[80px]" />
       <div class="absolute left-1/2 top-0 h-32 w-2/3 -translate-x-1/2 rounded-[100%] bg-gradient-to-r from-teal/60 via-primary/60 to-accent/70 blur-[90px]" />

@@ -1,11 +1,6 @@
-// Dynamic sitemap source — emits locale-prefixed URLs for content-driven
-// detail routes (products, services, jobs, news) that @nuxtjs/sitemap can't
-// discover from the static page tree. Registered via `sitemap.sources`.
 export default defineSitemapEventHandler(async (event) => {
   const locales = ['mn', 'en'] as const
   const urls: { loc: string }[] = []
-  // Wave-1 collections read Directus when the provider flag is on; drafts are
-  // excluded upstream (the CMS endpoint only serves published records).
   const directus = useRuntimeConfig().public.cmsProvider === 'directus'
 
   for (const locale of locales) {

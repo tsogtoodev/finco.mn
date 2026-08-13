@@ -1,26 +1,4 @@
 #!/usr/bin/env node
-/**
- * Creates the `configuration` collection: flat key/value settings for the whole
- * site (contact details, social links, …). Seeds the first five keys.
- * Idempotent — existing objects are skipped, never mutated, and existing values
- * are left alone so a re-run can never overwrite what an editor typed.
- *
- * Usage (from your machine):
- *   DIRECTUS_URL=https://cms.finco.design \
- *   DIRECTUS_TOKEN=<admin static token> \
- *   node directus/setup-configuration.mjs
- *
- * Auth: DIRECTUS_TOKEN (admin static token) or DIRECTUS_ADMIN_EMAIL +
- * DIRECTUS_ADMIN_PASSWORD, same as the other setup scripts.
- *
- * NOT translated, deliberately. A phone number, an address line and a Facebook
- * URL are the same string in every locale, and a translations table would make
- * every one of them a two-row edit that silently half-publishes. Anything that
- * genuinely differs per language belongs in `pages` with the rest of the copy.
- *
- * After it succeeds: snapshot the schema (see PHASE1-SETUP.md §6) and commit
- * directus/schema.yaml.
- */
 
 const BASE = (process.env.DIRECTUS_URL ?? 'https://cms.finco.design').replace(/\/$/, '')
 
@@ -65,9 +43,6 @@ function log(step, msg) {
   console.log(`  ${step === 'skip' ? '=' : '+'} ${msg}`)
 }
 
-// ---------------------------------------------------------------------------
-// Auth
-// ---------------------------------------------------------------------------
 if (!token) {
   const email = process.env.DIRECTUS_ADMIN_EMAIL
   const password = process.env.DIRECTUS_ADMIN_PASSWORD
@@ -80,9 +55,6 @@ if (!token) {
 }
 console.log(`\nProvisioning ${BASE}\n`)
 
-// ---------------------------------------------------------------------------
-// 1. configuration collection
-// ---------------------------------------------------------------------------
 console.log('[1/3] configuration collection')
 if (await exists('/collections/configuration')) {
   log('skip', 'collection configuration exists')
@@ -103,8 +75,6 @@ if (await exists('/collections/configuration')) {
     schema: {},
     fields: [
       {
-        // The key IS the primary key: it is what code looks a setting up by, so
-        // a separate uuid would just be a second identifier that can drift.
         field: 'key',
         type: 'string',
         meta: {
@@ -189,17 +159,10 @@ if (await exists('/collections/configuration')) {
   log('add', 'created collection configuration')
 }
 
-// ---------------------------------------------------------------------------
-// 2. seed rows
-// ---------------------------------------------------------------------------
-// Kept in sync with content/configuration/*.yml — the @nuxt/content fallback the
-// site reads when NUXT_PUBLIC_CMS_PROVIDER is not 'directus'.
 console.log('[2/3] seed entries')
 const SEEDS = [
   { key: 'contact_phone', sort: 1, label: 'Contact phone number', value: '+976 7070 1212' },
   { key: 'contact_email', sort: 2, label: 'Contact email address', value: 'contact@finco.mn' },
-  // Empty on purpose: nobody should invent a social URL. Fill these in the
-  // admin; until then the site falls back to hiding the icon.
   { key: 'social_facebook', sort: 3, label: 'Facebook page URL', value: '' },
   { key: 'social_instagram', sort: 4, label: 'Instagram profile URL', value: '' },
   { key: 'social_youtube', sort: 5, label: 'YouTube channel URL', value: '' },
@@ -214,12 +177,6 @@ for (const seed of SEEDS) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// 3. permissions
-// ---------------------------------------------------------------------------
-// API Read Policy: published-only, matching every other public collection.
-// Editors/Publishers: no `_translations` table here, so this is the plain
-// single-collection version of the loop in setup-phase2.mjs.
 console.log('[3/3] permissions')
 
 async function ensurePermission(policyId, perm) {
@@ -250,12 +207,10 @@ if (readPolicy) {
 const editorPolicy = await findOne('/policies', { name: 'Editor Policy' })
 const publisherPolicy = await findOne('/policies', { name: 'Publisher Policy' })
 if (editorPolicy && publisherPolicy) {
-  // Editor: may add a key and edit drafts, never flips status.
   const editorFields = ['key', 'value', 'label', 'sort']
   await ensurePermission(editorPolicy.id, { collection: 'configuration', action: 'create', fields: editorFields, permissions: null })
   await ensurePermission(editorPolicy.id, { collection: 'configuration', action: 'read', fields: ['*'], permissions: null })
   await ensurePermission(editorPolicy.id, { collection: 'configuration', action: 'update', fields: editorFields, permissions: { status: { _eq: 'draft' } } })
-  // Publisher: full CRU, no hard delete — archive instead, same as elsewhere.
   await ensurePermission(publisherPolicy.id, { collection: 'configuration', action: 'create', fields: ['*'], permissions: null })
   await ensurePermission(publisherPolicy.id, { collection: 'configuration', action: 'read', fields: ['*'], permissions: null })
   await ensurePermission(publisherPolicy.id, { collection: 'configuration', action: 'update', fields: ['*'], permissions: null })

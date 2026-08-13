@@ -1,4 +1,3 @@
-# Empty until the real URL is confirmed — callers treat "" as "no link".
 key: social_facebook
 label: Facebook page URL
 sort: 3

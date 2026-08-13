@@ -1,19 +1,4 @@
 <template>
-  <!-- Finco Capital wordmark, exported from Figma 1113:4531 — the footer's
-       full-bleed watermark. Distinct from <FincoLogo>, which is the two-colour
-       lockup the header uses at small sizes: this one is a single flat path
-       drawn at 1172x236, sized to bleed off the bottom of the page.
-
-       Two things were dropped from the Figma export deliberately:
-        - the frame's `<rect fill="#DCDCDC">` backdrop, which is the artboard
-          behind the logo, not part of it — keeping it would paint a grey box
-          across the footer's light surface;
-        - the clipPath, a 1171.48x235.38 rect over a 1172x236 canvas, i.e. a
-          half-pixel no-op.
-
-       The export hard-codes `fill="black" fill-opacity="0.2"`; that is expressed
-       as `currentColor` here so the tint is a caller decision (the footer passes
-       `text-black/20`, which resolves to exactly the exported value). -->
   <svg
     viewBox="0 0 1172 236"
     fill="none"

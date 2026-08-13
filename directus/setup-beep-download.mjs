@@ -1,24 +1,4 @@
 #!/usr/bin/env node
-/**
- * The Beep section's download block (HomeBeepV2, Figma 1267:15587) grew past the
- * CMS schema: the label above the store badges and the QR image were both baked
- * into the component. This adds them as editable fields and back-fills the
- * values the site currently shows, so the migration is visually a no-op.
- *
- *   pages_translations  += beep_download_label  (string, home_beep_group)
- *                       += beep_qr_file         (uuid -> directus_files)
- *
- * The App Store / Google Play badges themselves are NOT CMS content — they are
- * vendor artwork governed by Apple's and Google's brand guidelines and stay in
- * public/images/home/ with the component.
- *
- * Field definitions are mirrored in directus/setup-flatten-json.mjs (label) and
- * read back by server/utils/cms-normalizers.ts `assembleBeep` — keep in sync.
- * QR bytes live in R2 like all other media; sha256 dedupe via the file
- * `description` tag. Must run from the repo root (reads ./public).
- *
- * Usage:  DIRECTUS_URL=... DIRECTUS_TOKEN=... node directus/setup-beep-download.mjs [--force]
- */
 
 import { readFileSync, existsSync } from 'node:fs'
 import { join, basename } from 'node:path'
@@ -32,8 +12,6 @@ const ROOT = process.cwd()
 const T = 'pages_translations'
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-// The QR the component bakes in today, and the label per language. Mirrors
-// content/pages/<locale>/home.yml `beep.downloadLabel`.
 const QR_ART = '/images/home/beep-qr-v2.png'
 const LABELS = { mn: 'Апп татах:', en: 'Download the app:' }
 
@@ -95,9 +73,6 @@ async function uploadImage(publicPath) {
   return id
 }
 
-// ---------------------------------------------------------------------------
-// Run
-// ---------------------------------------------------------------------------
 if (!token) {
   const email = process.env.DIRECTUS_ADMIN_EMAIL
   const password = process.env.DIRECTUS_ADMIN_PASSWORD
@@ -109,7 +84,6 @@ if (!token) {
 }
 console.log(`\nBeep download block (label + QR) on ${BASE}\n`)
 
-// 1. fields ---------------------------------------------------------------------
 console.log('[fields]')
 if (await exists(`/fields/${T}/beep_download_label`)) log('skip', 'beep_download_label exists')
 else {
@@ -152,9 +126,6 @@ else {
   log('add', 'beep_qr_file (+ relation to directus_files)')
 }
 
-// 2. back-fill ------------------------------------------------------------------
-// Only rows that already carry Beep copy — pages_translations holds every page,
-// and about/products/… have no Beep block to label.
 console.log('[migrate]')
 const rows = await api(
   'GET',

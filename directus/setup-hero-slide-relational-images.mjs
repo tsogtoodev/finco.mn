@@ -1,34 +1,4 @@
 #!/usr/bin/env node
-/**
- * First-class relational image fields for the home hero carousel — replacing
- * the `image` FILE PICKER INSIDE the hero_slides JSON repeater, which Directus
- * core does not properly support (list stores plain JSON, no relational
- * machinery — the picker renders but selection/thumbnails misbehave and a save
- * can silently clear the value; see directus/directus discussions #3001/#8834).
- *
- *   pages_translations += hero_slide_fincobiz_file    (uuid -> directus_files)
- *                         hero_slide_beepwallet_file
- *                         hero_slide_loans_file
- *                         hero_slide_trust_file
- *
- * One real column per slide: the slide SET is fixed by HomeHero.vue (key, route
- * and baked fallback art live in code), so a column per key matches reality and
- * buys the standard, fully-working file-image interface with thumbnail. Copy
- * fields (key/tab/headline/subtext) stay in the repeater.
- *
- * Migration copies each translation row's hero_slides[].image uuid into the
- * matching column, then REMOVES the broken `image` subfield from the repeater
- * UI (the uuids remain in the JSON as a normalizer-side fallback until
- * --drop-legacy strips them).
- *
- * The normalizer prefers the new columns over the legacy JSON value
- * (server/utils/cms-normalizers.ts assembleHeroSlides) — keep in sync.
- *
- * Auth: set DIRECTUS_TOKEN to an admin static token (same as the other
- * directus/setup-*.mjs scripts).
- *
- * Usage:  DIRECTUS_URL=... DIRECTUS_TOKEN=... node directus/setup-hero-slide-relational-images.mjs [--force] [--drop-legacy]
- */
 
 const BASE = (process.env.DIRECTUS_URL ?? 'https://cms.finco.design').replace(/\/$/, '')
 const token = process.env.DIRECTUS_TOKEN
@@ -38,15 +8,13 @@ const DROP = process.argv.includes('--drop-legacy')
 const T = 'pages_translations'
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-// slide key (hero_slides[].key, camelCase — set by HomeHero.vue) -> new column.
-// Order/sort mirrors the tab bar; all land next to the repeater in home_group.
 const SLIDE_FIELDS = [
   { key: 'fincoBiz', field: 'hero_slide_fincobiz_file', label: 'FincoBiz', sort: 32 },
   { key: 'beepWallet', field: 'hero_slide_beepwallet_file', label: 'BeepWallet', sort: 33 },
   { key: 'loans', field: 'hero_slide_loans_file', label: 'Loans', sort: 34 },
   { key: 'trust', field: 'hero_slide_trust_file', label: 'Trust', sort: 35 },
 ]
-const GROUP = 'home_group' // hero_slides lives here (sort 31)
+const GROUP = 'home_group'
 
 async function api(method, path, body) {
   const res = await fetch(BASE + path, {
@@ -77,16 +45,12 @@ function log(step, msg) {
   console.log(`  ${step === 'skip' ? '=' : '+'} ${msg}`)
 }
 
-// ---------------------------------------------------------------------------
-// Run
-// ---------------------------------------------------------------------------
 if (!token) {
   console.error('Set DIRECTUS_TOKEN (admin static token).')
   process.exit(1)
 }
 console.log(`\nRelational hero-slide images on ${BASE}\n`)
 
-// 1. real uuid columns with file relations ------------------------------------
 console.log('[fields]')
 for (const { field, label, sort } of SLIDE_FIELDS) {
   if (await exists(`/fields/${T}/${field}`)) {
@@ -115,7 +79,6 @@ for (const { field, label, sort } of SLIDE_FIELDS) {
   log('add', `${field} (+ relation to directus_files)`)
 }
 
-// 2. migrate repeater uuids into the columns ----------------------------------
 console.log('[migrate]')
 const fieldNames = SLIDE_FIELDS.map((x) => x.field)
 const rows = await api(
@@ -140,9 +103,6 @@ for (const row of rows) {
   }
 }
 
-// 3. remove the broken picker from the repeater UI ----------------------------
-// The JSON keeps any existing image uuids (normalizer fallback) — only the
-// Studio subfield goes, so editors can no longer feed the broken interface.
 {
   const f = await api('GET', `/fields/${T}/hero_slides`)
   const options = f.meta?.options ?? {}
@@ -157,7 +117,6 @@ for (const row of rows) {
   }
 }
 
-// 4. optionally strip legacy uuids out of the JSON ----------------------------
 if (DROP) {
   console.log('[drop-legacy]')
   for (const row of rows) {

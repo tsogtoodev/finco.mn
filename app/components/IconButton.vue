@@ -1,6 +1,4 @@
 <script setup lang="ts">
-// Circular icon button — carousel prev/next arrows (Figma 1:14212/1:14214).
-// `direction` flips the shared arrow glyph; `tone` adapts to dark/light sections.
 withDefaults(
   defineProps<{
     direction?: 'prev' | 'next'

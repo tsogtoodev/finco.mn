@@ -1,4 +1,3 @@
-# Empty until the real URL is confirmed — callers treat "" as "no link".
 key: social_instagram
 label: Instagram profile URL
 sort: 4

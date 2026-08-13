@@ -1,19 +1,3 @@
-// Reference-counted <body> scroll lock.
-//
-// Two things lock page scrolling — the mobile nav drawer (SiteHeader) and
-// AppDialog — and they can be open at the same time (the floating action button
-// sits above the drawer). A plain `overflow = 'hidden'` / `overflow = ''` pair in
-// each would mean whichever closes FIRST unlocks the page behind the other, so
-// the content scrolls away underneath a panel that is still open.
-//
-// Counting the locks instead means the page only unlocks when the last holder
-// releases. Module scope is deliberate — the count is shared across callers — and
-// it is only ever touched in the browser, so there is no SSR cross-request state.
-//
-// `overflow: hidden` alone no longer stops the page: Lenis listens on window and
-// scrolls programmatically, so it has to be told to stand down as well (no-op
-// when there is no instance — reduced-motion users).
-
 import { getSmoothScroll } from '~/utils/smoothScroll'
 
 let lockCount = 0

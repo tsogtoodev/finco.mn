@@ -1,6 +1,4 @@
 <script setup lang="ts">
-// One board-of-directors row (Figma 1:7907) — portrait + name/title on the
-// left, bio on the right. Stacks (photo above text) on small screens.
 import type { BoardMember } from '~/composables/useAboutContent'
 
 defineProps<{ member: BoardMember }>()
@@ -21,11 +19,6 @@ defineProps<{ member: BoardMember }>()
         <p class="text-base font-light text-[rgba(0,0,0,0.6)] sm:text-lg">{{ member.role }}</p>
       </div>
     </div>
-    <!-- Bio column. When the member has a `bioHover` career timeline, hovering
-         the description cross-fades the bio out and the timeline in (they're
-         stacked, so no layout shift). The row's photo keeps it tall enough for
-         the timeline to reveal in place without pushing into the next row.
-         See the scoped styles for the touch fallback. -->
     <div class="bio relative flex flex-col justify-center text-sm font-light leading-6 text-[rgba(0,0,0,0.6)] sm:text-base md:max-w-[720px] md:self-stretch">
       <p class="bio-main">
         {{ member.bio }}
@@ -38,11 +31,6 @@ defineProps<{ member: BoardMember }>()
 </template>
 
 <style scoped>
-/* The cross-fade is expressed here rather than with `group-hover:` utilities so
-   the two states can be scoped to pointer capability explicitly. Every board
-   member carries a six-line `bioHover` career history; with a bare :hover rule
-   that content was present in the DOM (and announced by screen readers) but
-   impossible to reveal on any touch device. */
 .bio-main,
 .bio-alt {
   transition: opacity 300ms;
@@ -50,14 +38,12 @@ defineProps<{ member: BoardMember }>()
 .bio-alt {
   position: absolute;
   inset-inline: 0;
-  /* Centered like .bio-main so the cross-fade swaps in place. */
   top: 50%;
   translate: 0 -50%;
   opacity: 0;
   white-space: pre-line;
 }
 
-/* Pointer devices keep the designed cross-fade. */
 @media (hover: hover) {
   .bio:hover .bio-main {
     opacity: 0;
@@ -67,9 +53,6 @@ defineProps<{ member: BoardMember }>()
   }
 }
 
-/* Touch: there is no hover to trigger, so the timeline drops into normal flow
-   under the bio and both simply read. Guarding on (hover: none) rather than
-   width also avoids iOS' sticky :hover-on-tap fading the bio out underneath it. */
 @media (hover: none) {
   .bio-alt {
     position: static;

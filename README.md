@@ -1,6 +1,4 @@
-# finco.design
-
-Bilingual (Mongolian-first) marketing + careers site for **Finco Capital ББСБ ХХК**, the non-bank financial institution behind the **Beep** and **FincoBiz** products. Built from the Figma `final` page (file `Jy6iCHGx9nTqqT9nnQ6cE9`); see [structure.md](structure.md) for the page/section/component plan.
+# finco.mn
 
 ## Stack
 
@@ -8,7 +6,6 @@ Bilingual (Mongolian-first) marketing + careers site for **Finco Capital ББС�
 - **@nuxt/content** — typed collections (products / services / branches / jobs / news / pages) backed by **Cloudflare D1** in production (`better-sqlite3` is local-dev only)
 - **@nuxtjs/i18n** — `mn` (default) + `en`, both prefixed (`/mn`, `/en`), root redirects via cookie/browser detection
 - **Tailwind CSS v4** (`@tailwindcss/vite`), **motion-v** for animation, **@number-flow/vue** for counters, Spline runtime for 3D scenes
-- **Nuxt Studio v2** (self-hosted CMS) — editors visit `/_studio` on the deployed site, sign in with a GitHub OAuth app; edits commit to `main` and trigger a redeploy
 - **Auth**: Firebase (client SDK) as identity provider; the server verifies ID tokens with `jose` and mints a sealed-cookie session via `nuxt-auth-utils`
 - **@nuxtjs/seo** — sitemap (content-driven via `server/api/__sitemap__/urls`), canonical, og-image, hreflang
 
@@ -56,10 +53,3 @@ Secrets are **not** committed — set them on the worker:
 npx wrangler secret put NUXT_SESSION_PASSWORD
 npx wrangler secret put STUDIO_GITHUB_CLIENT_SECRET
 ```
-
-Gotchas worth knowing (details in the config comments):
-
-- Keep `nitro.preset: 'cloudflare-module'` (hyphen!) and `compatibilityDate ≥ 2024-09-19` — other combinations fall back to the legacy Workers Sites build.
-- Keep `hub: { database: true }` (raw D1 binding). Do **not** switch to `hub.db` — that's NuxtHub's Drizzle layer and breaks @nuxt/content.
-
-Local preview of a production build: `npm run preview`.

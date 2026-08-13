@@ -1,72 +1,21 @@
-// Central render-cost policy for every <SplineScene> on the site.
-//
-// WHY THIS FILE EXISTS
-// Measured on the live site (see perf-research.md): /about asked the GPU for 24
-// full-screen post-processing passes, 92.6 megapixels of fill and 522 draw calls
-// EVERY FRAME, across two WebGL contexts; / asked for 32 passes, 48.9 MP and 429
-// draw calls. That is more pixel work than a 4K game frame, on a marketing site —
-// integrated graphics land at ~10fps. Every dial that brings it down lives here,
-// so the whole intervention can be tuned (or reverted) from one place.
-//
-// The scenes themselves (poly counts, per-object draw calls, texture sizes) can
-// only be fixed in the Spline editor; this file covers everything reachable from
-// code.
-
-/**
- * Ceiling on the WebGL drawing-buffer scale, as a multiple of CSS pixels.
- *
- * The Spline runtime derives its pixel ratio from the scene's publish settings
- * (`_getPixelRatio`: `0 → window.devicePixelRatio`, `1 → 1`, `2 → 2`) and those
- * default to `0`. So every scene rendered at 2x on retina and 1.25–1.5x on a
- * scaled Windows laptop. Capping at 1 was measured at 5.7x faster per frame on
- * the About mission scene, but read visibly soft on retina, so the cap sits at
- * 1.5 — the sharpness knob, and the expensive one: pixel cost scales with the
- * SQUARE of this number (1.5 is 2.25x the fill of 1, 2 would be 4x). Individual
- * call sites can still pass a lower `max-pixel-ratio`.
- */
 export const SPLINE_MAX_PIXEL_RATIO = 2
 
-/**
- * Frame-rate ceiling for a scene's render loop. None of these scenes are
- * interactive 3D — they are ambient loops — so halving the frame rate halves
- * every number in the measurements above and is close to invisible. This is the
- * first dial to raise if a scene reads as choppy.
- */
 export const SPLINE_MAX_FPS = 60
 
-/**
- * How many scenes may render simultaneously. Both `/` and `/about` mount two,
- * and on `/` the stats section is `sticky top-0`, so it stayed on-screen (and
- * rendering) for the entire products scroll while a second scene rendered too.
- */
 export const SPLINE_MAX_CONCURRENT = 1
-
-// --- device gate -------------------------------------------------------------
-// Every call site already has a static fallback image (the scenes are decoration
-// over a raster that matches them). Below this bar we show that image and never
-// create a WebGL context at all — no 1.5MB scene download, no multi-second
-// parse/upload stall, no render loop.
 
 let deviceVerdict: boolean | null = null
 
-/** Number of logical cores at or below which scenes are skipped. */
 const MIN_CORES = 4
-/** GB of RAM (navigator.deviceMemory, coarse) at or below which scenes are skipped. */
 const MIN_MEMORY_GB = 4
 
-/**
- * GPU substrings that reliably cannot afford these scenes. Deliberately narrow:
- * software rasterisers and the older integrated Intel parts. Newer integrated
- * GPUs (Iris Xe, Arc, Apple) are left to the core/memory heuristics so we don't
- * strip the design from machines that can cope.
- */
 const SLOW_GPU = [
-  'swiftshader', // Chrome's software rasteriser — no GPU at all
+  'swiftshader',
   'llvmpipe',
   'software',
   'basic render',
   'microsoft basic',
-  'intel(r) hd graphics', // Gen7/8/9 integrated
+  'intel(r) hd graphics',
   'intel hd graphics',
   'mesa offscreen',
 ]
@@ -75,33 +24,23 @@ function gpuIsSlow(): boolean {
   try {
     const c = document.createElement('canvas')
     const gl = (c.getContext('webgl') || c.getContext('experimental-webgl')) as WebGLRenderingContext | null
-    if (!gl) return true // no WebGL → definitely use the image
+    if (!gl) return true
     const ext = gl.getExtension('WEBGL_debug_renderer_info')
     const name = ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : ''
-    // Release the probe context immediately; browsers cap concurrent contexts
-    // and each live scene already needs one.
     gl.getExtension('WEBGL_lose_context')?.loseContext()
     if (!name) return false
     const lower = name.toLowerCase()
     return SLOW_GPU.some(s => lower.includes(s))
   }
   catch {
-    return false // never let the probe itself break the page
+    return false
   }
 }
 
-/**
- * Whether this device should run Spline scenes at all. Decided once per page
- * load and cached — the inputs don't change mid-session and the GPU probe costs
- * a throwaway WebGL context.
- */
 export function splineDeviceAllowed(): boolean {
   if (deviceVerdict !== null) return deviceVerdict
   if (typeof window === 'undefined') return (deviceVerdict = false)
 
-  // Reduced motion: the smooth-scroll layer already opts these users out
-  // entirely, Spline never did. Ambient 3D motion is exactly what the
-  // preference is about.
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return (deviceVerdict = false)
 
   const nav = navigator as Navigator & { deviceMemory?: number; hardwareConcurrency?: number }
@@ -112,15 +51,8 @@ export function splineDeviceAllowed(): boolean {
   return (deviceVerdict = true)
 }
 
-// --- render coordinator ------------------------------------------------------
-// Scenes report how much of themselves is on screen; only the most-visible
-// SPLINE_MAX_CONCURRENT of them keep a render loop attached. Everything else
-// holds its last painted frame at zero GPU cost.
-
 export type SplineParticipant = {
-  /** Visible fraction of the canvas, 0 when off screen. */
   ratio: number
-  /** Attach (true) or detach (false) this scene's render loop. */
   setRendering: (on: boolean) => void
 }
 
@@ -154,10 +86,6 @@ export function unregisterSplineScene(p: SplineParticipant) {
   }
 }
 
-/**
- * Re-decide which scenes render. Called whenever any scene's visibility changes
- * or the tab is backgrounded. Cheap: a sort over at most a handful of entries.
- */
 export function rebalanceSplineScenes() {
   if (documentHidden) {
     participants.forEach(p => p.setRendering(false))

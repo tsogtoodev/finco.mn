@@ -1,7 +1,4 @@
 <script setup lang="ts">
-// Single FAQ row (Figma 1:13738/1:13746). Open → card surface + grey minus button;
-// closed → flat row with a blurple plus button and bottom divider. Height animates
-// via motion-v; ARIA wires the button to its panel.
 const props = withDefaults(defineProps<{ question: string; defaultOpen?: boolean }>(), {
   defaultOpen: false,
 })
@@ -30,7 +27,6 @@ const uid = useId()
           class="grid size-9 shrink-0 place-items-center rounded-full transition-colors"
           :class="open ? 'bg-black/5 text-black/70' : 'bg-transparent text-black/70'"
         >
-          <!-- Both icons stacked in the same grid cell so the swap can cross-fade/rotate -->
           <Icon
             name="lucide:plus"
             class="col-start-1 row-start-1 size-5 transition duration-300 ease-out"

@@ -1,23 +1,4 @@
 #!/usr/bin/env node
-/**
- * One-time (but idempotent) importer: content/ files -> Directus.
- * Plan §9: parses all 70 source files, creates base records once per shared
- * slug/key, attaches mn+en translations, uploads file-field images to R2
- * (deduplicated by sha256), resolves related-product slugs in a second pass.
- *
- * - Idempotent: base records upserted by slug/key, translations by (base, locale),
- *   files deduped by checksum tag, junction rows by pair. Re-runs never duplicate.
- * - Imports as DRAFTS (status untouched on update). Use --publish after validation.
- * - JSON-embedded image paths (pages hero.image, team avatars, …) are left as
- *   strings — those assets stay in public/ per the plan's decorative/content split.
- * - Markdown bodies on `type: data` collections (products, services) have no
- *   Directus field; they are reported as warnings, never silently dropped.
- *
- * Usage:
- *   DIRECTUS_URL=... DIRECTUS_TOKEN=... node scripts/directus-seed.mjs --dry-run
- *   DIRECTUS_URL=... DIRECTUS_TOKEN=... node scripts/directus-seed.mjs
- *   DIRECTUS_URL=... DIRECTUS_TOKEN=... node scripts/directus-seed.mjs --publish
- */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { join, basename, extname } from 'node:path'
@@ -58,9 +39,6 @@ async function api(method, path, body, isForm = false) {
   return json.data
 }
 
-// ---------------------------------------------------------------------------
-// Type configs: source field names (camelCase) -> Directus fields (snake_case)
-// ---------------------------------------------------------------------------
 const TYPES = {
   products: {
     key: 'slug',
@@ -69,14 +47,11 @@ const TYPES = {
     trans: (d) => ({
       title: d.title, menu_title: d.menuTitle ?? null, menu_desc: d.menuDesc ?? null,
       summary: d.summary ?? null, category: d.category ?? null,
-      // flattened (setup-flatten-json.mjs) — legacy loan_terms/tabs never written.
-      // tabs.info is not seeded: body always shadows it on the detail page.
       loan_amount: d.loanTerms?.amount ?? null, loan_rate: d.loanTerms?.rate ?? null,
       loan_period: d.loanTerms?.period ?? null,
-      // both tab bodies are markdown (directus/setup-tabs-richtext.mjs)
       tabs_requirements: d.tabs?.requirements ?? null, tabs_other: d.tabs?.other ?? null,
       faq: d.faq ?? null,
-      body: d._body || null, // rendered as the "info" tab on product detail
+      body: d._body || null,
     }),
     related: { junction: 'products_related', own: 'products_id', other: 'related_products_id', target: 'products' },
   },
@@ -134,10 +109,6 @@ const TYPES = {
     key: 'key',
     base: (d) => ({ key: d.key }),
     files: {},
-    // hero/valueProps/beep/fincobiz/about ship as flattened fields
-    // (setup-flatten-json.mjs / setup-about-restructure.mjs); the legacy JSON
-    // columns may already be dropped, so never write them. showcases/cta/
-    // leadership/team/sections are retired (no consumer) and not seeded.
     trans: async (d) => ({
       stats: d.stats ?? null, stats_heading: d.statsHeading ?? null,
       hero_slides: d.heroSlides ?? null,
@@ -147,7 +118,6 @@ const TYPES = {
       hero_headline: d.hero?.headline ?? null,
       hero_accent: d.hero?.accent ?? null,
       hero_subheadline: d.hero?.subheadline ?? null,
-      // relational upload (setup-image-fields.mjs) — path strings are legacy
       hero_image_file: await uploadImage(d.hero?.image, 'pages hero'),
       hero_cta_label: d.hero?.cta?.label ?? null,
       hero_cta_to: d.hero?.cta?.to ?? null,
@@ -174,13 +144,8 @@ const TYPES = {
   },
 }
 
-// string[] -> repeater rows [{text}]
 const wrapText = (arr) => arr?.map((s) => (typeof s === 'string' ? { text: s } : s)) ?? null
 
-// content-file about blob -> flat about_* fields. Mirrors explode() in
-// directus/setup-about-restructure.mjs and assembleAbout() in
-// server/utils/cms-normalizers.ts — keep the three in sync. `align` on value
-// items is intentionally dropped (dead since the AboutValues redesign).
 async function explodeAbout(a) {
   if (!a) return {}
   return {
@@ -219,9 +184,6 @@ async function explodeAbout(a) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Parse content files
-// ---------------------------------------------------------------------------
 function parseFile(path) {
   const raw = readFileSync(path, 'utf8')
   if (path.endsWith('.md')) {
@@ -264,10 +226,7 @@ function loadType(type) {
   return byKey
 }
 
-// ---------------------------------------------------------------------------
-// File upload with checksum dedup
-// ---------------------------------------------------------------------------
-const fileCache = new Map() // public path -> directus file id
+const fileCache = new Map()
 
 async function uploadImage(publicPath, typeLabel) {
   if (!publicPath) return null
@@ -295,7 +254,7 @@ async function uploadImage(publicPath, typeLabel) {
   }
   const form = new FormData()
   form.append('title', basename(publicPath))
-  form.append('description', tag) // checksum key for idempotent dedup
+  form.append('description', tag)
   form.append('file', new Blob([buf]), basename(publicPath))
   const file = await api('POST', '/files', form, true)
   stats.filesUploaded++
@@ -303,11 +262,7 @@ async function uploadImage(publicPath, typeLabel) {
   return file.id
 }
 
-// ---------------------------------------------------------------------------
-// Upserts
-// ---------------------------------------------------------------------------
 function firstLocaleValue(pair, pick, label) {
-  // Base fields must agree between locales; mn wins, divergence is warned.
   const mnVal = JSON.stringify(pick(pair.mn) ?? null)
   const enVal = JSON.stringify(pick(pair.en) ?? null)
   if (pair.mn && pair.en && mnVal !== enVal) warnings.push(`${label}: base field differs between locales; using mn (${mnVal} vs ${enVal})`)
@@ -318,7 +273,7 @@ async function upsertBase(type, key, payload) {
   const cfg = TYPES[type]
   const found = await api('GET', `/items/${type}?filter[${cfg.key}][_eq]=${encodeURIComponent(key)}&limit=1&fields=id`)
   if (found?.length) {
-    if (!DRY) await api('PATCH', `/items/${type}/${found[0].id}`, payload) // status untouched
+    if (!DRY) await api('PATCH', `/items/${type}/${found[0].id}`, payload)
     stats.updated++
     return found[0].id
   }
@@ -326,7 +281,7 @@ async function upsertBase(type, key, payload) {
     stats.created++
     return `(dry:${type}/${key})`
   }
-  const created = await api('POST', `/items/${type}`, payload) // status defaults to draft
+  const created = await api('POST', `/items/${type}`, payload)
   stats.created++
   return created.id
 }
@@ -349,9 +304,6 @@ async function upsertTranslation(type, baseId, locale, payload) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
 console.log(`\nSeeding ${BASE} ${DRY ? '(DRY RUN — no writes)' : ''}\n`)
 
 const loaded = {}
@@ -366,8 +318,8 @@ if (errors.length) {
   process.exit(1)
 }
 
-const idsByType = {} // type -> Map(slug -> id)
-const relatedTodo = [] // { type, baseId, slugs }
+const idsByType = {}
+const relatedTodo = []
 
 for (const [type, byKey] of Object.entries(loaded)) {
   const cfg = TYPES[type]
@@ -378,7 +330,6 @@ for (const [type, byKey] of Object.entries(loaded)) {
     const label = `${type}/${key}`
     const payload = firstLocaleValue(pair, (d) => (d ? cfg.base(d) : null), label)
 
-    // file fields (base-level; mn path wins on divergence)
     for (const [srcField, dbField] of Object.entries(cfg.files)) {
       const path = firstLocaleValue(pair, (d) => d?.[srcField] ?? null, `${label}.${srcField}`)
       payload[dbField] = await uploadImage(path, label)
@@ -398,7 +349,6 @@ for (const [type, byKey] of Object.entries(loaded)) {
   }
 }
 
-// second pass: related-product junctions
 console.log('[relations] second pass')
 for (const { type, key, baseId, slugs } of relatedTodo) {
   const cfg = TYPES[type].related
@@ -423,7 +373,6 @@ for (const { type, key, baseId, slugs } of relatedTodo) {
   }
 }
 
-// optional publish pass
 if (PUBLISH && !DRY) {
   console.log('[publish] setting status=published on all seeded records')
   for (const [type, ids] of Object.entries(idsByType)) {
@@ -433,7 +382,6 @@ if (PUBLISH && !DRY) {
   }
 }
 
-// ---------------------------------------------------------------------------
 console.log(`
 Summary${DRY ? ' (dry run)' : ''}:
   base records:   ${stats.created} created, ${stats.updated} updated

@@ -1,19 +1,9 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-// Product-detail tab strip (Figma 1:13353): three equal-width underline tabs
-// (Үйлчилгээний нөхцөл · Тавигдах шаардлага · Бүрдүүлэх материал), the active one
-// in medium weight with a dark underline.
-//
-// All three panels are markdown, authored in the CMS rich-text editor: the info
-// tab from the doc `body` (already an AST -> <ContentRenderer>), the other two
-// as raw markdown strings parsed at render time by <MDC>. The numbered rows with
-// full-width dividers the Figma shows for requirements are the `.tab-prose ol`
-// styles below, so an ordered list still renders as designed.
 const props = defineProps<{ tabs: NonNullable<Collections['products']['tabs']>; body?: unknown }>()
 const { t } = useI18n()
 
-// Build the visible tab set from whichever fields the product provides.
 const available = computed(() => {
   const out: { key: string; label: string }[] = []
   if (props.tabs.info || props.body) out.push({ key: 'info', label: t('tabs.info') })
@@ -22,25 +12,19 @@ const available = computed(() => {
   return out
 })
 
-// Open on the requirements tab when present (Figma shows it active), else the first.
 const active = ref(
   available.value.find((to) => to.key === 'requirements')?.key ?? available.value[0]?.key ?? 'info',
 )
-// Drives the sliding underline: tabs are equal-width, so the indicator just
-// translates by one slot-width per index.
 const activeIndex = computed(() =>
   Math.max(0, available.value.findIndex((to) => to.key === active.value)),
 )
 
-// Shared panel typography — the same `prose` modifier set legal/[slug].vue uses,
-// tuned to the tab body style (16px/28 light, black/80).
 const proseClass =
   'prose prose-neutral tab-prose max-w-none text-base font-light prose-headings:font-display prose-headings:font-medium prose-p:leading-7 prose-p:text-black/80 prose-li:text-black/80 prose-strong:text-foreground'
 </script>
 
 <template>
   <div v-if="available.length">
-    <!-- Underline tablist -->
     <div role="tablist" :aria-label="t('tabs.requirements')" class="relative flex w-full">
       <button
         v-for="tab in available"
@@ -55,19 +39,12 @@ const proseClass =
         {{ tab.label }}
       </button>
       <span class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-black/10" />
-      <!-- Sliding active indicator: one slot wide, translated to the active tab.
-           This only lines up because the tabs are `flex-1 min-w-0`. `flex-1`
-           alone is `flex: 1 1 0%` with `min-width: auto`, which floors each tab
-           at its longest word — so the three Mongolian labels rendered ~132/105/105
-           while the indicator drew 114px slots at 0/114/229 and sat under the
-           wrong tab's edge. `min-w-0` removes the floor and makes them equal. -->
       <span
         class="pointer-events-none absolute bottom-0 left-0 h-0.5 bg-black/80 transition-transform duration-300 ease-out"
         :style="{ width: `${100 / available.length}%`, transform: `translateX(${activeIndex * 100}%)` }"
       />
     </div>
 
-    <!-- Panels: keyed by active tab so switching cross-fades out-in -->
     <AnimatePresence mode="wait">
       <Motion
         :key="active"
@@ -95,12 +72,6 @@ const proseClass =
 </template>
 
 <style scoped>
-/* The Figma requirements panel is numbered rows with full-width hairlines
-   between them. That design now has to survive arbitrary CMS markdown, so it
-   lives on `ol`: an ordered list renders exactly as designed, and anything else
-   the editor writes (paragraphs, bullets, tables) falls back to plain prose.
-   `:deep` because every node here is rendered by <MDC>/<ContentRenderer>, which
-   carry no scope attribute. */
 .tab-prose :deep(ol) {
   list-style: none;
   counter-reset: tab-row;

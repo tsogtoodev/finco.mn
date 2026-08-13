@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-// Legal / policy page — renders a `legal` collection doc (markdown body) at
-// /legal/[slug] (terms, privacy). Dark PageHero + a narrow prose column, mirror
-// of the news article page. 404s when the slug/locale pair is missing.
 const { locale, t } = useI18n()
 const route = useRoute()
 const slug = computed(() => String(route.params.slug ?? ''))

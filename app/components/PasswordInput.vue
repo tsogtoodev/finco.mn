@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Password field with a reveal toggle.
 const model = defineModel<string>()
 const props = defineProps<{ id?: string; placeholder?: string; required?: boolean }>()
 const visible = ref(false)

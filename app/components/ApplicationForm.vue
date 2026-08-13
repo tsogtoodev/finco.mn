@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-// Multi-step accordion form, driven by the job's `applicationSections` content.
 const props = defineProps<{
   sections: NonNullable<Collections['jobs']['applicationSections']>
   jobSlug: string
@@ -72,15 +71,6 @@ async function submit() {
               <option value="" disabled>—</option>
               <option v-for="o in f.options" :key="o" :value="o">{{ o }}</option>
             </select>
-            <!-- File gets its own branch: the generic text styling put the OS
-                 button and the selected filename inline inside a padded, bordered
-                 box, so a long filename overflowed it at 375 and the row sat
-                 taller than its siblings. `file:` styles the native button,
-                 `min-w-0` + `truncate` keep the filename inside the field, and
-                 `accept` makes the mobile picker filter to documents.
-                 NOTE: no v-model — Vue does not support it on a file input, so
-                 the value never bound here anyway. Wiring the upload is the
-                 separate P8 task (see server/api/careers/apply.post.ts). -->
             <input
               v-else-if="f.type === 'file'"
               :id="f.name"

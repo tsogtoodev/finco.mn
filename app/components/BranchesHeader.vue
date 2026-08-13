@@ -1,10 +1,6 @@
 <script setup lang="ts">
-// Light, centered page header for /branches (Figma 1:12836):
-// a "Буцах" back pill top-left, a centered two-tone title + subtitle,
-// over a faint, blurred map texture. Pairs with the nav's SOLID/light mode.
 const props = defineProps<{
   title?: string
-  /** Substring of `title` rendered in the accent colour. */
   accent?: string
   subtitle?: string
   mapTexture?: string
@@ -13,7 +9,6 @@ const props = defineProps<{
 const { t } = useI18n()
 const localePath = useLocalePath()
 
-// Split the title so the accent substring can be coloured without retyping copy.
 const parts = computed(() => {
   const title = props.title ?? ''
   const accent = props.accent
@@ -30,7 +25,6 @@ function goBack() {
 
 <template>
   <section class="relative overflow-hidden bg-[#fbfbfc]">
-    <!-- faint blurred map texture -->
     <div
       v-if="mapTexture"
       class="pointer-events-none absolute inset-x-0 top-0 h-[260px] bg-cover bg-center opacity-[0.12] blur-[5px]"
@@ -39,8 +33,6 @@ function goBack() {
     />
 
     <div class="relative mx-auto max-w-7xl px-4 pb-14 pt-8 sm:pb-16">
-      <!-- Back pill, secondary variant: filled, for this light surface. The dark
-           photo heroes use `ghost` instead. -->
       <AppButton variant="secondary" class="h-10 w-fit" @click="goBack">
         <Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />
         {{ t('common.back') }}

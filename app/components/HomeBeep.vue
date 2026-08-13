@@ -1,14 +1,6 @@
 <script setup lang="ts">
-// Beep showcase (Figma 1:14222 → card 1:14223). Pixel-exact recreation of the
-// 1440×704 artboard: solid #0f2c23 card with a baked pill-cluster raster, the
-// lifestyle photo bleeding off the right, a lime halftone field, the Beep
-// wordmark, heading copy and a permanent glass info bar. The whole card is a
-// fixed 1440×704 coordinate stage that scales proportionally via container
-// units, so it matches Figma exactly at ≥1440 and shrinks faithfully below.
 const { t } = useI18n()
 
-// Copy from the `pages` home doc's beep group (i18n fallback); the pill
-// cluster, photo and layout stay baked/component-side.
 const page = await usePageContent('home')
 const copy = computed(() => ({
   heading: page.value?.beep?.heading ?? t('home.beep.heading'),
@@ -18,19 +10,12 @@ const copy = computed(() => ({
   teaser: page.value?.beep?.teaser ?? t('home.beep.teaser'),
 }))
 
-// ── "Download app" → QR popover ────────────────────────────────────────────
-// The info bar and the card both clip their overflow, so the popover is
-// teleported to <body> and positioned `fixed`, anchored just above the button.
 const BEEP_URL = 'https://beep.finco.mn'
 const qrOpen = ref(false)
 const downloadBtn = ref<HTMLElement | null>(null)
 const qrPop = ref<HTMLElement | null>(null)
-// px; matches the popover's fixed width for centering math — the popover has no
-// intrinsic width, it is set from this. 14px padding + 156px QR (140 + its 8px
-// content-box quiet zone) + 12px gap + the ~23px store column + 14px padding.
 const POP_W = 220
 const qrStyle = ref<Record<string, string>>({})
-// Hover-intent timers so the button↔popover gap doesn't flicker it closed.
 let qrOpenTimer: ReturnType<typeof setTimeout> | undefined
 let qrCloseTimer: ReturnType<typeof setTimeout> | undefined
 const QR_OPEN_DELAY = 100
@@ -45,14 +30,12 @@ function positionQr() {
   if (!el) return
   const r = el.getBoundingClientRect()
   const GAP = 12
-  // centre on the button, clamped into the viewport
   const left = Math.min(
     Math.max(8, r.left + r.width / 2 - POP_W / 2),
     window.innerWidth - POP_W - 8,
   )
   qrStyle.value = {
     left: `${Math.round(left)}px`,
-    // grow upward from just above the button (no transform → free for the tween)
     bottom: `${Math.round(window.innerHeight - r.top + GAP)}px`,
     width: `${POP_W}px`,
   }
@@ -69,8 +52,6 @@ function closeQr() {
 function toggleQr() {
   qrOpen.value ? closeQr() : openQr()
 }
-// Hover: open on button enter (after a short intent delay); close once the
-// pointer has left BOTH the button and the popover (the delay bridges the gap).
 function hoverOpenQr() {
   clearTimeout(qrCloseTimer)
   if (qrOpen.value) return
@@ -84,7 +65,6 @@ function cancelQrClose() {
   clearTimeout(qrCloseTimer)
 }
 
-// Dismiss on outside press / Escape; reposition while open on scroll/resize.
 function onDocPointer(e: Event) {
   if (!qrOpen.value) return
   const target = e.target as Node
@@ -117,21 +97,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <!-- Top padding reserves room for the photo head-bleed (71.45px above the
-       card at 1440, scaling down with it) so it never overlaps the section
-       above; Figma gives the card the same 71px headroom. -->
   <section data-section="home-beep" class="bg-white px-6 pb-10 pt-[max(2.5rem,min(4.97vw,4.5rem))]">
     <div class="mx-auto w-full max-w-[1440px]">
       <div class="beep-card">
-        <!-- Unclipped copy of the lifestyle photo — Figma keeps a second
-             "image 2058" outside the clip frame so the model's head bleeds
-             above the card's top edge. Inside the card the clip's solid
-             background covers this copy, so only the overflow shows. -->
-        <!-- NuxtImg, not <img>: as a raw <img> this bypassed Cloudflare Image
-             Transformations entirely and shipped the source 2208x2208 RGBA PNG —
-             1.9MB on the wire, ~19.5MB decoded, the largest resource on the home
-             page by 3.5x. It renders inside a ~46% column of a 1440 card, so the
-             widest it is ever painted is ~940px. -->
         <div class="beep-person beep-person--bleed" aria-hidden="true">
           <NuxtImg
             src="/images/home/beep-lifestyle.png"
@@ -141,16 +109,10 @@ onBeforeUnmount(() => {
           />
         </div>
         <div class="beep-clip">
-          <!-- Pill cluster (baked raster, bleeds off the right edge) -->
           <img src="/images/home/beep-pills.png" alt="" aria-hidden="true" class="beep-pills">
 
-          <!-- Lime halftone field -->
           <div class="beep-dots-wrap">
             <div class="beep-dots-rot">
-              <!-- Stays a raw <img>: the Cloudflare provider bypasses SVG anyway,
-                   and this one is 372KB of path data (113KB gzipped) that would
-                   lose its crispness as a raster. Decoding it off the main thread
-                   is the only cheap win available here. -->
               <img
                 src="/images/home/beep-halftone.svg"
                 alt=""
@@ -162,8 +124,6 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <!-- Lifestyle photo (same source + sizes as the bleed copy above, so the
-               two share one cached CDN variant rather than fetching twice) -->
           <div class="beep-person">
             <NuxtImg
               src="/images/home/beep-lifestyle.png"
@@ -174,33 +134,19 @@ onBeforeUnmount(() => {
             />
           </div>
 
-          <!-- Bottom fade -->
           <div class="beep-fade" />
 
-          <!-- Beep wordmark -->
           <img
             src="/images/home/beep-wordmark-lime.svg"
             :alt="t('hero.wordmarkAlt')"
             class="beep-wordmark"
           >
 
-          <!-- Heading -->
           <div class="beep-heading">
             <h2 class="beep-title">{{ copy.heading }}</h2>
             <p class="beep-subtext">{{ copy.subtext }}</p>
           </div>
 
-          <!-- Loyalty teaser — sits under the info bar, so it only reads in the
-               unhovered state (Figma Variant2); the revealed bar covers it. -->
-          <!-- <p class="beep-teaser">{{ copy.teaser }}</p> -->
-
-          <!-- Plus affordance, top-right (Figma Huge-icon/solid/plus: 22.5px
-               white cross in a 40px box) — hints that the card expands. -->
-          <!-- <svg class="beep-plus" viewBox="0 0 40 40" aria-hidden="true">
-            <path d="M20 8.75v22.5M8.75 20h22.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" />
-          </svg> -->
-
-          <!-- Info bar -->
           <div class="beep-bar" :class="{ 'beep-bar--pinned': qrOpen }">
             <div class="beep-bar-inner">
               <p class="beep-bar-text">
@@ -233,7 +179,6 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- QR popover for "Download app" — teleported out of the clipped card -->
     <Teleport to="body">
       <Transition name="qr-pop">
         <div
@@ -264,7 +209,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* 1440×704 stage. cqw inside resolves to this card's width (=1440px at ≥1440). */
 .beep-card {
   position: relative;
   width: 100%;
@@ -277,12 +221,10 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  border-radius: 2.7778cqw; /* 40px */
-  /* Diagonal fill: #0f2c23 at the bottom-left corner → #000 at the top-right. */
+  border-radius: 2.7778cqw;
   background: linear-gradient(to top right, #000 0%, #0f2c23 100%);
 }
 
-/* Pills raster — left 520.76 top 109.11 w 1021.191 h 287.436 */
 .beep-pills {
   position: absolute;
   left: 36.164%;
@@ -293,7 +235,6 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-/* Halftone field — Figma inset / rotate / skew reproduced verbatim */
 .beep-dots-wrap {
   position: absolute;
   inset: -37% 4.85% -102.07% -33.87%;
@@ -315,10 +256,6 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
-/* Lifestyle photo — left 776.29 top -71.45 w 663.709 h 775.564.
-   Rendered twice like Figma: once inside .beep-clip (composited under the
-   bottom fade) and once as .beep-person--bleed directly in .beep-card, where
-   nothing clips it, so the head rises above the card's top edge. */
 .beep-person {
   position: absolute;
   left: 53.909%;
@@ -338,7 +275,6 @@ onBeforeUnmount(() => {
   display: block;
 }
 
-/* Bottom fade — top 433.25 h 270.752, transparent → #001f16 */
 .beep-fade {
   position: absolute;
   left: 0;
@@ -349,32 +285,28 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-/* Loyalty teaser — left 783.75, centre-y 691.02 of 704; black 90% on the dark
-   fade (per Figma), painted below the info bar so the bar hides it on hover */
 .beep-teaser {
   position: absolute;
   left: 54.427%;
   top: 98.156%;
   transform: translateY(-50%);
   font-weight: 200;
-  font-size: 1.1111cqw; /* 16px */
+  font-size: 1.1111cqw;
   line-height: normal;
   color: rgba(0, 0, 0, 0.9);
   white-space: nowrap;
   pointer-events: none;
 }
 
-/* Plus affordance — 40×40 box at left 1370.2 / top 33 */
 .beep-plus {
   position: absolute;
   left: 95.153%;
   top: 4.688%;
-  width: 2.7778cqw; /* 40px */
+  width: 2.7778cqw;
   height: 2.7778cqw;
   pointer-events: none;
 }
 
-/* Wordmark — left 42.71 top 269.59 w 259.379 h 93.477 */
 .beep-wordmark {
   position: absolute;
   left: 2.966%;
@@ -383,7 +315,6 @@ onBeforeUnmount(() => {
   height: 13.278%;
 }
 
-/* Heading — left 42.12 top 33.11 */
 .beep-heading {
   position: absolute;
   left: 2.925%;
@@ -391,21 +322,20 @@ onBeforeUnmount(() => {
 }
 .beep-title {
   font-weight: 600;
-  font-size: 1.3889cqw; /* 20px */
-  line-height: 2.2222cqw; /* 32px */
+  font-size: 1.3889cqw;
+  line-height: 2.2222cqw;
   color: #fff;
   white-space: nowrap;
 }
 .beep-subtext {
-  margin-top: 0.5556cqw; /* 8px */
-  width: 38.09cqw; /* 548.49px */
+  margin-top: 0.5556cqw;
+  width: 38.09cqw;
   font-weight: 300;
-  font-size: 1.1111cqw; /* 16px */
-  line-height: 1.6667cqw; /* 24px */
+  font-size: 1.1111cqw;
+  line-height: 1.6667cqw;
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Info bar — bottom band, h 208 */
 .beep-bar {
   position: absolute;
   left: 0;
@@ -413,25 +343,17 @@ onBeforeUnmount(() => {
   bottom: 0;
   height: 29.545%;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(0.9722cqw); /* frosted glass — 14px @1440 */
+  backdrop-filter: blur(0.9722cqw);
   -webkit-backdrop-filter: blur(0.9722cqw);
-  border-radius: 0.8333cqw; /* 12px */
-  /* Glass rim: light top-edge highlight + faint full ring */
+  border-radius: 0.8333cqw;
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
     inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   overflow: hidden;
 }
 
-/* Reveal-on-hover: where a pointer can hover, the bar is tucked below the clip's
-   edge (overflow:hidden hides it) and slides up when the card is hovered or a
-   button inside it is focused. On touch / no-hover devices it stays visible so
-   it's never unreachable. */
 @media (hover: hover) {
   .beep-bar {
-    /* Figma Variant2 (unhovered): bar sits at y 691.13 vs 496 docked —
-       195.13/208 = 93.81% of its own height — at opacity 0; the hover
-       reaction smart-animates to Default over ~0.51s (Gentle). */
     transform: translateY(93.81%);
     opacity: 0;
     transition:
@@ -445,13 +367,10 @@ onBeforeUnmount(() => {
   }
 }
 @media (hover: hover) and (prefers-reduced-motion: reduce) {
-  /* honour reduced-motion: still reveal, but without the slide/fade tween */
   .beep-bar {
     transition: none;
   }
 }
-/* Keep the bar revealed while the QR popover is open. A button click doesn't
-   reliably move focus on macOS, so :focus-within alone won't hold it — pin it. */
 .beep-bar--pinned {
   transform: translateY(0) !important;
   opacity: 1 !important;
@@ -463,14 +382,14 @@ onBeforeUnmount(() => {
   margin-inline: auto;
   display: flex;
   align-items: center;
-  gap: 16.6667cqw; /* 240px */
+  gap: 16.6667cqw;
 }
 .beep-bar-text {
   flex: 1 1 0;
   min-width: 0;
   font-weight: 300;
-  font-size: 1.25cqw; /* 18px */
-  line-height: 1.8056cqw; /* 26px */
+  font-size: 1.25cqw;
+  line-height: 1.8056cqw;
   color: rgba(255, 255, 255, 0.84);
 }
 .beep-bar-lead {
@@ -485,20 +404,20 @@ onBeforeUnmount(() => {
   flex: none;
   display: flex;
   align-items: center;
-  gap: 1.6667cqw; /* 24px */
+  gap: 1.6667cqw;
 }
 .beep-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5556cqw; /* 8px */
-  padding: 0.5556cqw 1.1111cqw; /* 8px 16px */
+  gap: 0.5556cqw;
+  padding: 0.5556cqw 1.1111cqw;
   border-radius: 999px;
   background: rgba(242, 242, 242, 0.15);
   white-space: nowrap;
   transition: background-color 0.2s ease;
 }
 .beep-btn--download {
-  gap: 0.6944cqw; /* 10px */
+  gap: 0.6944cqw;
   border: 1px solid #caff00;
 }
 .beep-btn:hover {
@@ -506,28 +425,25 @@ onBeforeUnmount(() => {
 }
 .beep-btn-label {
   font-weight: 500;
-  font-size: 1.1111cqw; /* 16px */
+  font-size: 1.1111cqw;
   color: #fff;
 }
 .beep-store-icon {
   display: block;
-  height: 1.1111cqw; /* 16px */
+  height: 1.1111cqw;
 }
 .beep-store-icon--play {
-  width: 0.9722cqw; /* 14px */
+  width: 0.9722cqw;
 }
 .beep-store-icon--apple {
-  width: 0.9028cqw; /* 13px */
+  width: 0.9028cqw;
 }
 .beep-arrow {
-  width: 1.1111cqw; /* 16px */
+  width: 1.1111cqw;
   height: 1.1111cqw;
   color: #fff;
 }
 
-/* ── "Download app" QR popover ─────────────────────────────────────────────
-   Teleported to <body>, so it lives outside the card's container context —
-   sized in plain px (no cqw) and positioned `fixed` via the inline qrStyle. */
 .beep-qr-pop {
   position: fixed;
   z-index: 70;
@@ -551,14 +467,8 @@ onBeforeUnmount(() => {
   padding: 8px;
   border-radius: 10px;
   background: #fff;
-  box-sizing: content-box; /* keep the QR crisp at 140px + an 8px quiet zone */
+  box-sizing: content-box;
 }
-/* QR + store marks side by side. The two SVGs are authored
-   `preserveAspectRatio="none"`, so BOTH axes have to be set from the viewBox
-   ratio or they skew — the same reason .beep-store-icon--play/--apple carry
-   explicit widths rather than `width: auto`. Plain px here, not cqw: this
-   popover is teleported to <body> and so sits outside the card's container
-   context. Widening it also means POP_W had to grow (see the constant). */
 .beep-qr-row {
   display: flex;
   align-items: center;
@@ -574,10 +484,10 @@ onBeforeUnmount(() => {
   height: 26px;
 }
 .beep-qr-store--play {
-  width: 22.75px; /* 14:16 */
+  width: 22.75px;
 }
 .beep-qr-store--apple {
-  width: 21.125px; /* 13:16 */
+  width: 21.125px;
 }
 .beep-qr-cap {
   max-width: 156px;
@@ -620,18 +530,7 @@ onBeforeUnmount(() => {
   }
 }
 
-/* ── Mobile / tablet (<1024px) ─────────────────────────────────────────────
-   Everything above is a 1440×704 coordinate stage: every type size, gap and
-   padding is a fraction of the card's own width (cqw). That only holds while
-   the card is wide. At a 327px card `1cqw` is 3.27px, so the title rendered at
-   4.5px, the subtext at 3.6px and the info-bar buttons at 38×11px — and the
-   aspect-ratio lock capped the whole card at 160px tall, so no amount of type
-   tuning alone could fit legible copy inside it.
 
-   Below `lg` the card therefore stops being a fixed-aspect stage and becomes an
-   ordinary stacked flow: px/rem type, 44px touch targets, and the layers whose
-   geometry only means something on the stage are dropped. Desktop (≥1024) is
-   untouched. */
 @media (max-width: 1023.98px) {
   .beep-card {
     aspect-ratio: auto;
@@ -646,26 +545,18 @@ onBeforeUnmount(() => {
     border-radius: 1.5rem;
   }
 
-  /* Stage-bound layers: the head-bleed copy needs the card's top edge to bleed
-     past, the halftone's rotate/hypot math needs the fixed-size container, and
-     the bottom fade existed to blend the docked bar — which is in flow now. */
   .beep-person--bleed,
   .beep-dots-wrap,
   .beep-fade {
     display: none;
   }
 
-  /* Pills stay as a corner texture. Absolutely-positioned boxes paint above
-     in-flow siblings, so it needs an explicit z-index below the copy. */
   .beep-pills {
     left: auto;
     right: -20%;
     top: 0;
     width: 76%;
     height: auto;
-    /* Faint: at desktop the cluster sits in open space, but here it lands
-       behind the heading and subtext, where its own pill labels are legible
-       enough to compete with the copy. */
     opacity: 0.22;
     z-index: 0;
   }
@@ -684,14 +575,14 @@ onBeforeUnmount(() => {
     top: auto;
   }
   .beep-title {
-    font-size: 1.375rem; /* 22px */
+    font-size: 1.375rem;
     line-height: 1.3;
-    white-space: normal; /* the desktop nowrap would overflow a 279px column */
+    white-space: normal;
   }
   .beep-subtext {
     margin-top: 0.5rem;
-    width: 100%; /* was 38.09cqw — a fraction of the stage */
-    font-size: 0.9375rem; /* 15px */
+    width: 100%;
+    font-size: 0.9375rem;
     line-height: 1.6;
   }
 
@@ -699,20 +590,16 @@ onBeforeUnmount(() => {
     order: 2;
     left: auto;
     top: auto;
-    /* Explicit height, not `auto`: as a flex item the img's auto main size
-       falls back to the source's intrinsic 150px instead of the aspect-derived
-       height. 120 × 93.477/259.379 keeps the desktop slot's proportions. */
-    width: 7.5rem; /* 120px */
-    height: 2.7rem; /* 43px */
+    width: 7.5rem;
+    height: 2.7rem;
   }
 
-  /* Photo becomes a banner instead of a right-edge bleed. */
   .beep-person {
     order: 3;
     left: auto;
     top: auto;
     width: 100%;
-    height: 13.75rem; /* 220px */
+    height: 13.75rem;
     border-radius: 1rem;
   }
   .beep-person-img {
@@ -721,11 +608,9 @@ onBeforeUnmount(() => {
     height: 100%;
     max-width: 100%;
     object-fit: cover;
-    object-position: 50% 12%; /* keep the face in frame under the crop */
+    object-position: 50% 12%;
   }
 
-  /* Info bar: in flow and always visible — the hover reveal above would leave
-     it translated 93.81% and transparent on a narrow hover-capable window. */
   .beep-bar {
     order: 4;
     height: auto;
@@ -740,10 +625,10 @@ onBeforeUnmount(() => {
     width: 100%;
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem; /* was a 240px cqw gap */
+    gap: 1rem;
   }
   .beep-bar-text {
-    font-size: 0.9375rem; /* 15px */
+    font-size: 0.9375rem;
     line-height: 1.5;
   }
   .beep-bar-actions {
@@ -752,7 +637,7 @@ onBeforeUnmount(() => {
     gap: 0.75rem;
   }
   .beep-btn {
-    min-height: 2.75rem; /* 44px touch target */
+    min-height: 2.75rem;
     gap: 0.5rem;
     padding: 0.625rem 1.125rem;
   }
@@ -760,7 +645,7 @@ onBeforeUnmount(() => {
     gap: 0.5rem;
   }
   .beep-btn-label {
-    font-size: 0.9375rem; /* 15px */
+    font-size: 0.9375rem;
   }
   .beep-store-icon {
     height: 1rem;

@@ -1,7 +1,4 @@
 <script setup lang="ts">
-// Shared FAQ block (Figma 1:13733 / 1:14010). Centered heading + accordion; all
-// items start collapsed. Used by the products/business listing and the detail
-// pages — same `items` API.
 defineProps<{ items?: { question: string; answer: string }[]; heading?: string }>()
 const { t } = useI18n()
 </script>

@@ -1,26 +1,4 @@
 #!/usr/bin/env node
-/**
- * Narrow, idempotent sync of `content/branches/**` -> Directus (and therefore R2).
- *
- * Why not scripts/directus-seed.mjs: that walks all 7 collections and PATCHes ~35
- * base records. The branch carousel (Figma 965:15404) only needed the four branch
- * photos + their copy, so this touches nothing else.
- *
- * What it does, per slug:
- *   - uploads content/…/photo + mapImage from public/ (sha256-deduped through the
- *     file `description` tag — same convention as directus-seed.mjs, so a photo
- *     already in R2 is reused rather than re-uploaded)
- *   - PATCHes the base row: photo, map_image, order, pin_x/y, latitude/longitude
- *   - PATCHes the mn + en translations: name, address, phone, hours, caption
- *
- * `status` is never touched, so nothing gets unpublished. Needs a token with
- * write access to branches / branches_translations / directus_files — the
- * NUXT_CMS_TOKEN in .env is the read-only api-reader and will 403.
- *
- * Usage:
- *   DIRECTUS_URL=... DIRECTUS_TOKEN=... node scripts/sync-branches.mjs --dry-run
- *   DIRECTUS_URL=... DIRECTUS_TOKEN=... node scripts/sync-branches.mjs
- */
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { join, basename } from 'node:path'
@@ -56,7 +34,6 @@ async function api(method, path, body, isForm = false) {
   return json.data
 }
 
-// ── load content/branches/{mn,en}/*.yml, keyed by slug ──────────────────────
 const bySlug = new Map()
 for (const locale of LOCALES) {
   const dir = join(ROOT, 'content/branches', locale)
@@ -67,7 +44,6 @@ for (const locale of LOCALES) {
   }
 }
 
-// ── sha256-deduped upload of a public/ asset ────────────────────────────────
 const fileCache = new Map()
 const stats = { uploaded: 0, reused: 0, patched: 0, transPatched: 0, transCreated: 0 }
 
@@ -97,7 +73,7 @@ async function uploadImage(publicPath, label) {
   }
   const form = new FormData()
   form.append('title', basename(publicPath))
-  form.append('description', tag) // checksum key for idempotent dedup
+  form.append('description', tag)
   form.append('file', new Blob([buf]), basename(publicPath))
   const file = await api('POST', '/files', form, true)
   console.log(`  + uploaded ${publicPath} -> ${file.id}`)
@@ -106,7 +82,6 @@ async function uploadImage(publicPath, label) {
   return file.id
 }
 
-// ── sync ────────────────────────────────────────────────────────────────────
 console.log(`\nSyncing branches -> ${BASE}${DRY ? ' (DRY RUN — no writes)' : ''}\n`)
 
 for (const [slug, pair] of bySlug) {
@@ -124,7 +99,6 @@ for (const [slug, pair] of bySlug) {
   }
   const id = found[0].id
 
-  // Base row. Photo/map paths are locale-invariant, so mn is authoritative.
   const payload = {
     order: mn.order ?? null,
     pin_x: mn.pin?.x ?? null,
@@ -134,8 +108,6 @@ for (const [slug, pair] of bySlug) {
   }
   const photo = await uploadImage(mn.photo, `${slug}.photo`)
   const mapImage = await uploadImage(mn.mapImage, `${slug}.mapImage`)
-  // Only send a file field when we resolved an id — a null would unlink the
-  // existing asset, which on a dry run (uploads skipped) would be destructive.
   if (photo) payload.photo = photo
   if (mapImage) payload.map_image = mapImage
 

@@ -1,7 +1,4 @@
 <script setup lang="ts">
-// Shared page header: optional breadcrumb + eyebrow + title + subtitle.
-// `dark` renders the dark image-bg variant. `back` adds a "Буцах" pill and
-// `centered` centers the title/subtitle (Figma 1:13610 breadcrumb-hero pattern).
 withDefaults(
   defineProps<{
     eyebrow?: string
@@ -9,9 +6,7 @@ withDefaults(
     subtitle?: string
     dark?: boolean
     breadcrumb?: { label: string; to?: string }[]
-    /** Show a "Back" pill below the breadcrumb (router.back, falls to home). */
     back?: boolean
-    /** Center the title/subtitle block (1:13610 centered-title pattern). */
     centered?: boolean
   }>(),
   { dark: false, back: false, centered: false },

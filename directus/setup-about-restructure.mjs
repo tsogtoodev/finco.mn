@@ -1,26 +1,4 @@
 #!/usr/bin/env node
-/**
- * About-blob restructure: replaces the single raw-JSON `pages_translations.about`
- * field (the whole About page in one code editor) with structured per-section
- * fields, grouped under one collapsed "About page" group so the other five
- * page records aren't cluttered.
- *
- * Idempotent — safe to re-run. Three stages per run:
- *   1. ensure the group aliases + about_* fields exist
- *   2. migrate: explode the `about` JSON of each translation row into the new
- *      fields (skips rows already migrated unless --force), then verify the
- *      new fields reassemble to the original blob (align is intentionally
- *      dropped — dead since the AboutValues redesign; greetingBody round-trips
- *      through a blank-line-separated textarea)
- *   3. only with --drop-blob (after the app deploy is verified): delete the
- *      `about` field. Until then the blob stays, marked readonly + deprecated.
- *
- * Shape mapping (blob path -> field) is mirrored by assembleAbout() in
- * server/utils/cms-normalizers.ts and the pages mapper in
- * scripts/directus-seed.mjs — keep the three in sync.
- *
- * Usage:  DIRECTUS_URL=... DIRECTUS_TOKEN=... node directus/setup-about-restructure.mjs [--force] [--drop-blob]
- */
 
 const BASE = (process.env.DIRECTUS_URL ?? 'https://cms.finco.design').replace(/\/$/, '')
 let token = process.env.DIRECTUS_TOKEN ?? null
@@ -56,9 +34,6 @@ function log(step, msg) {
   console.log(`  ${step === 'skip' ? '=' : '+'} ${msg}`)
 }
 
-// ---------------------------------------------------------------------------
-// Field definitions
-// ---------------------------------------------------------------------------
 const T = 'pages_translations'
 
 const group = (field, groupParent, note, opts = {}) => ({
@@ -125,10 +100,6 @@ const GROUPS = [
 ]
 
 const FIELDS = [
-  // NB: about_hero_photo / about_ceo_portrait are NOT declared here — they
-  // were superseded by the relational upload fields of setup-image-fields.mjs
-  // (about_hero_photo_file / about_ceo_portrait_file); declaring them would
-  // resurrect deleted columns on re-runs.
   input('about_hero_headline', 'about_hero_group', { width: 'full' }),
   text('about_hero_intro', 'about_hero_group'),
 
@@ -173,7 +144,6 @@ const FIELDS = [
   tags('about_org_departments', 'about_org_group', { note: 'One tag per department pill, in display order.' }),
 ]
 
-// blob -> flat row (align intentionally dropped; greetingBody joined)
 function explode(about) {
   const a = about ?? {}
   return {
@@ -208,7 +178,6 @@ function explode(about) {
   }
 }
 
-// flat row -> blob (must mirror assembleAbout in cms-normalizers.ts)
 function assemble(r) {
   if (!r.about_hero_headline) return null
   return {
@@ -252,21 +221,16 @@ function assemble(r) {
   }
 }
 
-// deep-compare ignoring dropped `align` keys and greetingBody whitespace round-trip
 function normalizeForDiff(about) {
   if (!about) return about
   const clone = JSON.parse(JSON.stringify(about))
   clone.values.items = clone.values.items?.map(({ title, body }) => ({ title, body }))
   clone.ceo.greetingBody = clone.ceo.greetingBody?.map((s) => s.trim()).filter(Boolean)
-  // photos live in setup-image-fields.mjs' relational fields, not here
   if (clone.hero) delete clone.hero.photo
   if (clone.ceo) delete clone.ceo.portrait
   return clone
 }
 
-// ---------------------------------------------------------------------------
-// Run
-// ---------------------------------------------------------------------------
 if (!token) {
   const email = process.env.DIRECTUS_ADMIN_EMAIL
   const password = process.env.DIRECTUS_ADMIN_PASSWORD
@@ -278,7 +242,6 @@ if (!token) {
 }
 console.log(`\nAbout-blob restructure on ${BASE}\n`)
 
-// 1. fields ------------------------------------------------------------------
 console.log('[fields]')
 for (const fld of [...GROUPS, ...FIELDS]) {
   if (await exists(`/fields/${T}/${fld.field}`)) log('skip', `${T}.${fld.field} exists`)
@@ -288,7 +251,6 @@ for (const fld of [...GROUPS, ...FIELDS]) {
   }
 }
 
-// 2. migrate -----------------------------------------------------------------
 console.log('[migrate]')
 const blobExists = await exists(`/fields/${T}/about`)
 if (!blobExists) {
@@ -309,15 +271,11 @@ if (!blobExists) {
     }
     const migrated = FIELDS.some((x) => row[x.field] != null)
     if (migrated && !FORCE) {
-      // Already-migrated fields legitimately evolve past the frozen blob
-      // (editor changes, setup-image-fields.mjs replacing photo paths with
-      // file uuids) — a stale-blob diff would be a false alarm here.
       log('skip', `${label}: already migrated (--force to overwrite from blob)`)
       continue
     }
     await api('PATCH', `/items/${T}/${row.id}`, explode(row.about))
     log('add', `${label}: exploded about blob into ${FIELDS.length} fields`)
-    // verify the write round-trips against the blob it came from
     const fresh = await api('GET', `/items/${T}/${row.id}?fields=about,${FIELDS.map((x) => x.field).join(',')}`)
     const want = JSON.stringify(normalizeForDiff(fresh.about))
     const got = JSON.stringify(normalizeForDiff(assemble(fresh)))
@@ -329,14 +287,12 @@ if (!blobExists) {
   }
   if (failures) process.exit(1)
 
-  // hide + readonly the blob so editors can't keep two sources alive
   await api('PATCH', `/fields/${T}/about`, {
     meta: { readonly: true, hidden: true, note: 'DEPRECATED — replaced by the "About page" group. Removed once the site deploy is verified.' },
   })
   log('add', 'about blob marked hidden + readonly + deprecated')
 }
 
-// 3. drop --------------------------------------------------------------------
 if (DROP_BLOB) {
   console.log('[drop-blob]')
   if (!blobExists) log('skip', 'about blob already gone')

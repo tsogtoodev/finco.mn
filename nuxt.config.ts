@@ -10,22 +10,14 @@ const PAGE_CACHE = process.env.NODE_ENV === 'production'
     }
   : {}
 
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   app: {
     head: {
       link: [
         { rel: 'icon', type: 'image/png', href: '/favicon.png' },
         { rel: 'manifest', href: '/manifest.json' },
-        // No Spline CDN hints: every `.splinecode` is vendored into
-        // `public/spline` (see scripts/sync-spline.mjs) and served same-origin,
-        // so the connection is already open by the time a scene loads.
       ],
     },
-    // Cross-page fade+rise (classes in main.css). `out-in` so the old page
-    // finishes leaving before the new one enters — no layout overlap. The
-    // layout transition covers default ↔ minimal switches, which would
-    // otherwise swap with no animation at all.
     pageTransition: { name: 'page', mode: 'out-in' },
     layoutTransition: { name: 'layout', mode: 'out-in' },
   },
@@ -44,14 +36,14 @@ export default defineNuxtConfig({
   ],
 
   runtimeConfig: {
-    cmsUrl: '', // NUXT_CMS_URL
-    cmsToken: '', // NUXT_CMS_TOKEN
-    cmsMediaUrl: '', // NUXT_CMS_MEDIA_URL
-    cmsPreviewToken: '', // NUXT_CMS_PREVIEW_TOKEN
-    cmsPreviewSecret: '', // NUXT_CMS_PREVIEW_SECRET
-    cmsWebhookSecret: '', // NUXT_CMS_WEBHOOK_SECRET
+    cmsUrl: '',
+    cmsToken: '',
+    cmsMediaUrl: '',
+    cmsPreviewToken: '',
+    cmsPreviewSecret: '',
+    cmsWebhookSecret: '',
     public: {
-      cmsProvider: '', // NUXT_PUBLIC_CMS_PROVIDER
+      cmsProvider: '',
       firebase: {
         apiKey: '',
         authDomain: '',
@@ -164,14 +156,6 @@ export default defineNuxtConfig({
     },
   },
 
-  // Editors write prose in Directus' plain markdown box and expect a single
-  // Enter to break the line — but CommonMark collapses a lone newline into a
-  // space, so those breaks silently vanished (e.g. the sub-headings in the
-  // beep-terms article merged into the paragraph below them). remark-breaks
-  // turns every soft break into a real <br>. @nuxt/content merges these
-  // remarkPlugins into its own build-time markdown pipeline, so this covers
-  // both the /content files and the parseMarkdown() calls in
-  // server/utils/cms-normalizers.ts.
   mdc: {
     remarkPlugins: {
       'remark-breaks': {},

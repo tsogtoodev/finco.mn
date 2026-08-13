@@ -1,12 +1,4 @@
 <script setup lang="ts">
-// Lazy Spline scene renderer. Loads @splinetool/runtime and the .splinecode
-// scene only once the canvas scrolls near the viewport, so the WebGL payload
-// never blocks initial load. Client-only by nature.
-//
-// Visibility is detected with getBoundingClientRect + passive scroll/resize
-// listeners rather than IntersectionObserver: IO is simpler but doesn't fire in
-// some embedded/headless renderers, and a rect check is reliable everywhere.
-// The listeners self-remove after the scene loads.
 import { onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import { afterLcp } from '~/utils/afterLcp'
 import { getSmoothScroll } from '~/utils/smoothScroll'
@@ -21,106 +13,16 @@ import {
 
 const props = withDefaults(
   defineProps<{
-    /**
-     * URL of the exported .splinecode scene. Same-origin by convention —
-     * the scenes are vendored into `public/spline/<sceneId>.splinecode` by
-     * `scripts/sync-spline.mjs` rather than fetched from prod.spline.design,
-     * so a Spline outage or CDN hiccup can't take a section down and the
-     * bytes ride the site's own cache headers.
-     */
     scene: string
-    /** Pre-load margin (px) around the viewport before the canvas is visible. */
     rootMargin?: number
-    /**
-     * Ceiling on the drawing-buffer scale for THIS scene, as a multiple of CSS
-     * pixels. Defaults to the site-wide cap in `utils/splineQuality`. Lower it
-     * for scenes that are blurred, clipped, or already CSS-upscaled and whose
-     * cost shows up in a profile — pixel work scales with the square of this
-     * number, so 0.75 renders 1.17MP where 1.5 renders 4.67MP.
-     */
     maxPixelRatio?: number
-    /**
-     * Frame-rate ceiling for this scene's render loop. Defaults to the site-wide
-     * cap. Set 0 to leave the loop unthrottled.
-     */
     maxFps?: number
-    /**
-     * Drop the runtime's global `pointermove` listener once loaded. That listener
-     * raycasts the scene graph on every mouse move (189 objects on the values
-     * cluster), so it costs real CPU for a cursor-follow effect that purely
-     * decorative scenes don't have. Leave off for anything that reacts to hover.
-     */
     noHover?: boolean
-    /**
-     * Suppress click-drag interaction — camera orbit / object dragging — by
-     * swallowing move events that occur *while a press is held on the canvas*.
-     * Bare hover (and the scene's cursor-follow tilt) and plain clicks still
-     * pass through. Spline has no runtime control toggle, so we catch the drag
-     * moves in the window capture phase before they reach its listeners.
-     */
     noDrag?: boolean
-    /**
-     * Hold the canvas hidden for this many ms *after* the scene finishes
-     * loading, then run the fade-in. The scene still loads and renders
-     * immediately — only its reveal is delayed — so it's already animating by
-     * the time it fades in. 0 = reveal as soon as it loads (default).
-     */
     revealDelay?: number
-    /**
-     * Camera zoom applied via the Spline runtime after the scene loads.
-     * < 1 zooms out (scene smaller/farther), > 1 zooms in. 1 = the scene's
-     * exported camera, untouched (default).
-     */
     zoom?: number
-    /**
-     * CSS selector for an OPAQUE element that can scroll over and completely
-     * cover this canvas — i.e. a scene that stays geometrically in the viewport
-     * while being invisible.
-     *
-     * IntersectionObserver is purely geometric: it knows nothing about z-index
-     * or occlusion. A `sticky` scene therefore keeps reporting a full ratio (and
-     * keeps the render slot) for as long as it is pinned, even with an opaque
-     * panel scrolled across it. That is the home stats wave: it is pinned for
-     * the whole products scroll and renders 431k triangles a frame behind a
-     * solid white section. Naming the covering element here lets the scene drop
-     * its ratio to 0 the moment it is fully hidden.
-     *
-     * This is written for the PINNED case specifically: the selector marks where
-     * the scrolling content that buries the scene BEGINS, and the scene counts as
-     * hidden once that element's top edge has passed above the canvas's visible
-     * band (while spanning it horizontally). Deliberately not "the cover fully
-     * contains the canvas" — that only holds briefly. The products panel is
-     * 1037px against a 900px viewport, so a few hundred pixels later its own
-     * bottom edge is back inside the band and the next opaque section is doing
-     * the covering; a containment test flickers back to "visible" there, which is
-     * exactly wrong. Measured on /: containment reported hidden at one scroll
-     * offset out of thirteen across the pin.
-     */
     occludedBy?: string
-    /**
-     * Treat this scene as important: warm the runtime + `.splinecode`
-     * immediately on mount rather than waiting for browser idle. For the scenes
-     * a visitor reliably reaches (the About mission pin, the contact CTA) this
-     * removes the pause between scrolling to the section and the scene
-     * appearing.
-     */
     preload?: boolean
-    /**
-     * Hold BOTH the network warm-up and the load itself until the page's LCP has
-     * settled (see `utils/afterLcp`). For a scene that is on screen — or within
-     * `rootMargin` — at scroll top, `loadScene` otherwise runs during the load
-     * window, and `Application.load()` is one uninterruptible main-thread task:
-     * 0.5 s for the About mission scene, 2.3 s for the one it replaced, measured
-     * on production with the bytes already cached. That freeze pushes the LCP
-     * element's paint out by its own length and locks input for the same stretch.
-     *
-     * Set on the scenes a visitor meets in the first viewport or just below it.
-     * Below-the-fold scenes that only load after a real scroll (the map pin) get
-     * nothing from it — by then the load window is over.
-     *
-     * Composes with `preload`: the gate decides WHEN warming may start, `preload`
-     * decides whether it then waits for browser idle on top.
-     */
     deferUntilLcp?: boolean
   }>(),
   {
@@ -136,26 +38,12 @@ const props = withDefaults(
   },
 )
 
-// No connection hints: scenes are same-origin (see the `scene` prop), so there
-// are no DNS + TLS round trips left to save. They couldn't be emitted from here
-// anyway — this component only ever renders on the client (call sites gate it
-// behind `useSplineEnabled()`, false through SSR and hydration), so a useHead in
-// this setup would land after hydration, too late to matter.
-//
-// Deliberately no `<link rel="preload" as="fetch">` for the scene itself either.
-// It is ~1MB of runtime plus the scene payload; a hard preload on a below-fold
-// asset competes with the LCP image and logs "preloaded but not used" for every
-// visitor who never scrolls that far. `preload` here means "skip the idle wait"
-// (see schedulePrefetch) — early, but still yielding to the critical path.
-
 const emit = defineEmits<{ load: [] }>()
 
 const canvas = ref<HTMLCanvasElement | null>(null)
 const loaded = ref(false)
-// Drives the fade-in — flips `revealDelay` ms after the scene has loaded.
 const revealed = ref(false)
 let revealTimer: ReturnType<typeof setTimeout> | null = null
-// shallowRef: the Spline Application is a large non-reactive instance.
 const app = shallowRef<import('@splinetool/runtime').Application | null>(null)
 
 function inView() {
@@ -163,7 +51,6 @@ function inView() {
   if (!el) return false
   const r = el.getBoundingClientRect()
   const m = props.rootMargin
-  // width > 0 also skips the responsive `hidden` case (no layout box).
   return r.width > 0 && r.top < window.innerHeight + m && r.bottom > -m
 }
 
@@ -179,35 +66,26 @@ function onScroll() {
   }
 }
 
-// Set synchronously the moment a load is committed to. `app.value` can no longer
-// serve as that flag on its own: with `deferUntilLcp` the function can sit at an
-// await for seconds before it exists, which is long enough for a second trigger
-// to walk straight past the guard and build a second WebGL context.
 let loadStarted = false
 let unmounted = false
 
 async function loadScene() {
   if (loadStarted || !canvas.value) return
   loadStarted = true
-  // A load can start from the prefetch path too (preload scenes), leaving the
-  // proximity listeners doing rect reads per scroll for nothing.
   teardownScroll()
   try {
     if (props.deferUntilLcp) await afterLcp()
-    // Unmounted (or torn down) while the gate was closed.
     if (unmounted || !canvas.value) return
     const { Application } = await import('@splinetool/runtime')
     if (unmounted || !canvas.value) return
     app.value = new Application(canvas.value)
     await app.value.load(props.scene)
-    // Unmounted mid-load: onBeforeUnmount has already disposed and nulled it.
     if (unmounted || !app.value) return
     if (props.zoom !== 1) app.value.setZoom(props.zoom)
     applyPixelRatio()
     relaxRuntimeScrollListeners()
     if (props.noHover) detachHoverRaycast()
     loaded.value = true
-    // Delay the fade-in without delaying the load/render itself.
     if (props.revealDelay > 0) revealTimer = setTimeout(() => { revealed.value = true }, props.revealDelay)
     else revealed.value = true
     startRenderGating()
@@ -218,12 +96,6 @@ async function loadScene() {
   }
 }
 
-// Warm the cache during browser idle so a below-the-fold scene loads (near-)
-// instantly once it scrolls into view: pull the shared @splinetool/runtime chunk
-// (the ~1MB payload; the ESM module cache dedupes it across every scene) and this
-// scene's .splinecode into the HTTP cache ahead of the scroll trigger. `loadScene`
-// then reuses both. Skipped on data-saver / 2G so we don't spend metered bandwidth
-// a bouncing visitor never uses.
 async function schedulePrefetch() {
   if (loadStarted || typeof window === 'undefined') return
   const conn = (navigator as Navigator & {
@@ -233,20 +105,7 @@ async function schedulePrefetch() {
 
   const warm = () => {
     if (loadStarted || unmounted) return
-    // A CSS-hidden wrapper (`hidden sm:block`, `hidden lg:block`) still MOUNTS
-    // this component. The render path already copes — `inView()` guards on
-    // `r.width > 0` — but the prefetch had no such guard, so a phone downloaded
-    // the ~1MB runtime plus the .splinecode of every scene it can never show.
-    // Zero width means "not laid out"; a scene merely below the fold still has
-    // width, so genuine ahead-of-scroll prefetch is unaffected. Checked here
-    // rather than at schedule time so it reflects layout at the idle callback.
     if (!canvas.value || canvas.value.getBoundingClientRect().width === 0) return
-    // `preload` scenes build the full Application here, not just the HTTP cache:
-    // Application.load() is one uninterruptible main-thread task (see
-    // deferUntilLcp above), and a cache-only warm-up left that task to fire from
-    // the scroll trigger ~200px before the section — a visible hitch mid-scroll.
-    // Built early it runs while the visitor reads the top of the page, and
-    // render gating keeps the offscreen scene's loop detached until it's seen.
     if (props.preload) {
       loadScene()
       return
@@ -254,67 +113,18 @@ async function schedulePrefetch() {
     import('@splinetool/runtime').catch(() => {})
     fetch(props.scene).catch(() => {})
   }
-  // The warm-up is gated too, not just the load. Pulling the runtime chunk means
-  // COMPILING it — a ~200ms main-thread task on its own — and the 1MB+ of scene
-  // bytes competes for bandwidth with the LCP image, which on these pages is the
-  // hero photo sitting right above the scene.
   if (props.deferUntilLcp) {
     await afterLcp()
     if (unmounted) return
   }
-  // `preload` scenes skip the idle wait entirely — the whole point is to be
-  // fetching while the visitor is still reading the top of the page, not to
-  // queue behind whatever else the main thread is doing. The data-saver and
-  // zero-width guards above still apply, so a phone that can never show the
-  // scene still downloads nothing.
   if (props.preload) warm()
   else if ('requestIdleCallback' in window) window.requestIdleCallback(warm, { timeout: 3000 })
   else setTimeout(warm, 1500)
 }
 
-// --- render gating (perf / thermals) ----------------------------------------
-// The Spline runtime renders every frame for as long as it's alive and does NOT
-// pause when scrolled offscreen, so each scene keeps the GPU busy continuously.
-// With several scenes on one page (home has two), an idle tab parked anywhere —
-// even the pure-CSS hero, where no scene is visible — still burns every scene's
-// render loop, which heats the machine over a few minutes.
-//
-// Once loaded we gate rendering off the canvas's viewport visibility
-// (IntersectionObserver) AND the tab's visibility, so only an on-screen scene in
-// a foregrounded tab renders. If IO is unavailable the scene just keeps
-// rendering — i.e. the prior behaviour, never worse.
-//
-// On top of that, two cost ceilings (see utils/splineQuality for the measured
-// numbers behind them):
-//   • only the MOST VISIBLE scene renders. Being on screen is no longer enough,
-//     because both / and /about keep two scenes on screen at once, and on / the
-//     stats section is sticky so it stayed on screen — and rendering — for the
-//     whole products scroll. The IO now reports a RATIO to a module-level
-//     coordinator, which picks the winner.
-//   • the loop is throttled to SPLINE_MAX_FPS. Skipping a frame is safe for
-//     animation timing: the runtime derives dt from its own `_lastTime`, which it
-//     only advances when render() is actually called, so a 30fps loop simply sees
-//     ~33ms deltas and plays at the correct speed.
-//
-// Gating detaches ONLY the render loop (renderer.setAnimationLoop(null) → rAF
-// off, 0 GPU, last frame stays on the canvas). It must NOT use the public
-// app.stop()/play() pair: stop() is a destructive teardown — it deactivates the
-// whole event manager and runs mixer.stopAllAction(), killing every playing
-// animation — and play() re-dispatches the scene's Start events into a frame
-// clock whose _lastTime was never reset, so the first resumed frame gets
-// dt = the entire time spent offscreen. That giant delta fast-forwards every
-// finite (non-looping) animation to its end, where clampWhenFinished freezes it
-// until a full page reload. Resetting _lastTime before re-attaching the loop
-// makes resume seamless: animations continue mid-flight from where they paused.
 let io: IntersectionObserver | null = null
-// null, not false: the runtime attaches its OWN unthrottled loop during load, so
-// the first setRenderLoop call must always apply — either to swap in the
-// throttled callback or to detach the loop entirely.
 let renderActive: boolean | null = null
 
-// Private runtime internals (verified against @splinetool/runtime 1.12.98).
-// `render` is a bound arrow field on Application — exactly what the runtime's
-// own play() passes to setAnimationLoop.
 type RuntimeInternals = {
   _renderer?: {
     setAnimationLoop: (fn: ((t: number) => void) | null) => void
@@ -323,31 +133,11 @@ type RuntimeInternals = {
   }
   _lastTime?: number
   render?: (t: number) => void
-  /**
-   * The runtime's own resize. Passing `true` takes its FORCE path — it sets the
-   * size 1px smaller and then back, which is the only way to make a new pixel
-   * ratio reach the drawing buffer (see applyPixelRatio).
-   */
   _resize?: (force?: boolean) => void
-  /** Handler behind the runtime's non-passive `document` scroll listener. */
   _onScroll?: EventListener
   _eventManager?: { onScroll?: EventListener; onMouseMove?: EventListener }
 }
 
-/**
- * Cap the drawing-buffer scale.
- *
- * `setPixelRatio` on its own is NOT enough to shrink the canvas backbuffer: the
- * runtime wraps three's `setSize` with an early return when the CSS size is
- * unchanged, and three's `setPixelRatio` resizes by calling exactly that. It
- * still pays off — the internal post-processing render targets do shrink, and
- * those are where the cost is (12 of the About mission scene's 13 full-screen
- * passes are internal; capping the ratio alone measured 5.7x faster). To get the
- * backbuffer as well we follow with `_resize(true)`, the runtime's own force
- * path. Deliberately NOT the public `setSize()`: that flips `_viewportMode` to
- * manual, which stops the frame view tracking the viewport and re-frames the
- * scene's camera.
- */
 function applyPixelRatio() {
   const a = app.value
   if (!a) return
@@ -360,21 +150,6 @@ function applyPixelRatio() {
   g._resize?.(true)
 }
 
-/**
- * Make the runtime's scroll listeners passive.
- *
- * Every Application registers `document.addEventListener('scroll', _onScroll)`
- * with no options — so NON-passive — and the handler calls
- * `canvas.getBoundingClientRect()`. With Lenis driving real scroll every frame
- * that is a forced layout per scene per frame, plus the browser can't treat the
- * scroll as passive. Scenes with baked scroll interactions add a second one on
- * window via the event manager.
- *
- * Re-registering the SAME handler as passive changes nothing behavioural —
- * `scroll` isn't cancelable, so nothing was relying on preventDefault — and
- * `dispose()`/`disconnect()` still remove them, because removeEventListener
- * matches on capture only.
- */
 function relaxRuntimeScrollListeners() {
   const g = app.value as unknown as RuntimeInternals | null
   if (!g) return
@@ -390,11 +165,6 @@ function relaxRuntimeScrollListeners() {
   }
 }
 
-/**
- * Drop the runtime's global pointermove raycast for scenes with no hover
- * behaviour. The listener is registered on both window and document depending on
- * the scene, so we remove from both — a miss is a harmless no-op.
- */
 function detachHoverRaycast() {
   const handler = (app.value as unknown as RuntimeInternals | null)?._eventManager?.onMouseMove
   if (typeof handler !== 'function') return
@@ -402,14 +172,11 @@ function detachHoverRaycast() {
   document.removeEventListener('pointermove', handler)
 }
 
-// --- coordinator participation ---
 const participant: SplineParticipant = {
   ratio: 0,
   setRendering: (on: boolean) => setRenderLoop(on),
 }
 
-// The two inputs behind the reported ratio: how much of the canvas is inside the
-// viewport (IO) and whether `occludedBy` is currently covering all of that.
 let ioRatio = 0
 let occluded = false
 
@@ -420,12 +187,6 @@ function syncParticipantRatio() {
   rebalanceSplineScenes()
 }
 
-// --- occlusion tracking (opt-in via `occludedBy`) ---------------------------
-// Only armed while the canvas is actually in the viewport, so a scene that IO
-// has already zeroed costs nothing. One rAF-coalesced pair of
-// getBoundingClientRect reads per scroll frame — a forced layout we otherwise
-// work to avoid, but it buys back a full render of the heaviest scene on the
-// site, so it is comfortably the right trade.
 let occlusionBound = false
 let occlusionFrame: number | null = null
 
@@ -440,9 +201,6 @@ function measureOcclusion() {
   }
   const c = el.getBoundingClientRect()
   const r = cover.getBoundingClientRect()
-  // Compare against the VISIBLE part of the canvas: these wrappers are routinely
-  // taller than the viewport (the stats wave is `min-h-[51vw] scale-120`), and
-  // the off-screen remainder is not what we are asking about.
   const top = Math.max(c.top, 0)
   const bottom = Math.min(c.bottom, window.innerHeight)
   const left = Math.max(c.left, 0)
@@ -477,7 +235,6 @@ function unbindOcclusion() {
   }
 }
 
-/** Re-arm (or stand down) occlusion tracking after the IO ratio changes. */
 function refreshOcclusion() {
   if (!props.occludedBy || ioRatio === 0) {
     unbindOcclusion()
@@ -489,14 +246,11 @@ function refreshOcclusion() {
   measureOcclusion()
 }
 
-/** Throttled wrapper around the runtime's render, installed as the rAF callback. */
 let lastFrameAt = 0
 function throttledFrame(t: number) {
   const g = app.value as unknown as RuntimeInternals | null
   if (!g?.render) return
   const interval = props.maxFps > 0 ? 1000 / props.maxFps : 0
-  // -1ms of slack: rAF timestamps land a hair under the interval on a 60Hz
-  // display, which would otherwise halve the target rate instead of hitting it.
   if (interval && lastFrameAt && t - lastFrameAt < interval - 1) return
   lastFrameAt = t
   g.render(t)
@@ -510,8 +264,6 @@ function setRenderLoop(active: boolean) {
   const g = a as unknown as RuntimeInternals
   if (g._renderer?.setAnimationLoop && typeof g.render === 'function') {
     if (active) {
-      // Falsy _lastTime → the runtime skips the dt computation on the first
-      // resumed frame instead of seeing the whole offscreen gap as one delta.
       g._lastTime = 0
       lastFrameAt = 0
       g._renderer.setAnimationLoop(throttledFrame)
@@ -521,23 +273,15 @@ function setRenderLoop(active: boolean) {
     }
   }
   else {
-    // Internals moved in a runtime upgrade — fall back to the public pair.
-    // Coarser (animations restart / can freeze) but never renders offscreen.
     if (active && a.isStopped) a.play()
     else if (!active && !a.isStopped) a.stop()
   }
 }
 
 function startRenderGating() {
-  // Bail if the component unmounted during the async load (app already disposed),
-  // so we don't attach listeners that onBeforeUnmount has already torn down.
   if (!app.value) return
   registerSplineScene(participant)
   if (typeof IntersectionObserver !== 'undefined' && canvas.value) {
-    // Report a ratio rather than a boolean so the coordinator can pick the most
-    // visible scene. rootMargin is 0 here (the 200px pre-warm lives on the LOAD
-    // trigger above): a scene that is merely near the viewport should not be
-    // taking the render slot from one that is actually on screen.
     io = new IntersectionObserver((entries) => {
       const last = entries[entries.length - 1]
       if (!last) return
@@ -547,7 +291,6 @@ function startRenderGating() {
     io.observe(canvas.value)
   }
   else {
-    // No IO — assume visible so the scene still animates.
     ioRatio = 1
     refreshOcclusion()
   }
@@ -559,14 +302,7 @@ function stopRenderGating() {
   unbindOcclusion()
   unregisterSplineScene(participant)
 }
-// ---------------------------------------------------------------------------
 
-// --- motion suppression -----------------------------------------------------
-// Block move events over the canvas so the scene only reacts to clicks. Caught
-// in the window capture phase → fires before Spline's own canvas/document
-// listeners regardless of registration order. pointerdown/up are left alone so
-// clicks still register. Covers both a drag (press began on the canvas) and a
-// bare hover/scroll-induced move whose target is the canvas.
 let pressedOnCanvas = false
 
 function isOverCanvas(e: Event) {
@@ -577,8 +313,6 @@ function onPressStart(e: PointerEvent | TouchEvent) {
   pressedOnCanvas = !!canvas.value && target === canvas.value
 }
 function onMove(e: Event) {
-  // Block only moves that are part of a press-drag (camera orbit / object drag).
-  // Bare hover passes through, so the scene's cursor-follow interaction works.
   if (pressedOnCanvas) e.stopPropagation()
 }
 function onPressEnd() {
@@ -605,37 +339,7 @@ function unbindMotionGuard() {
   window.removeEventListener('touchmove', onMove, true)
   window.removeEventListener('touchend', onPressEnd, true)
 }
-// ---------------------------------------------------------------------------
-// Wheel over the canvas has three problems to solve at once:
-//  1. Spline's wheel-to-zoom — blocked by stopPropagation (capture phase, so the
-//     event never descends to Spline's own listener on the canvas).
-//  2. Scroll jank — Spline registers a NON-PASSIVE wheel listener on the canvas,
-//     so the browser forces main-thread ("janky/finicky") scrolling over the
-//     canvas region even when the zoom is blocked. Dropping the canvas out of
-//     hit-testing for the duration of the scroll makes the wheel target the page
-//     instead; cursor-follow resumes ~250ms after the wheel stops. This is a
-//     no-op for scenes whose wrapper is already pointer-events:none (the canvas
-//     is never the wheel target, and we never set its inline pointer-events).
-//  3. The smooth-scroll layer getting skipped. This one is why scrolling used to
-//     break up around Spline sections. Lenis listens for `wheel` on WINDOW in the
-//     BUBBLE phase, i.e. AFTER the canvas in the propagation path — so the
-//     stopPropagation in (1), fired from the window CAPTURE phase, stopped the
-//     event reaching Lenis too. The page then scrolled natively for that event
-//     while Lenis was mid-glide, and because Lenis ignores a native scroll that
-//     arrives while `isScrolling === 'smooth'`, its target went stale and the
-//     next frame yanked the page back. One native jump plus a snap-back, at the
-//     start of every gesture begun over a scene.
-//
-//     Fixing it means handing the page an equivalent event that Spline cannot
-//     see: cancel the real one (so nothing scrolls natively) and re-dispatch a
-//     copy directly on window, where Lenis picks it up and applies its own
-//     multipliers. The copy targets window rather than the canvas, so it neither
-//     re-enters this guard nor matches any `data-lenis-prevent`.
-//
-//     Only done when the smooth-scroll layer actually owns the wheel. For
-//     reduced-motion users the plugin builds no Lenis at all, and cancelling the
-//     native scroll without a replacement would leave the page unscrollable over
-//     a scene — so there we keep the old passive, stopPropagation-only path.
+
 let scrollIdleTimer: ReturnType<typeof setTimeout> | null = null
 let ownsWheel = false
 
@@ -651,8 +355,6 @@ function forwardWheelToPage(e: WheelEvent) {
     shiftKey: e.shiftKey,
     altKey: e.altKey,
     metaKey: e.metaKey,
-    // Not bubbling, dispatched on window: `target` is window, so `e.target === el`
-    // below is false and this cannot loop.
     bubbles: false,
     cancelable: true,
   }))
@@ -678,22 +380,14 @@ function onWheelGuard(e: WheelEvent) {
   }
 }
 function onPinchGuard(e: TouchEvent) {
-  // Two-finger touch = pinch; single-finger passes through (page scroll).
   if (e.touches.length >= 2 && isOverCanvas(e)) e.stopPropagation()
 }
 function onGestureGuard(e: Event) {
-  // Safari trackpad pinch (gesture* events).
   if (isOverCanvas(e)) e.stopPropagation()
 }
 function bindScrollPinchGuard() {
-  // Resolved once: the Lenis plugin runs before any component mounts and the
-  // instance never swaps mid-session.
   ownsWheel = !!getSmoothScroll()?.options.smoothWheel
 
-  // Non-passive only when we intend to cancel the native scroll and forward to
-  // Lenis. That costs nothing extra there — Lenis already holds a non-passive
-  // wheel listener on window, so wheel handling is main-thread either way. With
-  // no Lenis we stay passive, exactly as before.
   window.addEventListener('wheel', onWheelGuard, { capture: true, passive: !ownsWheel })
   window.addEventListener('touchmove', onPinchGuard, true)
   window.addEventListener('gesturestart', onGestureGuard, true)
@@ -702,7 +396,6 @@ function bindScrollPinchGuard() {
 }
 function unbindScrollPinchGuard() {
   window.removeEventListener('wheel', onWheelGuard, true)
-  // Restore hit-testing if we tore down mid-scroll, and drop the idle timer.
   if (scrollIdleTimer) { clearTimeout(scrollIdleTimer); scrollIdleTimer = null }
   if (canvas.value) canvas.value.style.pointerEvents = ''
   window.removeEventListener('touchmove', onPinchGuard, true)
@@ -710,7 +403,6 @@ function unbindScrollPinchGuard() {
   window.removeEventListener('gesturechange', onGestureGuard, true)
   window.removeEventListener('gestureend', onGestureGuard, true)
 }
-// ---------------------------------------------------------------------------
 
 onMounted(() => {
   bindScrollPinchGuard()

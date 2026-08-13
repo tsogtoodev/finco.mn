@@ -1,32 +1,4 @@
 #!/usr/bin/env node
-/**
- * FincoBiz card deck: per-card heading + body.
- *
- * Before this, `pages_translations.fincobiz_card_<id>` was a lone string — the
- * card's tab label — so of the deck's nine copy fields only three reached the
- * CMS. The headings and bodies came from i18n and were not editable, except on
- * the `request` card, which borrowed the section-level
- * fincobiz_callout_heading / fincobiz_callout_subtext.
- *
- * This adds `fincobiz_card_<id>_heading` and `fincobiz_card_<id>_body` for all
- * three cards, alongside the existing tab field and in the same
- * `home_fincobiz_group`, then seeds them from the values those cards render
- * today so publishing does not blank the section.
- *
- * Idempotent — safe to re-run. Existing fields are skipped, and seeding only
- * fills a field that is empty (pass --force to overwrite).
- *
- * The shape is mirrored by assembleFincobizCards() in
- * server/utils/cms-normalizers.ts and by the `fincobiz.cards` schema in
- * content.config.ts — keep the three in sync.
- *
- * Usage:
- *   DIRECTUS_URL=... DIRECTUS_TOKEN=... node directus/setup-fincobiz-cards.mjs [--force]
- *   (or DIRECTUS_ADMIN_EMAIL + DIRECTUS_ADMIN_PASSWORD instead of a token)
- *
- * NOTE: needs an ADMIN token. NUXT_CMS_TOKEN is the published-only api-reader
- * and cannot create fields.
- */
 
 const BASE = (process.env.DIRECTUS_URL ?? 'https://cms.finco.design').replace(/\/$/, '')
 let token = process.env.DIRECTUS_TOKEN ?? null
@@ -65,7 +37,6 @@ const T = 'pages_translations'
 const GROUP = 'home_fincobiz_group'
 const CARDS = ['request', 'receivables', 'eligibility']
 
-// Sorts continue after the three existing tab fields (4, 5, 6).
 let sort = 7
 const input = (field, note) => ({
   field,
@@ -85,9 +56,6 @@ const FIELDS = CARDS.flatMap((id) => [
   text(`fincobiz_card_${id}_body`, `Card-deck body copy — "${id}" card.`),
 ])
 
-// Seed values: exactly what each card renders today, so the first publish after
-// this migration is a no-op visually. mn/en keyed by languages_code.
-// Source of truth is i18n/locales/*.json → home.fincobiz.cards.<id>.
 const SEED = {
   mn: {
     request: {
@@ -130,7 +98,6 @@ if (!token) {
 }
 console.log(`\nFincoBiz card fields on ${BASE}\n`)
 
-// 1. fields ------------------------------------------------------------------
 console.log('[fields]')
 if (!(await exists(`/fields/${T}/${GROUP}`))) {
   console.error(`  ! ${T}.${GROUP} is missing — run setup-flatten-json.mjs first.`)
@@ -144,9 +111,6 @@ for (const fld of FIELDS) {
   }
 }
 
-// 2. seed --------------------------------------------------------------------
-// Only the `home` page record has these fields; the other five page records
-// leave them null and are untouched.
 console.log('\n[seed]')
 const rows = await api(
   'GET',

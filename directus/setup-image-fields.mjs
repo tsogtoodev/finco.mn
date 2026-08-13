@@ -1,26 +1,4 @@
 #!/usr/bin/env node
-/**
- * Real image uploads for the fields that were labeled "image" but rendered as
- * text inputs holding baked /images/… paths (the plan's old decorative/content
- * split). Editors get a proper file picker; bytes live in R2 like all other
- * media. Companion to setup-flatten-json.mjs (same lifecycle).
- *
- *   pages_translations  hero_image (string path)        -> hero_image_file (uuid -> directus_files)
- *                       about_hero_photo (string path)  -> about_hero_photo_file
- *                       about_ceo_portrait (string path)-> about_ceo_portrait_file
- *                       about_board_members[].photo     -> IN-PLACE: path replaced by file uuid,
- *                                                          repeater subfield switched to a file picker
- *
- * Migration uploads the referenced public/ assets (sha256 dedupe via the file
- * `description` tag — same convention as scripts/directus-seed.mjs) so the
- * site keeps rendering the exact same images. Must run from the repo root
- * (reads ./public). value_props_items[].icon is left alone — unused in data.
- *
- * The normalizer resolves uuid -> media URL with a path-string fallback
- * (server/utils/cms-normalizers.ts fileUrlResolver) — keep in sync.
- *
- * Usage:  DIRECTUS_URL=... DIRECTUS_TOKEN=... node directus/setup-image-fields.mjs [--force] [--drop-legacy]
- */
 
 import { readFileSync, existsSync } from 'node:fs'
 import { join, basename } from 'node:path'
@@ -64,14 +42,12 @@ function log(step, msg) {
 const T = 'pages_translations'
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-// path field -> { file field, form group, sort }
 const FIELDS = [
   { legacy: 'hero_image', field: 'hero_image_file', group: 'hero_group', sort: 5, note: 'Hero image.' },
   { legacy: 'about_hero_photo', field: 'about_hero_photo_file', group: 'about_hero_group', sort: 3, note: 'Hero photo.' },
   { legacy: 'about_ceo_portrait', field: 'about_ceo_portrait_file', group: 'about_ceo_group', sort: 9, note: 'CEO portrait.' },
 ]
 
-// sha256-deduped upload of a public/ asset (seed convention: tag in description)
 const fileCache = new Map()
 async function uploadImage(publicPath) {
   if (!publicPath || UUID_RE.test(publicPath)) return null
@@ -101,9 +77,6 @@ async function uploadImage(publicPath) {
   return id
 }
 
-// ---------------------------------------------------------------------------
-// Run
-// ---------------------------------------------------------------------------
 if (!token) {
   const email = process.env.DIRECTUS_ADMIN_EMAIL
   const password = process.env.DIRECTUS_ADMIN_PASSWORD
@@ -115,7 +88,6 @@ if (!token) {
 }
 console.log(`\nImage-upload fields on ${BASE}\n`)
 
-// 1. relational file fields + repeater file picker -----------------------------
 console.log('[fields]')
 for (const { field, group, sort, note } of FIELDS) {
   if (await exists(`/fields/${T}/${field}`)) log('skip', `${field} exists`)
@@ -136,7 +108,6 @@ for (const { field, group, sort, note } of FIELDS) {
   }
 }
 
-// board repeater: photo subfield becomes a file picker (stores the uuid in JSON)
 {
   const f = await api('GET', `/fields/${T}/about_board_members`)
   const fields = f.meta?.options?.fields ?? []
@@ -150,7 +121,6 @@ for (const { field, group, sort, note } of FIELDS) {
   }
 }
 
-// 2. migrate ------------------------------------------------------------------
 console.log('[migrate]')
 const legacyNames = FIELDS.map((x) => x.legacy)
 const fileNames = FIELDS.map((x) => x.field)
@@ -192,7 +162,6 @@ for (const row of rows) {
   }
 }
 
-// 3. hide legacy path fields --------------------------------------------------
 for (const legacy of legacyNames) {
   if (!(await exists(`/fields/${T}/${legacy}`))) continue
   await api('PATCH', `/fields/${T}/${legacy}`, {

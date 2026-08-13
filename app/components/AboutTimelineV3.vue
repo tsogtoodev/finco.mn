@@ -15,7 +15,6 @@ const ROW_TINTS = [
 ] as const;
 const rowTint = (i: number) => ROW_TINTS[Math.min(i, ROW_TINTS.length - 1)];
 
-// Pair milestones up: [2005, 2023], [2024, 2025], [2025, 2026] …
 const rows = computed(() => {
   const paired: Milestone[][] = [];
   for (let i = 0; i < props.milestones.length; i += 2) {

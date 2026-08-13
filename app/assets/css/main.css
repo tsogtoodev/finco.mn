@@ -1,42 +1,13 @@
 @import "tailwindcss";
 
-/* legal/[slug].vue styles CMS markdown with `prose` + `prose-*` modifiers, which
-   are this plugin's API. Without it those classes are inert AND v4's Preflight
-   has already stripped the browser defaults (headings inherit font-size/weight,
-   lists lose their markers) — so the policy pages rendered as one flat block. */
 @plugin "@tailwindcss/typography";
 
-/* Headerless CMS tables.
-   GFM has no headerless-table syntax: the delimiter row is only recognised when
-   a header row precedes it, so `| --- | --- |` followed by rows parses as a
-   PARAGRAPH and renders as literal pipe characters. Verified against the actual
-   pipeline (@nuxtjs/mdc's parseMarkdown, which server/utils/cms-normalizers.ts
-   calls for every `body` field).
-   The authoring workaround is an empty header row — `|  |  |` above the
-   delimiter — which does parse, but yields <thead><tr><th></th>…, and the
-   typography plugin gives thead a bottom border and th padding, i.e. a blank
-   bordered strip above the data. This hides a thead whose cells are ALL empty;
-   a table with real headers is untouched because its th are not :empty. */
 .prose thead:not(:has(th:not(:empty))) {
   display: none;
 }
 
-/* `touch:` — applies only where the pointer cannot hover.
-   Several sections reveal content on :hover (product card summaries and CTAs,
-   board-member career timelines). On a touch device that content is in the DOM —
-   and read by screen readers — but can never be revealed, so it is silently lost.
-   Each of those hover rules now pairs with a `touch:` variant that simply shows
-   the content instead. */
 @custom-variant touch (@media (hover: none));
 
-/* The AutoNextNews overlay and the floating action button both occupy the
-   bottom-right. The overlay's container is capped at 1200px, so they only clear
-   each other above ~1376px viewport width — below that the FAB (z-50) lands on
-   top of the overlay's Close and "read next" buttons (z-40), which is exactly
-   where a tablet lands. Reserving a gutter would shift the overlay off-centre at
-   every width, so the FAB yields the corner instead: the overlay is transient
-   (10s auto-advance) and the FAB returns when it leaves. Same `:has()` idiom the
-   announcement bar uses above. */
 body:has(.anx-overlay) .fab-dock {
   opacity: 0;
   pointer-events: none;
@@ -53,45 +24,33 @@ body:has(.anx-overlay) .fab-dock {
   }
 }
 
-/* ── finco.mn design tokens (Tailwind v4 @theme) ──────────────────────────────
-   Values from the Figma `final` page variables (structure.md §4).
-   Tailwind generates utilities from these, e.g. --color-primary → bg-primary,
-   text-primary, border-primary. Items marked CONFIRM need a Figma cross-check. */
 @theme {
-  /* Brand */
-  --color-primary: #214784;        /* brand blue — buttons, links, headings */
-  --color-primary-hover: #1a3a6c;  /* derived darker step for hover/pressed */
-  --color-teal: #13cfb9;           /* Beep accent / highlights */
-  --color-lime: #caff00;           /* Beep CTA button (Figma 1:3088) — lime, dark text */
-  --color-accent: #4c41d8;         /* blurple — section headings accent, CTAs (Figma 1:14125) */
-  --color-accent-bright: #6b4fff;  /* brighter violet — loan-calculator total (Figma 1:11617) */
-  --color-dark: #28303f;           /* dark hero/footer backgrounds + nav text */
-  --color-announcement: #080a12;   /* near-black announcement bar (Figma 1:12280) */
+  --color-primary: #214784;
+  --color-primary-hover: #1a3a6c;
+  --color-teal: #13cfb9;
+  --color-lime: #caff00;
+  --color-accent: #4c41d8;
+  --color-accent-bright: #6b4fff;
+  --color-dark: #28303f;
+  --color-announcement: #080a12;
 
-  /* Neutrals & surfaces */
-  --color-foreground: #09090b;          /* body text */
-  --color-muted-foreground: #5b6675;    /* secondary / low-emphasis text */
+  --color-foreground: #09090b;
+  --color-muted-foreground: #5b6675;
   --color-background: #ffffff;
-  --color-muted: #f4f4f5;               /* muted SURFACE (not text) */
-  --color-secondary: #f5f5f5;           /* secondary surface */
-  --color-secondary-foreground: #383838;/* text on secondary (confirmed via Figma) */
-  --color-input: #e6e6e6;               /* input borders */
+  --color-muted: #f4f4f5;
+  --color-secondary: #f5f5f5;
+  --color-secondary-foreground: #383838;
+  --color-input: #e6e6e6;
 
-  /* Radius */
   --radius: 12px;
-  --radius-sm: calc(var(--radius) - 4px); /* 8px */
+  --radius-sm: calc(var(--radius) - 4px);
 
-  /* Shadow */
   --shadow-2xs: 0 1px 2px rgba(26, 26, 26, 0.05);
 
-  /* Typography — Geologica (variable Google font), auto-served by @nuxt/fonts. */
   --font-sans: "Geologica", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Geologica", ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Registered so --announcement-h can be *animated* — unregistered custom
-   properties aren't interpolable, so the collapse-on-dismiss ease below relies on
-   this. See the body:has() rules further down. */
 @property --announcement-h {
   syntax: "<length>";
   inherits: true;
@@ -100,8 +59,6 @@ body:has(.anx-overlay) .fab-dock {
 
 :root {
   color-scheme: light;
-  /* Height of the dismissible announcement strip; full-viewport heroes subtract
-     it so they fit exactly below it. Toggled by the :has() rules below. */
   --announcement-h: 0px;
 }
 
@@ -202,12 +159,6 @@ body:has(.announcement-bar.is-collapsing) {
   }
 }
 
-/* Carousel card reveal — staggered fade-up for carousel items, same CSS-driven
-   rationale as hero-rise. The carousel component gates it with an
-   IntersectionObserver: cards render visible for SSR/no-JS, hide only after
-   hydration, then get this class (plus an inline `animation-delay` per index)
-   when the carousel scrolls into view. Because CSS animations re-run on freshly
-   mounted nodes, swapping the card list (audience toggle) replays the stagger. */
 @keyframes carousel-rise {
   from {
     opacity: 0;
@@ -233,11 +184,6 @@ body:has(.announcement-bar.is-collapsing) {
   }
 }
 
-/* Nav mega-menu panel + dimming scrim open/close. CSS @keyframes (compositor-
-   driven) rather than motion-v / Vue <Transition> — JS/rAF-driven presence
-   animations can strand a toggling panel mid-opacity, same reason the hero uses a
-   CSS animation above. Enter on mount; exit plays via the `-out` class for ~0.15s
-   before the element unmounts (driven by a `closing` flag + timer in SiteHeader). */
 @keyframes mega-pop {
   from {
     opacity: 0;
@@ -262,9 +208,6 @@ body:has(.announcement-bar.is-collapsing) {
     filter: blur(4px);
   }
 }
-/* Switching between two open menus (Иргэнд ↔ Бизнесд): the panel remounts
-   (keyed on the open menu), so a light settle reads as a content swap rather
-   than replaying the full pop. */
 @keyframes mega-swap {
   from {
     opacity: 0;
@@ -319,13 +262,6 @@ body:has(.announcement-bar.is-collapsing) {
   }
 }
 
-/* Transitions.dev — Menu dropdown (scale + fade, asymmetric open/close).
-   Driven here by hover: the LocaleSwitcher wraps trigger + panel in a `.group`,
-   so `.group:hover` / `:focus-within` apply the open state. Asymmetric timing
-   is pure CSS — the resting style carries --dropdown-close-dur, the open style
-   carries --dropdown-open-dur. The `.is-open` / `.is-closing` hooks are kept
-   for any future click/JS-driven use (swap is-open→is-closing, then drop
-   is-closing after --dropdown-close-dur). data-origin sets the scale anchor. */
 :root {
   --dropdown-open-dur: 250ms;
   --dropdown-close-dur: 150ms;
@@ -382,21 +318,6 @@ body:has(.announcement-bar.is-collapsing) {
   }
 }
 
-/* Transitions.dev — Modal open / close */
-
-/*
-  Usage:
-    <div class="t-modal" role="dialog">…</div>
-
-  State:
-    - Add `.is-open` to open (scales up from --modal-scale).
-    - On close, swap `.is-open` for `.is-closing`, then remove
-      `.is-closing` after --modal-close-dur.
-
-  AppDialog drives the classes; it forces a reflow before adding `.is-open`
-  so the enter transition can't strand on hydrated/teleported nodes.
-*/
-
 :root {
   --modal-open-dur: 250ms;
   --modal-close-dur: 150ms;
@@ -441,17 +362,6 @@ body:has(.announcement-bar.is-collapsing) {
   .t-backdrop { animation-duration: 0.01ms; }
 }
 
-/* Transitions.dev — Card resize */
-
-/*
-  Usage:
-    <div class="t-resize">…</div>
-
-  Put `.t-resize` on any element and change its width/height
-  (directly, or via a state class such as `.is-small`). The
-  transition will tween the two sizes.
-*/
-
 :root {
   --resize-dur: 300ms;
   --resize-ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -468,14 +378,7 @@ body:has(.announcement-bar.is-collapsing) {
   .t-resize { transition: none !important; }
 }
 
-/* ── Page transitions ─────────────────────────────────────────────────────────
-Wired via app.pageTransition / app.layoutTransition in nuxt.config.ts
-(mode: 'out-in'): the old page fades up and out, then the new one fades in
-rising slightly. Header/footer live in the layout so they stay put; the
-layout-* classes only fire on default ↔ minimal layout switches. */
-
 :root {
-  /* Asymmetric like the dropdowns: leave quickly, enter with more presence. */
   --page-enter-dur: 300ms;
   --page-leave-dur: 180ms;
   --page-ease: cubic-bezier(0.22, 1, 0.36, 1);

@@ -5,29 +5,17 @@ type Keyframe = Record<string, string | number>
 
 const props = withDefaults(
   defineProps<{
-    /** Text content to animate. */
     text?: string
-    /** Delay between each word/letter, in ms. */
     delay?: number
-    /** Animate by whole 'words' or individual 'letters'. */
     animateBy?: 'words' | 'letters'
-    /** Direction the segments travel in from. */
     direction?: 'top' | 'bottom'
-    /** Intersection threshold (0–1) that triggers the animation. */
     threshold?: number
-    /** Root margin for the intersection observer. */
     rootMargin?: string
-    /** Override the initial (from) keyframe. */
     animationFrom?: Keyframe
-    /** Override the animation (to) keyframes. */
     animationTo?: Keyframe[]
-    /** Easing function applied across the keyframes. */
     easing?: (t: number) => number
-    /** Time each step takes, in seconds. */
     stepDuration?: number
-    /** Root element tag (e.g. 'h1', 'span'). Defaults to 'p'. */
     as?: string
-    /** Seconds to wait before the first segment — staggers whole blocks. */
     startDelay?: number
   }>(),
   {

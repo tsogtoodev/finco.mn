@@ -11,7 +11,6 @@ async function login() {
     await signInWithGoogle()
   }
   catch (e) {
-    // Popup closed/blocked or network error — surface quietly for now.
     console.error('Sign-in failed:', e)
   }
   finally {
@@ -21,7 +20,6 @@ async function login() {
 </script>
 
 <template>
-  <!-- Logged in: avatar + logout -->
   <div v-if="loggedIn" class="flex items-center gap-3 text-sm">
     <img
       v-if="user?.avatar"
@@ -39,7 +37,6 @@ async function login() {
     </button>
   </div>
 
-  <!-- Logged out: trigger Firebase sign-in -->
   <button
     v-else
     type="button"

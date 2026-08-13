@@ -1,7 +1,4 @@
 <script setup lang="ts">
-// One link inside a NavMegaMenu grid (Figma 1:11916 / 1:11775): title + one-line
-// description + trailing chevron. The whole cell is a real <NuxtLink> so it is
-// keyboard-focusable and routes correctly. `to` is a raw path, localised here.
 const props = defineProps<{
   to: string
   title: string

@@ -1,19 +1,4 @@
 #!/usr/bin/env node
-/**
- * Vendor every Spline scene the site uses into `public/spline/`.
- *
- * The components load their scenes same-origin (`/spline/<id>.splinecode`)
- * instead of from prod.spline.design, so a Spline outage can't blank a section
- * and the bytes ride our own cache headers. That means the files in
- * `public/spline` are a SNAPSHOT: re-publishing a scene in the Spline editor
- * changes nothing on the site until this script is run and the result committed.
- *
- *   node scripts/sync-spline.mjs          # fetch all, write changed files
- *   node scripts/sync-spline.mjs --check  # fail if any local copy is stale (CI)
- *
- * To add a scene: publish it in Spline, put its id + where it's used in SCENES
- * below, run this, and point the component at `/spline/<id>.splinecode`.
- */
 import { createHash } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
@@ -22,7 +7,6 @@ import { fileURLToPath } from 'node:url'
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT_DIR = join(ROOT, 'public', 'spline')
 
-/** Spline scene id → what it's used for (kept for traceability, not behaviour). */
 const SCENES = [
   { id: 'n2ZpeSHKKA8Olc1E', usedBy: 'AboutValues — values cluster' },
   { id: '5QI6kS8kPdn7j7Y3', usedBy: 'AboutMission / AboutMissionV3 — pinned mission scene' },

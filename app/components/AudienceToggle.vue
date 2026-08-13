@@ -1,10 +1,4 @@
 <script setup lang="ts">
-// Segmented Иргэнд / Бизнест switch pinned in the products hero — the same
-// sliding-pill TabPills used by the HomeProducts toggle, themed per audience
-// (teal pill for individuals, blurple accent for business, matching Figma
-// 1:13616 / the HomeProducts accent rules). Unlike HomeProducts (which
-// filters in place), selecting here NAVIGATES: /products vs /business is a
-// real route change (correct under the i18n locale prefix).
 import type { Audience } from '~/composables/useProducts'
 
 const props = defineProps<{ audience: Audience }>()
@@ -20,8 +14,6 @@ const tabs = computed(() =>
   options.map((o) => ({ value: o.key as string, label: t(o.labelKey) })),
 )
 
-// Bar tint + pill colour follow the active audience (10% brand tint bar, solid
-// brand pill — same scheme as the HomeProducts toggle).
 const tabTheme = computed(() =>
   props.audience === 'business'
     ? { bar: 'rgba(76, 65, 216, 0.18)', pill: 'var(--color-accent)' }

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-// Careers — recruitment timeline (horizontal), perks, open positions.
 definePageMeta({ transparentHeader: true })
 
 const { locale, t } = useI18n()
@@ -37,7 +36,6 @@ useSeoMeta({
       :subtitle="page?.hero?.subheadline"
     />
 
-    <!-- Recruitment process -->
     <section v-if="steps.length" class="mx-auto max-w-7xl px-4 py-20">
       <h2 class="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
         {{ t('careers.process') }}
@@ -47,7 +45,6 @@ useSeoMeta({
       </div>
     </section>
 
-    <!-- Perks + open roles -->
     <section class="mx-auto max-w-7xl px-4 pb-24">
       <div class="grid gap-12 lg:grid-cols-[20rem_1fr]">
         <div>

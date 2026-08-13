@@ -1,15 +1,4 @@
 #!/usr/bin/env node
-/**
- * Creates the "Purge site cache" Directus Flow (plan §8 revalidate webhook):
- * on any content create/update/delete it POSTs to the Nuxt revalidate
- * endpoint with the shared secret, purging the Worker CMS cache for that
- * collection. Publish latency then = Cloudflare edge TTL only (≤60s).
- * Idempotent. Uses 1 of Directus Core's 5 Flows.
- *
- * Usage:
- *   DIRECTUS_URL=... DIRECTUS_TOKEN=<admin> WEBHOOK_SECRET=<secret> \
- *   [SITE=https://finco.design] node directus/setup-revalidate-flow.mjs
- */
 const B = (process.env.DIRECTUS_URL ?? 'https://cms.finco.design').replace(/\/$/, '')
 const TOKEN = process.env.DIRECTUS_TOKEN
 const SECRET = process.env.WEBHOOK_SECRET

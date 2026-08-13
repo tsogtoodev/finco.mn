@@ -11,13 +11,9 @@ const page = await usePageContent('home')
 const copy = computed(() => ({
   lead: page.value?.beep?.expandLead ?? t('home.beep.expandLead'),
   rest: page.value?.beep?.expandRest ?? t('home.beep.expandRest'),
-  // "Апп татах:" above the store badges. The colon is part of the CMS string
-  // (Figma 1267:15649); the i18n fallback is the colon-less button label.
   downloadLabel: page.value?.beep?.downloadLabel ?? `${t('home.beep.appDownload')}:`,
 }))
 
-// Editors can swap the QR (it encodes the app's download link); the baked
-// export is the fallback.
 const qrSrc = computed(() => page.value?.beep?.qr || '/images/home/beep-qr-v2.png')
 
 const words = computed(() => {
@@ -77,16 +73,9 @@ onBeforeUnmount(() => videoIo?.disconnect())
       <div class="beep2-glow" aria-hidden="true">
         <img :src="glowOuter" alt="" class="beep2-glow-img" style="--d: 100%">
         <img :src="glowMid" alt="" class="beep2-glow-img" style="--d: 73.28%">
-        <!-- <img :src="glowInner" alt="" class="beep2-glow-img" style="--d: 49.26%"> -->
       </div>
 
       <div class="beep2-person" aria-hidden="true">
-        <!-- <NuxtImg
-          src="/images/home/beep-lifestyle-v2.png"
-          alt=""
-          sizes="sm:100vw md:560px lg:760px"
-          class="beep2-person-img"
-        /> -->
         <video
           ref="videoEl"
           src="/videos/beep.mp4"
@@ -128,10 +117,6 @@ onBeforeUnmount(() => videoIo?.disconnect())
               <span class="beep2-qr-card">
                 <img :src="qrSrc" alt="" class="beep2-qr-img">
               </span>
-              <!-- Label + the two official store badges, stacked (Figma 1267:15601).
-                   The badges are the vendors' own artwork (Apple / Google brand
-                   guidelines), so they are used as-is at their exact ratios — never
-                   recoloured or re-typeset. -->
               <span class="beep2-qr-stores">
                 <p class="beep2-qr-cap">{{ copy.downloadLabel }}</p>
                 <img
@@ -218,22 +203,22 @@ onBeforeUnmount(() => videoIo?.disconnect())
 .beep2-copy {
   display: flex;
   flex-direction: column;
-  gap: 1.0582cqw; /* 16px */
+  gap: 1.0582cqw;
   align-items: flex-start;
 }
 .beep2-wordmark {
   display: block;
-  width: 7.341cqw; /* 110.99px */
-  height: 2.6455cqw; /* 40px */
+  width: 7.341cqw;
+  height: 2.6455cqw;
 }
 .beep2-text {
   display: flex;
   flex-wrap: wrap;
-  white-space: pre-wrap; /* keep each word's trailing space from collapsing */
+  white-space: pre-wrap;
   font-weight: 200;
-  font-size: 1.0582cqw; /* 16px */
-  line-height: 1.5873cqw; /* 24px */
-  letter-spacing: 0.0106cqw; /* 0.16px */
+  font-size: 1.0582cqw;
+  line-height: 1.5873cqw;
+  letter-spacing: 0.0106cqw;
   color: rgba(0, 0, 0, 0.6);
 }
 .beep2-text-lead {
@@ -249,39 +234,36 @@ onBeforeUnmount(() => videoIo?.disconnect())
   display: flex;
   flex-direction: column;
   align-items: start;
-  gap: 0.2646cqw; /* 4px */
+  gap: 0.2646cqw;
 }
 .beep2-qr-row {
   display: flex;
   align-items: center;
-  gap: 1.5873cqw; /* 24px */
+  gap: 1.5873cqw;
 }
-/* Label + badges column (Figma 1267:15601): 12px rhythm, left-aligned. */
 .beep2-qr-stores {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  gap: 0.7937cqw; /* 12px */
+  gap: 0.7937cqw;
 }
-/* Vendor badge artwork — BOTH axes are set from each badge's own ratio (they
-   differ: 120×40 Apple, 119×36 Google) so neither is ever stretched. */
 .beep2-badge {
   display: block;
 }
 .beep2-badge--apple {
-  width: 7.9143cqw; /* 119.66px */
-  height: 2.6455cqw; /* 40px */
+  width: 7.9143cqw;
+  height: 2.6455cqw;
 }
 .beep2-badge--play {
-  width: 7.8704cqw; /* 119px */
-  height: 2.381cqw; /* 36px */
+  width: 7.8704cqw;
+  height: 2.381cqw;
 }
 .beep2-qr-card {
   display: block;
-  width: 11.706cqw; /* 177px */
-  height: 12.302cqw; /* 186px */
-  border-radius: 0.7937cqw; /* 12px */
+  width: 11.706cqw;
+  height: 12.302cqw;
+  border-radius: 0.7937cqw;
   background: #fdfffe;
   overflow: hidden;
 }
@@ -293,7 +275,7 @@ onBeforeUnmount(() => videoIo?.disconnect())
 }
 .beep2-qr-cap {
   font-weight: 300;
-  font-size: 1.3228cqw; /* 20px */
+  font-size: 1.3228cqw;
   line-height: 1.3228cqw;
   color: rgba(37, 64, 63, 0.5);
   white-space: nowrap;
@@ -321,11 +303,11 @@ onBeforeUnmount(() => videoIo?.disconnect())
     gap: 1rem;
   }
   .beep2-wordmark {
-    width: 6.9375rem; /* 111px */
+    width: 6.9375rem;
     height: 2.5rem;
   }
   .beep2-text {
-    font-size: 0.9375rem; /* 15px */
+    font-size: 0.9375rem;
     line-height: 1.6;
     letter-spacing: 0.01em;
   }
@@ -343,14 +325,13 @@ onBeforeUnmount(() => videoIo?.disconnect())
   .beep2-qr-stores {
     gap: 0.75rem;
   }
-  /* Badges shrink to ~87% below lg so the row still clears a 360px viewport. */
   .beep2-badge--apple {
-    width: 6.5rem; /* 104px */
-    height: 2.1667rem; /* 34.7px */
+    width: 6.5rem;
+    height: 2.1667rem;
   }
   .beep2-badge--play {
-    width: 6.4625rem; /* 103.4px */
-    height: 1.9531rem; /* 31.3px */
+    width: 6.4625rem;
+    height: 1.9531rem;
   }
   .beep2-qr-cap {
     font-size: 1.125rem;
@@ -365,7 +346,7 @@ onBeforeUnmount(() => videoIo?.disconnect())
     overflow: hidden;
   }
   .beep2-person-img {
-    object-position: 50% 18%; /* keep the phone-in-pocket framing in the crop */
+    object-position: 50% 18%;
   }
 }
 </style>

@@ -1,17 +1,10 @@
 <script setup lang="ts">
-// Reusable scroll-reveal wrapper built on motion-v.
-// Usage: <MotionReveal :delay="0.1"><h2>…</h2></MotionReveal>
 const props = withDefaults(
   defineProps<{
-    /** Pixels to travel on the y-axis as it reveals. */
     y?: number
-    /** Animation delay in seconds. */
     delay?: number
-    /** Animation duration in seconds. */
     duration?: number
-    /** Animate only the first time it enters the viewport. */
     once?: boolean
-    /** Rendered element/tag. */
     as?: string
   }>(),
   {

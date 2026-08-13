@@ -1,12 +1,4 @@
 #!/usr/bin/env node
-/**
- * Creates the read-only API consumer the Nuxt Worker uses (plan §8).
- * Policy can read PUBLISHED content only — drafts/versions are invisible to it,
- * so a leaked token can never expose unpublished work. No app access.
- * Idempotent. Prints the static token ONCE on creation.
- *
- * Usage: DIRECTUS_URL=... DIRECTUS_TOKEN=<admin> node directus/setup-api-reader.mjs
- */
 import { randomBytes } from 'node:crypto'
 
 const BASE = (process.env.DIRECTUS_URL ?? 'https://cms.finco.design').replace(/\/$/, '')
@@ -22,7 +14,6 @@ async function api(method, path, body) {
   if (!res.ok) throw new Error(`${method} ${path} -> ${res.status}: ${JSON.stringify(json?.errors ?? json)}`)
   return json.data
 }
-// simpler re-read
 async function call(method, path, body) {
   const res = await fetch(BASE + path, {
     method,

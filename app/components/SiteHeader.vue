@@ -1,19 +1,4 @@
 <script setup lang="ts">
-// Global site nav. ONE component, two page-driven treatments (Figma 1:14121 /
-// 1:13321):
-//   • solid  (default)      — white bg, dark text + full-colour logo. Homepage,
-//                             form pages. Gains a shadow once scrolled a touch.
-//   • overlay (transparent) — floats over a dark image hero with a white logo +
-//                             links and a top-down scrim, then transitions to the
-//                             solid treatment after scrolling past the hero top.
-//
-// Two nav items (Иргэнд / Бизнест) open a mega-menu panel (Figma 1:11916 /
-// 1:11775); the other three are plain links. While a panel is open the bar is
-// forced to its solid treatment so the white panel reads correctly.
-//
-// The 36px AnnouncementBar rides at the top of this sticky header (rendered
-// below), so it reveals/hides WITH the nav on scroll — returning on scroll-up
-// until dismissed — instead of scrolling away. The nav row is 60px per Figma.
 import { navPromoArt, navPromos, type NavAudience } from '~/data/navMenus'
 
 const props = withDefaults(defineProps<{ transparent?: boolean }>(), {
@@ -24,19 +9,11 @@ const { t } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
 
-// The error page gets a hairline bottom border. It's rendered by app/error.vue,
-// which sits outside the router's page tree — a 404 URL matches no page, so
-// `route.meta` is empty and the layout's meta-driven props (transparentHeader,
-// floatingActions) can't reach it. useError() is the signal that works there.
-// It's set during SSR too, so the border renders server-side — no hydration flip.
 const nuxtError = useError()
 const onErrorPage = computed(() => Boolean(nuxtError.value))
 
-// ── nav model ─────────────────────────────────────────────────────────────
 type NavItem =
   | { kind: 'link'; to: string; label: string }
-  // Mega-menu items are also real links: the trigger navigates to its section
-  // page on click while opening the dropdown on hover.
   | { kind: 'menu'; audience: NavAudience; label: string; to: string }
 
 const navItems = computed<NavItem[]>(() => [
@@ -47,13 +24,8 @@ const navItems = computed<NavItem[]>(() => [
   { kind: 'link', to: '/news', label: t('nav.news') },
 ])
 
-// Main nav links sit in the viewport permanently — prefetch on hover/focus only
-// (not visibility) so we don't pull every destination's chunks/assets on load.
 const navPrefetchOn = { interaction: true, visibility: false } as const
 
-// Menu links come from the `products` collection (audience + order) so the
-// menus track the CMS catalog; promo card structure comes from navPromos and
-// its copy from i18n. `label` names the panel for assistive tech.
 const catalog = await useProductList()
 
 function buildMenu(audience: NavAudience) {
@@ -82,11 +54,6 @@ const menus = computed(() => ({
   business: buildMenu('business'),
 }))
 
-// ── mega-menu open/close with hover intent ─────────────────────────────────
-// `openMenu` holds the visible menu; `closing` plays the exit animation for
-// EXIT_MS before the panel actually unmounts (so close is animated, not abrupt).
-// `swapped` marks an open→open switch (Иргэнд ↔ Бизнесд): the keyed panel
-// remounts with the lighter .mega-swap settle instead of the full pop.
 const openMenu = ref<NavAudience | null>(null)
 const closing = ref(false)
 const swapped = ref(false)
@@ -95,13 +62,13 @@ let closeTimer: ReturnType<typeof setTimeout> | undefined
 let exitTimer: ReturnType<typeof setTimeout> | undefined
 const OPEN_DELAY = 110
 const CLOSE_DELAY = 150
-const EXIT_MS = 180 // keep in sync with .mega-pop-out / .scrim-fade-out (0.18s)
+const EXIT_MS = 180
 
 function clearTimers() {
   clearTimeout(openTimer)
   clearTimeout(closeTimer)
 }
-// Show a menu now: cancels any pending close/exit and swaps content instantly.
+
 function showMenu(a: NavAudience) {
   clearTimers()
   clearTimeout(exitTimer)
@@ -109,7 +76,7 @@ function showMenu(a: NavAudience) {
   closing.value = false
   openMenu.value = a
 }
-// Begin the exit animation, then unmount once it finishes.
+
 function hideMenu() {
   clearTimers()
   if (!openMenu.value || closing.value) return
@@ -122,23 +89,13 @@ function hideMenu() {
 function scheduleOpen(a: NavAudience) {
   clearTimers()
   clearTimeout(exitTimer)
-  // already showing (or mid-exit) → switch/cancel-exit instantly; else intent delay
   if (openMenu.value) {
     showMenu(a)
     return
   }
   openTimer = setTimeout(() => showMenu(a), OPEN_DELAY)
 }
-// Touch at >=lg (iPad Pro portrait is exactly 1024, any tablet in landscape):
-// the trigger is a real <NuxtLink>, and the panel only ever opened on
-// @mouseenter — so a tap navigated straight to /products and the per-product
-// sub-links were unreachable from the nav entirely. First tap opens the panel,
-// a second tap on the same trigger follows the link. Below lg the drawer covers
-// this, and on a pointer device hover has already opened it so this is a no-op.
-//
-// Bound with .capture: vue-router's own click handler bails when the event is
-// already `defaultPrevented`, but only if we get there first — a bubble-phase
-// listener races with RouterLink's and would navigate anyway.
+
 function onTriggerActivate(e: MouseEvent, a: NavAudience) {
   if (window.matchMedia('(hover: hover)').matches) return
   if (openMenu.value === a) return
@@ -151,13 +108,12 @@ function scheduleClose() {
 }
 function cancelClose() {
   clearTimers()
-  // pointer returned while exiting → cancel the exit and keep it open
   if (closing.value && openMenu.value) showMenu(openMenu.value)
 }
 function closeNow() {
   hideMenu()
 }
-// Route change: drop the panel immediately (no exit animation mid-navigation).
+
 function hardClose() {
   clearTimers()
   clearTimeout(exitTimer)
@@ -166,46 +122,22 @@ function hardClose() {
   megaSize.value = {}
 }
 
-// ── mega-menu size tween (.t-resize) ───────────────────────────────────────
-// The panel is a different size per menu (Иргэнд: 1 column, Бизнесд: 2). A
-// persistent-while-open wrapper carries the card chrome + `.t-resize`; on each
-// open/switch we measure the (w-max, natural-size) content and pin the wrapper's
-// explicit px width/height, so an Иргэнд ↔ Бизнесд switch TWEENS the frame
-// between the two sizes (the wrapper persists across the switch; only the inner
-// keyed content remounts for the pop/swap). Reset on close so the next open
-// re-measures from scratch instead of flashing the previous menu's size.
 const megaContent = ref<HTMLElement | null>(null)
 const megaSize = ref<Record<string, string>>({})
 async function measureMega() {
   await nextTick()
   const el = megaContent.value
-  // Pin WIDTH only (the 1-col ↔ 2-col change). Height is left auto: both menus
-  // are ≤5 rows so it barely differs, and an exact pinned height would risk a
-  // 1px clip against the overflow-hidden frame.
   if (!el) return
-  // Read the content's NATURAL width with its cap lifted. The inner carries
-  // `max-w-full` so it can reflow when the viewport is the binding constraint —
-  // but that also means measuring it as-is on an Иргэнд → Бизнесд switch would
-  // read the PREVIOUS menu's pinned frame width and the panel could never grow.
-  // Lifting the cap for the read happens inside one task, so nothing paints.
   const prevCap = el.style.maxWidth
   el.style.maxWidth = 'none'
   const natural = el.offsetWidth
   el.style.maxWidth = prevCap
-  // Clamp to what the frame can actually show. Pinning the un-clamped max-content
-  // width just told the frame to be wider than the screen and `overflow-hidden`
-  // cropped the rest: the two-column business menu is ~1197px, so on a 1024px
-  // iPad Pro the entire second column of product links was unreachable.
   megaSize.value = { width: `${Math.min(natural, window.innerWidth - 32)}px` }
 }
 watch(openMenu, (v) => { if (v) measureMega() })
-// A resize while the panel is open would otherwise leave the pinned px width
-// stale — and potentially wider than the new viewport.
+
 function onMegaResize() { if (openMenu.value) measureMega() }
 
-// ── triggers (keyboard + focus management) ─────────────────────────────────
-// Triggers are <NuxtLink>s, so a template ref yields the component instance —
-// unwrap to its root <a> element so focus management (Esc restore) still works.
 const triggerEls = ref<Partial<Record<NavAudience, HTMLElement>>>({})
 function setTrigger(a: NavAudience, el: unknown) {
   if (!el) return
@@ -225,7 +157,7 @@ function escClose() {
   hideMenu()
   triggerEls.value[a]?.focus()
 }
-// Close when keyboard focus leaves the whole nav cluster (Tab past the last link).
+
 const navWrap = ref<HTMLElement | null>(null)
 function onFocusOut(e: FocusEvent) {
   if (!openMenu.value) return
@@ -233,18 +165,15 @@ function onFocusOut(e: FocusEvent) {
   if (!next || !navWrap.value?.contains(next)) closeNow()
 }
 
-// ── scroll state ───────────────────────────────────────────────────────────
-const scrolled = ref(false) // past a small offset → drop shadow
-const pastHero = ref(false) // past the hero top → overlay flips to solid
-const hidden = ref(false) // scrolling down past the bar → slide the row off-screen
+const scrolled = ref(false)
+const pastHero = ref(false)
+const hidden = ref(false)
 let lastY = 0
-const DIR_THRESHOLD = 4 // ignore sub-pixel/momentum jitter
+const DIR_THRESHOLD = 4
 function onScroll() {
   const y = window.scrollY
   scrolled.value = y > 8
   pastHero.value = y > 80
-  // Hide on scroll-down (once past the bar's own height), reveal on scroll-up.
-  // Always reveal near the top so the bar never hides over the hero/announcement.
   const delta = y - lastY
   if (y < 80) hidden.value = false
   else if (delta > DIR_THRESHOLD && y > 120) hidden.value = true
@@ -254,21 +183,9 @@ function onScroll() {
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape' && openMenu.value) escClose()
 }
-// Warm the mega-menu promo art. The panel is `v-if`'d, so this art is requested
-// for the first time at the exact moment it becomes visible — hence the pop-in.
-//
-// Deliberately NOT `<link rel="preload">` in the head: these are decorative and
-// only some visitors ever open a menu, so a head preload would compete with the
-// hero/LCP image on every page and log "preloaded but not used" for everyone
-// else. Warming a detached <img> after hydration costs nothing on the critical
-// path and still lands in the HTTP cache long before a hover.
-//
-// srcset + sizes are set rather than a bare `src` so the browser runs its normal
-// candidate selection — the URL it picks here is the same one NavPromoCard's
-// NuxtImg will ask for, DPR included. A plain src would warm the wrong variant
-// on retina and download twice.
+
 function warmPromoArt() {
-  if (!window.matchMedia('(min-width: 1024px)').matches) return // desktop-only panel
+  if (!window.matchMedia('(min-width: 1024px)').matches) return
   const conn = (navigator as Navigator & {
     connection?: { saveData?: boolean; effectiveType?: string }
   }).connection
@@ -283,7 +200,7 @@ function warmPromoArt() {
       if (srcset) el.srcset = srcset
       el.src = img(art.src)
     }
-    catch { /* a warm miss is never worth breaking the header over */ }
+    catch {}
   }
 }
 
@@ -304,7 +221,6 @@ onBeforeUnmount(() => {
   clearTimeout(exitTimer)
 })
 
-// ── mobile menu ──────────────────────────────────────────────────────────
 const mobileOpen = ref(false)
 const mobileExpanded = ref<NavAudience | null>(null)
 watch(() => route.fullPath, () => {
@@ -312,9 +228,6 @@ watch(() => route.fullPath, () => {
   hardClose()
 })
 
-// Lock the page behind the drawer. Without this, scrolling while the drawer is
-// open scrolls the content behind an opaque white panel. Reference-counted so it
-// composes with AppDialog, which can be opened on top of the drawer via the FAB.
 watch(mobileOpen, (open) => {
   if (open) lockBodyScroll()
   else unlockBodyScroll()
@@ -323,25 +236,17 @@ onBeforeUnmount(() => {
   if (mobileOpen.value) unlockBodyScroll()
 })
 
-// A mega-menu is visually present while open OR mid-exit animation.
 const menuVisible = computed(() => openMenu.value !== null)
 
-// Solid *appearance* = white bg + dark content. Overlay flips to it once the user
-// scrolls past the hero, whenever the mobile menu is open, or while a mega-menu
-// panel is open (so the white panel + dark links read correctly).
 const solid = computed(
   () => !props.transparent || pastHero.value || mobileOpen.value || openMenu.value !== null,
 )
 const showScrim = computed(() => props.transparent && !solid.value)
 
-// Drop a shadow once scrolled (overlay: past the hero; solid: any nudge) as the
-// separation cue. The bar height stays fixed at 60px — no shrink-on-scroll.
 const showShadow = computed(
   () => !mobileOpen.value && (props.transparent ? pastHero.value : scrolled.value),
 )
 
-// Slide the bar away on scroll-down, but never while a mega-menu or the mobile
-// menu is open (it must stay anchored for the panel to read correctly).
 const barHidden = computed(
   () => hidden.value && openMenu.value === null && !mobileOpen.value,
 )
@@ -352,12 +257,8 @@ const barHidden = computed(
     class="sticky top-0 z-50 [transition:box-shadow_300ms_cubic-bezier(0.33,1,0.68,1),translate_400ms_cubic-bezier(0.22,1,0.36,1)] [will-change:translate] motion-reduce:transition-none"
     :class="[
       barHidden ? '-translate-y-full' : 'translate-y-0',
-      // shadow conveys separation on scroll; suppressed while a panel is open so the
-      // bar reads as one clean surface with the floating panel
       showShadow && !menuVisible ? 'shadow-2xs' : 'shadow-none',
       transparent ? '-mb-[60px]' : '',
-      // Error page only: the page below is a short, mostly-empty column, so the
-      // scroll-driven shadow never fires and the bar would float unanchored.
       onErrorPage ? 'border-b border-black/10' : '',
     ]"
     @keydown.esc="escClose"
@@ -390,7 +291,6 @@ const barHidden = computed(
       class="relative z-50 mx-auto flex h-[60px] max-w-7xl items-center justify-between gap-6 px-4"
       @focusout="onFocusOut"
     >
-      <!-- left: logo + desktop nav -->
       <div class="flex items-center gap-8 xl:gap-16">
         <NuxtLink
           :to="localePath('/')"
@@ -447,7 +347,6 @@ const barHidden = computed(
         </nav>
       </div>
 
-      <!-- right: locale switcher + mobile toggle -->
       <div class="flex items-center gap-2">
         <LocaleSwitcher :variant="solid ? 'solid' : 'overlay'" />
         <button
@@ -467,31 +366,17 @@ const barHidden = computed(
         </button>
       </div>
 
-      <!-- desktop mega-menu panel: content-sized, centered below the bar.
-           Centering lives on this static wrapper (flex) — the animated child
-           can't carry translate classes since .mega-pop animates transform. -->
       <div class="pointer-events-none absolute inset-x-4 top-full z-50 hidden lg:flex lg:justify-center mr-30">
-        <!-- The bar↔card gap is PADDING (pt-2), not margin, so it belongs to this
-             pointer-events-auto box: moving trigger → gap → card stays hovered,
-             leaving no dead zone that would flicker the panel closed. -->
         <div
           v-if="openMenu"
           class="pointer-events-auto pt-2"
           @mouseenter="cancelClose"
           @mouseleave="scheduleClose"
         >
-          <!-- Resizing card frame: persists across an Иргэнд ↔ Бизнесд switch, so
-               `.t-resize` tweens its measured width between the two menus. The card
-               chrome (bg/shadow/ring/rounding) lives HERE so overflow-hidden clips
-               the inner content without clipping the box-shadow. Capped to the
-               viewport so a wide menu can't force a horizontal scrollbar. -->
           <div
             class="t-resize max-w-[calc(100vw-2rem)] shrink-0 overflow-hidden rounded-[24px] bg-white shadow-[0_16px_44px_-24px_rgba(0,0,0,0.22)] ring-1 ring-black/[0.05]"
             :style="megaSize"
           >
-            <!-- Inner content remounts per menu (keyed) to replay the pop/swap; it
-                 stays at its natural width (w-max) so the frame clips it during the
-                 tween instead of reflowing the columns. -->
             <div
               ref="megaContent"
               :id="`mega-${openMenu}`"
@@ -511,11 +396,6 @@ const barHidden = computed(
       </div>
     </div>
 
-    <!-- Tap-outside-to-close scrim for the mobile drawer, mirroring the desktop
-         mega-menu scrim above (which is lg:block, so it never covered this case).
-         Starts at top-full so the nav and announcement bar stay crisp. Sits below
-         the panel's z-40 — without an explicit z the positioned scrim would paint
-         over it. -->
     <div
       v-if="mobileOpen"
       class="absolute inset-x-0 top-full z-30 h-screen bg-black/20 lg:hidden"
@@ -523,19 +403,12 @@ const barHidden = computed(
       @click="mobileOpen = false"
     />
 
-    <!-- mobile menu — solid white panel (readable in both modes), overlays content.
-         Height animates via the CSS grid-rows 0fr→1fr trick (reliable, no JS). -->
     <div
       class="absolute inset-x-0 top-full z-40 grid bg-white transition-[grid-template-rows,border-color] duration-300 ease-out motion-reduce:transition-none lg:hidden"
       :class="mobileOpen ? 'grid-rows-[1fr] border-black/10 shadow-2xs' : 'grid-rows-[0fr] border-transparent'"
       :aria-hidden="!mobileOpen"
     >
       <div class="overflow-hidden">
-        <!-- Subtract the announcement strip as well as the 60px nav row: the panel
-             is anchored at top-full of a header that is 96px tall while the bar is
-             up, so `100dvh - 60px` ended 36px below the fold — and because the
-             header is sticky, scrolling can't bring that back. --announcement-h is
-             global (main.css) and eases to 0 when the bar is dismissed. -->
         <nav data-lenis-prevent class="mx-auto flex max-h-[calc(100dvh-60px-var(--announcement-h,0px))] max-w-7xl flex-col gap-1 overflow-y-auto px-4 py-3">
           <template v-for="item in navItems" :key="item.kind === 'menu' ? item.audience : item.to">
             <NuxtLink
@@ -548,8 +421,6 @@ const barHidden = computed(
               {{ item.label }}
             </NuxtLink>
 
-            <!-- mega items: the label links to its section page; the chevron
-                 toggles the sub-links accordion. -->
             <div v-else>
               <div class="flex items-center rounded-[var(--radius-sm)] text-dark transition-colors hover:bg-black/5">
                 <NuxtLink

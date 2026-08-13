@@ -1,18 +1,4 @@
 <script setup lang="ts">
-// Bottom-left frame-rate readout, for diagnosing scroll smoothness.
-//
-// Reports three numbers, because an average alone hides exactly the problem
-// worth finding: a scroll can average 55fps and still feel broken if it stalls
-// for 120ms once a second.
-//   FPS  — frames in the last second.
-//   min  — the WORST one-second sample since the last reset. Sticky, so a stall
-//          you scrolled past is still on screen when you look down.
-//   ms   — the longest single frame in the current second. 16.7 is one frame at
-//          60Hz; anything above ~33 is a visible hitch.
-//
-// Mounted from the default layout in dev only. The rAF loop it runs is the same
-// one the browser is already ticking, so the meter itself costs ~nothing.
-
 const fps = ref(0)
 const worst = ref(0)
 const longestFrame = ref(0)
@@ -43,7 +29,6 @@ function tick(now: number) {
 
   fps.value = Math.round((frames * 1000) / elapsed)
   longestFrame.value = Math.round(peakThisWindow)
-  // Ignore the first sample: it straddles mount and is never representative.
   if (worst.value === 0 || fps.value < worst.value) worst.value = fps.value
 
   frames = 0
@@ -56,8 +41,6 @@ function reset() {
   longestFrame.value = 0
 }
 
-// A backgrounded tab throttles rAF to ~1fps, which would poison `worst` with a
-// number that means nothing. Drop the in-flight window on the way back.
 function onVisibility() {
   if (document.hidden) return
   frames = 0
@@ -75,8 +58,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('visibilitychange', onVisibility)
 })
 
-// Green ≥55, amber ≥40, red below — judged on the sticky worst, since that is
-// the number that describes how the page actually felt.
 const tone = computed(() => {
   const v = worst.value || fps.value
   if (v >= 55) return 'text-[#4ade80]'

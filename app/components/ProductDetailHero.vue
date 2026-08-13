@@ -50,8 +50,6 @@ function goBack() {
     <div
       class="relative mx-auto w-full max-w-[1248px] px-6 lg:px-0 pb-10 pt-[100px] sm:pb-12 sm:pt-[112px] lg:pb-[49px] lg:pt-[100px]"
     >
-      <!-- Back, ghost variant: no fill or border, so the padding box is invisible
-           and the label sits on the column's left edge. -->
       <div class="hero-rise">
         <AppButton variant="ghost" class="h-10 w-fit" @click="goBack">
           <Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />
@@ -59,9 +57,6 @@ function goBack() {
         </AppButton>
       </div>
 
-      <!-- centred title + subtitle + stats + CTAs. The design tucks this block
-           just 7px under the back button — they sit side by side rather than
-           stacked, so only small screens need real breathing room. -->
       <div class="mt-10 flex flex-col items-center gap-8 text-center sm:mt-8 sm:gap-10 lg:mt-[7px]">
         <div class="flex w-full flex-col items-center gap-2">
           <BlurText

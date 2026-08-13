@@ -1,8 +1,4 @@
 <script setup lang="ts">
-// NET-NEW: Contact feedback form. No Figma source — built from the existing
-// design tokens and the ApplicationForm input styling (rounded-[--radius-sm],
-// border-input, focus:border-primary). Client-side validation + inline errors,
-// posts to the /api/contact stub, shows success / error states.
 const { t } = useI18n()
 
 type Field = 'name' | 'email' | 'phone' | 'message'
@@ -16,7 +12,6 @@ const serverError = ref('')
 const successRef = ref<HTMLElement | null>(null)
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-// Allows +, spaces, dashes, parens; 8–15 digits total.
 const phoneRe = /^\+?[\d\s().-]{8,20}$/
 
 function validateField(f: Field): string {
@@ -43,7 +38,6 @@ function clearError(f: Field) {
 async function submit() {
   serverError.value = ''
   if (!validateAll()) {
-    // Move focus to the first invalid field for keyboard/SR users.
     await nextTick()
     const first = (['name', 'email', 'phone', 'message'] as Field[]).find(f => errors[f])
     if (first) document.getElementById(`contact-${first}`)?.focus()
@@ -97,7 +91,6 @@ const fieldClass
     </h2>
 
     <div class="mt-6 space-y-5">
-      <!-- Name -->
       <div>
         <label for="contact-name" class="mb-1 block text-sm font-medium text-foreground">
           {{ t('contactPage.form.name') }} <span class="text-red-500">*</span>
@@ -118,7 +111,6 @@ const fieldClass
         </p>
       </div>
 
-      <!-- Email -->
       <div>
         <label for="contact-email" class="mb-1 block text-sm font-medium text-foreground">
           {{ t('contactPage.form.email') }} <span class="text-red-500">*</span>
@@ -139,7 +131,6 @@ const fieldClass
         </p>
       </div>
 
-      <!-- Phone -->
       <div>
         <label for="contact-phone" class="mb-1 block text-sm font-medium text-foreground">
           {{ t('contactPage.form.phone') }} <span class="text-red-500">*</span>
@@ -160,7 +151,6 @@ const fieldClass
         </p>
       </div>
 
-      <!-- Message -->
       <div>
         <label for="contact-message" class="mb-1 block text-sm font-medium text-foreground">
           {{ t('contactPage.form.message') }} <span class="text-red-500">*</span>

@@ -1,21 +1,13 @@
 <script setup lang="ts">
-// Labelled input (Figma 1:11593): 14px label above a rgba(0,0,0,0.03) field with
-// 12px radius and an optional leading/trailing unit (e.g. ₮ or %).
 const props = withDefaults(
   defineProps<{
     label: string
     modelValue: string | number
     type?: string
-    /** Unit shown inside the field, e.g. '₮' or '%'. */
     unit?: string
     unitPosition?: 'leading' | 'trailing'
     placeholder?: string
     inputmode?: string
-    /**
-     * Upper bound for `type="number"` fields. Values typed or pasted above it
-     * are clamped in place (the native `max` attribute only affects spinners
-     * and validation styling — it doesn't stop typed input).
-     */
     max?: number
   }>(),
   { type: 'text', unitPosition: 'leading', placeholder: '', inputmode: 'decimal' },
@@ -29,7 +21,7 @@ function onInput(e: Event) {
   let value = el.value
   if (props.type === 'number' && props.max != null && value !== '' && Number(value) > props.max) {
     value = String(props.max)
-    el.value = value // sync the DOM so the field visibly clamps
+    el.value = value
   }
   emit('update:modelValue', value)
 }

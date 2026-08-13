@@ -1,9 +1,4 @@
 <script setup lang="ts">
-// Service-detail hero (Figma 1:14671). Mirrors ProductsHero: blurred dark
-// lifestyle photo + diagonal scrim, a ghost "Буцах" back button top-left, and a
-// centered headline + subtext. The breadcrumb was dropped per request, matching
-// the products-listing and product-detail heroes.
-// The global transparent nav overlays the top ~96px, so content gets top clearance.
 const props = defineProps<{
   image?: string
   title?: string
@@ -21,7 +16,6 @@ function goBack() {
 
 <template>
   <section class="relative isolate flex min-h-[560px] flex-col overflow-hidden bg-dark text-white sm:min-h-[620px] lg:min-h-[660px]">
-    <!-- blurred background photo + diagonal scrim (Figma: 251.2deg, 0.25 → 1.0 black) -->
     <HeroBackgroundImage
       v-if="props.image"
       :src="props.image"
@@ -38,10 +32,7 @@ function goBack() {
       style="background: linear-gradient(251.2deg, rgba(0, 0, 0, 0.25) 7%, rgba(0, 0, 0, 0.95) 96%)"
     />
 
-    <!-- max-w-7xl + px-4 matches the header and the carousel/FAQ sections so the
-         content aligns with the nav logo. pt clears the ~96px transparent nav. -->
     <div class="relative mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pb-16 pt-24 sm:pt-28">
-      <!-- Back, ghost variant. Matches the products + product-detail heroes. -->
       <div class="hero-rise">
         <AppButton variant="ghost" class="h-10 w-fit" @click="goBack">
           <Icon name="lucide:arrow-left" class="size-4" aria-hidden="true" />
@@ -49,7 +40,6 @@ function goBack() {
         </AppButton>
       </div>
 
-      <!-- centered headline + subtext + CTA -->
       <div class="flex flex-1 flex-col items-center justify-center gap-8 pb-6 pt-10 text-center">
         <BlurText
           :text="props.title ?? ''"

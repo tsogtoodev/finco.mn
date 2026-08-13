@@ -1,18 +1,4 @@
 #!/usr/bin/env node
-/**
- * Phase 4 role UAT (plan §6 + §12 "Roles and workflow" criteria), run
- * programmatically against the live policies using the test accounts.
- * Read-write but self-cleaning: creates its own artifacts and removes them.
- *
- * Covers: Editor draft creation (and denied status write), denied edit of
- * published content, content-version create/save, denied promote, Publisher
- * promote (applies to main), denied Editor delete, and version LIVE PREVIEW
- * through the Nuxt boundary (needs the dev server or site running at APP).
- *
- * Usage:
- *   DIRECTUS_URL=... DIRECTUS_TOKEN=<admin> [APP=http://localhost:3000] \
- *   node directus/uat-roles.mjs
- */
 import { randomBytes } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
@@ -34,7 +20,6 @@ async function api(token, method, path, body) {
 }
 const admin = (m, p, b) => api(ADMIN, m, p, b)
 
-// -- setup: reset test-account passwords (they get deleted before real editors anyway)
 async function loginAs(email) {
   const password = randomBytes(12).toString('base64url')
   const users = (await admin('GET', `/users?filter[email][_eq]=${encodeURIComponent(email)}&fields=id`)).data
@@ -54,7 +39,6 @@ if (target.status !== 'published') throw new Error('beep-update must be publishe
 let draftId = null
 let versionId = null
 try {
-  // 1. Editor creates a draft; status defaults to draft
   const c1 = await api(editor, 'POST', '/items/news', {
     slug: 'uat-editor-draft',
     published_at: '2026-07-20T00:00:00',
@@ -67,20 +51,16 @@ try {
   const created = draftId ? (await admin('GET', `/items/news/${draftId}?fields=status`)).data : null
   check('Editor creates draft (status auto-draft)', c1.status === 200 && created?.status === 'draft', `status=${c1.status}, item=${created?.status}`)
 
-  // 2. Editor cannot write the status field
   const c2 = await api(editor, 'PATCH', `/items/news/${draftId}`, { status: 'published' })
   const after2 = (await admin('GET', `/items/news/${draftId}?fields=status`)).data
   check('Editor denied publishing (status write)', c2.status === 403 && after2.status === 'draft', `status=${c2.status}`)
 
-  // 3. Editor edits their draft
   const c3 = await api(editor, 'PATCH', `/items/news/${draftId}`, { external_url: 'https://example.com/uat' })
   check('Editor edits own draft', c3.status === 200, `status=${c3.status}`)
 
-  // 4. Editor cannot edit a PUBLISHED item directly
   const c4 = await api(editor, 'PATCH', `/items/news/${target.id}`, { external_url: 'https://hacked.example' })
   check('Editor denied editing published item', c4.status === 403, `status=${c4.status}`)
 
-  // 5. Editor creates a content version on the published item and saves a change
   const c5 = await api(editor, 'POST', '/versions', { key: 'uat-edit', name: 'UAT edit', collection: 'news', item: String(target.id) })
   versionId = c5.data?.id ?? null
   const c5b = versionId ? await api(editor, 'POST', `/versions/${versionId}/save`, { external_url: 'https://uat.finco.design/promoted' }) : { status: 0 }
@@ -88,7 +68,6 @@ try {
   check('Editor creates + saves content version', c5.status === 200 && c5b.status === 200, `create=${c5.status}, save=${c5b.status}`)
   check('Main record unchanged by version save', mainUntouched)
 
-  // 6. Version LIVE PREVIEW through the Nuxt boundary
   try {
     const SECRET = readFileSync(new URL('../.env', import.meta.url), 'utf8').match(/NUXT_CMS_PREVIEW_SECRET=(\S+)/)[1]
     const boot = await fetch(`${APP}/api/cms/preview?secret=${SECRET}&collection=news&id=${target.id}&locale=mn&version=uat-edit`, { redirect: 'manual' })
@@ -99,21 +78,17 @@ try {
     check('Version preview shows unpromoted change', false, `app unreachable: ${e.message}`)
   }
 
-  // 7. Editor cannot promote
   const vHash = (await admin('GET', `/versions/${versionId}?fields=hash`)).data.hash
   const c7 = await api(editor, 'POST', `/versions/${versionId}/promote`, { mainHash: vHash })
   check('Editor denied promote', c7.status === 403, `status=${c7.status}`)
 
-  // 8. Publisher promotes; main record receives the change
   const c8 = await api(publisher, 'POST', `/versions/${versionId}/promote`, { mainHash: vHash })
   const promoted = (await admin('GET', `/items/news/${target.id}?fields=external_url`)).data.external_url
   check('Publisher promotes version to main', c8.status === 200 && promoted === 'https://uat.finco.design/promoted', `status=${c8.status}, url=${promoted}`)
 
-  // 9. Editor cannot delete anything
   const c9 = await api(editor, 'DELETE', `/items/news/${draftId}`)
   check('Editor denied delete', c9.status === 403, `status=${c9.status}`)
 
-  // 10. Publisher can archive (status change) but the policy has no hard delete on news
   const c10 = await api(publisher, 'PATCH', `/items/news/${draftId}`, { status: 'archived' })
   const c10b = await api(publisher, 'DELETE', `/items/news/${draftId}`)
   check('Publisher archives; hard delete denied', c10.status === 200 && c10b.status === 403, `archive=${c10.status}, delete=${c10b.status}`)

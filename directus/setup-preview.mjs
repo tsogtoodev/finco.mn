@@ -1,19 +1,4 @@
 #!/usr/bin/env node
-/**
- * Live-preview provisioning (plan §7):
- *  1. "Preview Read Policy" + preview-reader user — can read ALL statuses
- *     (drafts included) and content versions. Server-only token; never public.
- *  2. Sets each collection's Live Preview URL to the Nuxt bootstrap endpoint,
- *     embedding the rotatable preview bootstrap secret.
- *
- * Idempotent. Prints NUXT_CMS_PREVIEW_TOKEN / NUXT_CMS_PREVIEW_SECRET once on
- * first creation — store them in .env + Worker secrets. Re-running keeps the
- * existing user token; pass ROTATE_SECRET=1 to mint + apply a fresh secret.
- *
- * Usage:
- *   DIRECTUS_URL=... DIRECTUS_TOKEN=<admin> [PREVIEW_SITE=https://finco.design] \
- *   [PREVIEW_SECRET=<existing>] node directus/setup-preview.mjs
- */
 import { randomBytes } from 'node:crypto'
 
 const BASE = (process.env.DIRECTUS_URL ?? 'https://cms.finco.design').replace(/\/$/, '')
@@ -36,9 +21,6 @@ const findOne = async (path, k, v) => (await call('GET', `${path}?filter[${k}][_
 const BASES = ['products', 'services', 'branches', 'jobs', 'news', 'legal', 'pages']
 const JUNCTIONS = ['products_related', 'services_related']
 
-// ---------------------------------------------------------------------------
-// 1. Policy + permissions (read everything, any status)
-// ---------------------------------------------------------------------------
 let policy = await findOne('/policies', 'name', 'Preview Read Policy')
 if (!policy) {
   policy = await call('POST', '/policies', { name: 'Preview Read Policy', icon: 'preview', app_access: false, admin_access: false })
@@ -55,9 +37,6 @@ for (const c of [...BASES, ...BASES.map((c) => `${c}_translations`), ...JUNCTION
   await ensureRead(c)
 }
 
-// ---------------------------------------------------------------------------
-// 2. preview-reader user + static token
-// ---------------------------------------------------------------------------
 let user = await findOne('/users', 'email', 'preview-reader@finco.design')
 if (!user) {
   const token = randomBytes(32).toString('hex')
@@ -70,9 +49,6 @@ if (!user) {
   console.log('\nNUXT_CMS_PREVIEW_TOKEN=' + token)
 } else console.log('= preview-reader user exists (token unchanged)')
 
-// ---------------------------------------------------------------------------
-// 3. Bootstrap secret + per-collection Live Preview URLs
-// ---------------------------------------------------------------------------
 const secret = process.env.PREVIEW_SECRET || randomBytes(32).toString('hex')
 if (!process.env.PREVIEW_SECRET) console.log('NUXT_CMS_PREVIEW_SECRET=' + secret + '\n(store both — shown once)')
 

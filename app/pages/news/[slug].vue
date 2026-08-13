@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import type { Collections } from '@nuxt/content'
 
-// News article page rebuilt to Figma 663:14287: solid header, white page,
-// 760px column — back pill, dotted date + 32px title, lede, rounded-24 cover,
-// divider, markdown body, accent "view more news" CTA. A sticky tick-ruler on
-// the left fills with accent as the article is read (progress % in accent).
-// 404s when the slug/locale pair is missing (same contract as product/job
-// detail pages).
 const { locale, t } = useI18n()
 const localePath = useLocalePath()
 const router = useRouter()
@@ -30,7 +24,6 @@ if (!article.value) {
   throw createError({ statusCode: 404, statusMessage: 'Article not found', fatal: true })
 }
 
-// "2026.12.22" — dotted date like the design.
 const published = computed(() => {
   if (!article.value?.publishedAt) return ''
   const d = new Date(article.value.publishedAt)
@@ -47,12 +40,8 @@ function goBack() {
   else navigateTo(localePath('/news'))
 }
 
-// --- reading-progress ruler (Figma 663:14309) --------------------------------
-// Sticky tick column in the left margin; ticks fill top-down with the accent
-// colour as the article scrolls past. The tick at the current position grows
-// longer and the percentage number rides right next to it.
 const TICKS = 34
-const TICK_PITCH = 5 // 1px tick + 4px gap — keep in sync with the template
+const TICK_PITCH = 5
 const articleEl = ref<HTMLElement | null>(null)
 const progress = ref(0)
 const activeTick = computed(() => Math.round(progress.value * (TICKS - 1)))
@@ -74,7 +63,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScroll)
   window.removeEventListener('resize', onScroll)
 })
-// -----------------------------------------------------------------------------
 
 useSeoMeta({
   title: () => article.value?.title ?? t('nav.news'),
@@ -84,7 +72,6 @@ useSeoMeta({
 
 <template>
   <div v-if="article" class="relative bg-white">
-    <!-- Sticky reading-progress ruler — decorative, margin space only -->
     <div class="pointer-events-none absolute inset-y-0 left-12 hidden lg:block" aria-hidden="true">
       <div class="sticky top-0 flex h-screen items-center">
         <div class="relative">
@@ -94,7 +81,6 @@ useSeoMeta({
           >
             {{ Math.round(progress * 100) }}
           </span>
-          <!-- One persistent long marker that slides along the ruler -->
           <span
             class="absolute left-0 h-px w-7 bg-accent transition-[top] duration-150 ease-out"
             :style="{ top: `${activeTick * TICK_PITCH}px` }"
@@ -153,9 +139,6 @@ useSeoMeta({
 </template>
 
 <style scoped>
-/* Markdown body per Figma 663:14303/14304: 16px semibold black headings,
-   16px light black/50 paragraphs, rounded-24 inline images. (No tailwind
-   typography plugin in this project — styled by hand.) */
 .article-body :deep(h2),
 .article-body :deep(h3),
 .article-body :deep(h4) {

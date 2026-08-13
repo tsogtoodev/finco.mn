@@ -1,23 +1,4 @@
 #!/usr/bin/env node
-// Directus content sanity check (plan §9) — the CMS-era successor to
-// check-content.mjs. Read-only. Guards the invariants the app relies on:
-//   1. Locale parity: every base record has EXACTLY one mn and one en
-//      translation (missing → 404s/vanishing lists in that locale; duplicates
-//      → nondeterministic picks in the normalizer).
-//   2. Slug/key integrity: present, unique, URL-safe (detail routes look up
-//      by slug; pages routes by key — all six keys present exactly once).
-//   3. Status values are only draft/published/archived.
-//   4. Required fields: products audience+numeric order+title; news
-//      title/summary/body + valid published_at; legal title/body; branches
-//      name/address + numeric coordinates; jobs/services title.
-//   5. Relations: junction rows point at existing products; a PUBLISHED item
-//      relating to a non-published product is flagged (renders as a gap).
-//   6. Files: every referenced image id resolves to a directus_files row.
-//
-// Needs a token that can read ALL statuses (admin or preview-reader) — the
-// api-reader token only sees published and would blind the draft checks.
-//
-// Usage: DIRECTUS_URL=... DIRECTUS_TOKEN=... node scripts/check-directus-content.mjs
 
 const BASE = (process.env.DIRECTUS_URL ?? 'https://cms.finco.design').replace(/\/$/, '')
 const TOKEN = process.env.DIRECTUS_TOKEN
@@ -42,8 +23,6 @@ async function get(path) {
 const all = (collection, fields) => get(`/items/${collection}?limit=-1&fields=${fields.join(',')}`)
 const blank = (v) => v == null || String(v).trim() === ''
 
-// Collection spec: identifier field, raw file-FK fields, required translated
-// fields, extra per-record checks.
 const SPECS = {
   products: {
     param: 'slug',
@@ -81,18 +60,11 @@ const SPECS = {
   pages: { param: 'key', files: [], requiredTr: [], baseFields: [] },
 }
 
-// ---------------------------------------------------------------------------
-// languages
-// ---------------------------------------------------------------------------
 const langs = (await all('languages', ['code'])).map((l) => l.code).sort()
 if (langs.join(',') !== 'en,mn') errors.push(`languages: expected exactly [en, mn], got [${langs.join(', ')}]`)
 
-// files index for reference checks
 const fileIds = new Set((await get('/files?limit=-1&fields=id')).map((f) => f.id))
 
-// ---------------------------------------------------------------------------
-// per-collection checks
-// ---------------------------------------------------------------------------
 const counts = {}
 const productStatusBySlug = new Map()
 const productIdStatus = new Map()
@@ -110,7 +82,6 @@ for (const [name, spec] of Object.entries(SPECS)) {
     const key = r[spec.param]
     const label = `${name}/${key ?? r.id}`
 
-    // slug/key integrity
     if (blank(key)) errors.push(`${label}: empty ${spec.param}`)
     else {
       if (seen.has(key)) errors.push(`${name}: duplicate ${spec.param} "${key}"`)
@@ -119,10 +90,8 @@ for (const [name, spec] of Object.entries(SPECS)) {
       if (spec.param === 'key' && !PAGE_KEYS.includes(key)) errors.push(`${label}: unknown page key`)
     }
 
-    // status
     if (!STATUSES.has(r.status)) errors.push(`${label}: invalid status "${r.status}"`)
 
-    // translation parity — exactly one per locale
     const perLocale = Object.fromEntries(LOCALES.map((l) => [l, r.translations?.filter((t) => t.languages_code === l) ?? []]))
     for (const l of LOCALES) {
       if (perLocale[l].length === 0) errors.push(`${label}: missing ${l} translation`)
@@ -131,7 +100,6 @@ for (const [name, spec] of Object.entries(SPECS)) {
     const strays = r.translations?.filter((t) => !LOCALES.includes(t.languages_code)) ?? []
     if (strays.length) errors.push(`${label}: translation with unknown language "${strays[0].languages_code}"`)
 
-    // required translated fields
     for (const l of LOCALES) {
       const t = perLocale[l][0]
       if (!t) continue
@@ -140,7 +108,6 @@ for (const [name, spec] of Object.entries(SPECS)) {
       }
     }
 
-    // file references resolve
     for (const f of spec.files) {
       if (r[f] && !fileIds.has(r[f])) errors.push(`${label}: ${f} references missing file ${r[f]}`)
     }
@@ -158,7 +125,6 @@ for (const [name, spec] of Object.entries(SPECS)) {
   }
 }
 
-// products: duplicate order within an audience makes carousel/menu order nondeterministic
 {
   const rows = await all('products', ['slug', 'audience', 'order', 'status'])
   const byAud = {}
@@ -170,14 +136,8 @@ for (const [name, spec] of Object.entries(SPECS)) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// about page structure (post-restructure: flat about_* fields, see
-// directus/setup-about-restructure.mjs). A missing key here silently blanks a
-// whole section on /about, so guard the shape the components destructure.
-// ---------------------------------------------------------------------------
 {
   const SCALARS = [
-    // photo/portrait are the relational upload fields (setup-image-fields.mjs)
     'about_hero_headline', 'about_hero_intro', 'about_hero_photo_file',
     'about_values_heading_lead', 'about_values_heading_accent', 'about_values_subheading',
     'about_history_heading_lead', 'about_history_heading_accent', 'about_history_subheading',
@@ -192,8 +152,8 @@ for (const [name, spec] of Object.entries(SPECS)) {
     about_mission_blocks: ['badge', 'heading', 'body'],
     about_values_items: ['title', 'body'],
     about_history_milestones: ['year', 'body'],
-    about_board_members: ['name', 'role', 'bio', 'photo'], // bioHover optional
-    about_org_departments: null, // string[]
+    about_board_members: ['name', 'role', 'bio', 'photo'],
+    about_org_departments: null,
   }
   try {
     const rows = await get(
@@ -202,7 +162,7 @@ for (const [name, spec] of Object.entries(SPECS)) {
     for (const l of LOCALES) {
       const t = rows?.[0]?.translations?.find((x) => x.languages_code === l)
       const label = `pages/about (${l})`
-      if (!t) continue // parity errors already reported above
+      if (!t) continue
       for (const f of SCALARS) if (blank(t[f])) errors.push(`${label}: missing ${f}`)
       for (const [f, keys] of Object.entries(REPEATERS)) {
         const v = t[f]
@@ -224,9 +184,6 @@ for (const [name, spec] of Object.entries(SPECS)) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// relations
-// ---------------------------------------------------------------------------
 for (const [junction, ownColl, ownField, otherField] of [
   ['products_related', 'products', 'products_id', 'related_products_id'],
   ['services_related', 'services', 'services_id', 'products_id'],
@@ -244,9 +201,6 @@ for (const [junction, ownColl, ownField, otherField] of [
   }
 }
 
-// ---------------------------------------------------------------------------
-// report
-// ---------------------------------------------------------------------------
 console.log(
   'counts: ' +
     Object.entries(counts)

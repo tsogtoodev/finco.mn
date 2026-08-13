@@ -1,6 +1,4 @@
 <script setup lang="ts">
-// About Us — Бидний тухай (Figma 1:12179). Full-bleed dark hero, so the page
-// opts into the transparent overlay nav. Footer comes from the default layout.
 definePageMeta({ transparentHeader: true })
 
 const { t } = useI18n()

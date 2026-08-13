@@ -1,6 +1,4 @@
 <script setup lang="ts">
-// Shared timeline. `orientation: vertical` (About story) | `horizontal`
-// (Careers recruitment). Items: { year/step label, title, body? }.
 withDefaults(
   defineProps<{
     items: { label: string; title: string; body?: string }[]
@@ -11,7 +9,6 @@ withDefaults(
 </script>
 
 <template>
-  <!-- Vertical -->
   <ol v-if="orientation === 'vertical'" class="relative space-y-10 border-l-2 border-input pl-8">
     <MotionReveal v-for="(m, i) in items" :key="i" :delay="i * 0.08" as="li">
       <span class="absolute -left-[9px] mt-1.5 size-4 rounded-full border-2 border-primary bg-background" />
@@ -21,7 +18,6 @@ withDefaults(
     </MotionReveal>
   </ol>
 
-  <!-- Horizontal -->
   <div v-else class="relative">
     <div class="absolute left-0 right-0 top-2 hidden h-0.5 bg-input md:block" />
     <ol class="grid gap-8 md:grid-cols-3 lg:grid-cols-6">

@@ -1,24 +1,4 @@
 #!/usr/bin/env node
-/**
- * Editor-controlled background photos for the home hero carousel.
- *
- *   pages_translations.hero_slides[]  += image  (file uuid -> directus_files)
- *
- * The four slide photos were baked into app/components/HomeHero.vue (`bg` on
- * each slide config). This adds an `image` subfield to the hero_slides repeater
- * as a file picker and back-fills each row with the photo the component is
- * currently showing — so nothing changes visually, but editors can now swap the
- * art per slide. Bytes live in R2 like all other media; sha256 dedupe via the
- * file `description` tag (same convention as scripts/directus-seed.mjs and
- * directus/setup-image-fields.mjs). Must run from the repo root (reads ./public).
- *
- * `bg` stays in the component as the fallback for rows with no upload — the
- * normalizer (server/utils/cms-normalizers.ts assembleHeroSlides) resolves the
- * uuid to a media URL and drops it if the file is gone. Keep the KEY_ART map
- * below in sync with the component's slide list.
- *
- * Usage:  DIRECTUS_URL=... DIRECTUS_TOKEN=... node directus/setup-hero-slide-images.mjs [--force]
- */
 
 import { readFileSync, existsSync } from 'node:fs'
 import { join, basename } from 'node:path'
@@ -32,7 +12,6 @@ const ROOT = process.cwd()
 const T = 'pages_translations'
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-// slide key -> the photo HomeHero.vue bakes in today (public/ paths)
 const KEY_ART = {
   fincoBiz: '/images/products/hero-business.jpg',
   beepWallet: '/images/home/hero-beep-bg.jpg',
@@ -90,9 +69,6 @@ async function uploadImage(publicPath) {
   return id
 }
 
-// ---------------------------------------------------------------------------
-// Run
-// ---------------------------------------------------------------------------
 if (!token) {
   const email = process.env.DIRECTUS_ADMIN_EMAIL
   const password = process.env.DIRECTUS_ADMIN_PASSWORD
@@ -104,7 +80,6 @@ if (!token) {
 }
 console.log(`\nHero-slide background images on ${BASE}\n`)
 
-// 1. repeater subfield -> file picker -----------------------------------------
 console.log('[field]')
 {
   const f = await api('GET', `/fields/${T}/hero_slides`)
@@ -132,7 +107,6 @@ console.log('[field]')
   }
 }
 
-// 2. back-fill the currently-rendered art --------------------------------------
 console.log('[migrate]')
 const rows = await api('GET', `/items/${T}?limit=-1&fields=id,languages_code,hero_slides`)
 let failures = 0
@@ -145,7 +119,6 @@ for (const row of rows) {
   let changed = false
   const migrated = []
   for (const s of slides) {
-    // Already picked by an editor — never clobber without --force.
     if (s?.image && !FORCE) {
       migrated.push(s)
       continue

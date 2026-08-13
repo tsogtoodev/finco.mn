@@ -1,22 +1,12 @@
 <script setup lang="ts">
 import { Motion } from 'motion-v'
 
-// Feature card (Figma 1016:4448): a 192px rounded illustration well on a soft
-// white gradient surface, with the accent title + supporting copy sitting at the
-// bottom of the card. Fills its grid cell, so the gap between the well and the
-// caption is whatever height the cell gives it.
-//
-// Keeps the React Bits tilt this component started as: the card rotates toward
-// the pointer on a spring and lifts a little. It tilts as ONE plane rather than
-// parallaxing its layers — the card clips its own rounded corners, and
-// `overflow: hidden` + `transform-style: preserve-3d` cancel each other out.
 const props = withDefaults(
   defineProps<{
     imageSrc: string
     altText?: string
     title?: string
     body?: string
-    /** Side of the square illustration well (Figma: 192px). */
     imageSize?: string
     scaleOnHover?: number
     rotateAmplitude?: number
@@ -34,7 +24,6 @@ const rotateX = ref(0)
 const rotateY = ref(0)
 const scale = ref(1)
 
-// Pointer position within the card, fed to the glow as CSS vars (see .tilt-glow).
 const glowX = ref(0)
 const glowY = ref(0)
 
@@ -45,8 +34,6 @@ const springTransition = {
   mass: 2,
 }
 
-// The tilt is pure decoration, so it's dropped entirely for reduced-motion
-// users — leaving the spring in place would still swing the card around.
 function prefersReducedMotion() {
   return import.meta.client && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
@@ -56,8 +43,6 @@ function handleMouse(e: MouseEvent) {
 
   const rect = cardRef.value.getBoundingClientRect()
 
-  // The glow tracks the pointer even for reduced motion — it's the hover
-  // affordance itself, not an embellishment on top of one.
   glowX.value = e.clientX - rect.left
   glowY.value = e.clientY - rect.top
 
@@ -71,8 +56,6 @@ function handleMouse(e: MouseEvent) {
 }
 
 function handleMouseEnter(e: MouseEvent) {
-  // Place the glow before it fades in, so it doesn't slide in from the corner
-  // when the pointer enters without a mousemove landing first.
   handleMouse(e)
   if (prefersReducedMotion()) return
   scale.value = props.scaleOnHover
@@ -100,19 +83,11 @@ function handleMouseLeave() {
       :animate="{ rotateX, rotateY, scale }"
       :transition="springTransition"
     >
-      <!-- Hover wash. `background-image` isn't an interpolable property, so the
-           hover gradient can't be transitioned on the card itself — it rides on
-           its own layer and cross-fades on opacity instead. Everything below it
-           is `relative` so it stays under the content despite being painted in
-           the positioned layer. -->
       <span
         aria-hidden="true"
         class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 ease-out [background:linear-gradient(180deg,#F3F2FD_0%,#FAFAFE_100%)] group-hover:opacity-100 motion-reduce:transition-none"
       />
 
-      <!-- Cursor glow (Figma 1016:4470). Sits above the wash — the wash is
-           opaque, so a glow underneath it would never show. The card's
-           `overflow-hidden` is what keeps it inside the rounded box. -->
       <span aria-hidden="true" class="tilt-glow" />
 
       <div
@@ -141,11 +116,6 @@ function handleMouseLeave() {
 </template>
 
 <style scoped>
-/* Figma 1016:4470 is a 50.7px #4C41D8 circle under a 48.2px gaussian blur, which
-   spreads it into a ~243px violet bloom. It's parked at the card's top-left and
-   translated to the pointer (the % in the calc is the glow's OWN half-size, so
-   it centres on the cursor); transitioning that transform is what makes it trail
-   the cursor instead of snapping to it. */
 .tilt-glow {
   position: absolute;
   top: 0;
@@ -167,7 +137,6 @@ figure:hover .tilt-glow {
   opacity: 1;
 }
 
-/* Reduced motion keeps the glow (it's the hover cue) but drops the trailing. */
 @media (prefers-reduced-motion: reduce) {
   .tilt-glow {
     transition: none;
