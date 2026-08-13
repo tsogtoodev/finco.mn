@@ -51,6 +51,32 @@ collections:
       versioning: false
     schema:
       name: branches_translations
+  - collection: configuration
+    meta:
+      accountability: all
+      archive_app_filter: true
+      archive_field: status
+      archive_value: archived
+      collapse: open
+      collection: configuration
+      color: null
+      display_template: '{{key}}'
+      group: null
+      hidden: false
+      icon: settings
+      item_duplication_fields: null
+      note: >-
+        Site-wide key/value settings (contact details, social links). Not
+        translated — the same value is used in every locale.
+      preview_url: null
+      singleton: false
+      sort: null
+      sort_field: sort
+      translations: null
+      unarchive_value: draft
+      versioning: false
+    schema:
+      name: configuration
   - collection: jobs
     meta:
       accountability: all
@@ -1308,6 +1334,379 @@ fields:
       data_type: varchar
       default_value: null
       max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: configuration
+    field: key
+    type: string
+    meta:
+      collection: configuration
+      conditions: null
+      display: null
+      display_options: null
+      field: key
+      group: null
+      hidden: false
+      interface: input
+      note: >-
+        Referenced from code — never rename a key that is in use. Lowercase with
+        underscores, e.g. contact_phone.
+      options:
+        slug: true
+        slugSeparator: _
+        trim: true
+      readonly: false
+      required: true
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: key
+      table: configuration
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: true
+      is_indexed: true
+      is_primary_key: true
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: configuration
+    field: status
+    type: string
+    meta:
+      collection: configuration
+      conditions: null
+      display: null
+      display_options: null
+      field: status
+      group: null
+      hidden: false
+      interface: select-dropdown
+      note: Only published entries reach the site.
+      options:
+        choices:
+          - text: $t:published
+            value: published
+          - text: $t:draft
+            value: draft
+          - text: $t:archived
+            value: archived
+      readonly: false
+      required: false
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: status
+      table: configuration
+      data_type: varchar
+      default_value: draft
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: configuration
+    field: value
+    type: text
+    meta:
+      collection: configuration
+      conditions: null
+      display: null
+      display_options: null
+      field: value
+      group: null
+      hidden: false
+      interface: input-multiline
+      note: >-
+        The value as it should appear on the site. Phone numbers keep their
+        spacing; links need the full https:// URL.
+      options: null
+      readonly: false
+      required: true
+      sort: 3
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: value
+      table: configuration
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: configuration
+    field: label
+    type: string
+    meta:
+      collection: configuration
+      conditions: null
+      display: null
+      display_options: null
+      field: label
+      group: null
+      hidden: false
+      interface: input
+      note: >-
+        What this setting is, in plain language. Editor-facing only — never
+        rendered.
+      options: null
+      readonly: false
+      required: false
+      sort: 4
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: label
+      table: configuration
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: configuration
+    field: sort
+    type: integer
+    meta:
+      collection: configuration
+      conditions: null
+      display: null
+      display_options: null
+      field: sort
+      group: null
+      hidden: true
+      interface: input
+      note: null
+      options: null
+      readonly: false
+      required: false
+      sort: 5
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: sort
+      table: configuration
+      data_type: integer
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: configuration
+    field: user_created
+    type: string
+    meta:
+      collection: configuration
+      conditions: null
+      display: null
+      display_options: null
+      field: user_created
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: true
+      required: false
+      sort: 6
+      special:
+        - user-created
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: user_created
+      table: configuration
+      data_type: char
+      default_value: null
+      max_length: 36
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: configuration
+    field: date_created
+    type: timestamp
+    meta:
+      collection: configuration
+      conditions: null
+      display: null
+      display_options: null
+      field: date_created
+      group: null
+      hidden: true
+      interface: datetime
+      note: null
+      options: null
+      readonly: true
+      required: false
+      sort: 7
+      special:
+        - date-created
+        - cast-timestamp
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: date_created
+      table: configuration
+      data_type: datetime
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: configuration
+    field: user_updated
+    type: string
+    meta:
+      collection: configuration
+      conditions: null
+      display: null
+      display_options: null
+      field: user_updated
+      group: null
+      hidden: true
+      interface: select-dropdown-m2o
+      note: null
+      options: null
+      readonly: true
+      required: false
+      sort: 8
+      special:
+        - user-updated
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: user_updated
+      table: configuration
+      data_type: char
+      default_value: null
+      max_length: 36
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: configuration
+    field: date_updated
+    type: timestamp
+    meta:
+      collection: configuration
+      conditions: null
+      display: null
+      display_options: null
+      field: date_updated
+      group: null
+      hidden: true
+      interface: datetime
+      note: null
+      options: null
+      readonly: true
+      required: false
+      sort: 9
+      special:
+        - date-updated
+        - cast-timestamp
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: date_updated
+      table: configuration
+      data_type: datetime
+      default_value: null
+      max_length: null
       numeric_precision: null
       numeric_scale: null
       is_nullable: true
@@ -3304,6 +3703,47 @@ fields:
       validation: null
       validation_message: null
       width: full
+  - collection: news
+    field: featured
+    type: boolean
+    meta:
+      collection: news
+      conditions: null
+      display: null
+      display_options: null
+      field: featured
+      group: null
+      hidden: false
+      interface: boolean
+      note: >-
+        Shown in the "Онцлох" block on the news index. Up to 3; the rest fill
+        with the latest articles.
+      options: null
+      readonly: false
+      required: false
+      sort: 5
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: featured
+      table: news
+      data_type: boolean
+      default_value: false
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
   - collection: news_translations
     field: id
     type: integer
@@ -7278,6 +7718,487 @@ fields:
       has_auto_increment: false
       foreign_key_table: directus_files
       foreign_key_column: id
+  - collection: pages_translations
+    field: fincobiz_card_request_heading
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: fincobiz_card_request_heading
+      group: home_fincobiz_group
+      hidden: false
+      interface: input
+      note: Card-deck heading — "request" card.
+      options: null
+      readonly: false
+      required: false
+      sort: 7
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: fincobiz_card_request_heading
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: fincobiz_card_request_body
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: fincobiz_card_request_body
+      group: home_fincobiz_group
+      hidden: false
+      interface: input-multiline
+      note: Card-deck body copy — "request" card.
+      options: null
+      readonly: false
+      required: false
+      sort: 8
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: fincobiz_card_request_body
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: fincobiz_card_receivables_heading
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: fincobiz_card_receivables_heading
+      group: home_fincobiz_group
+      hidden: false
+      interface: input
+      note: Card-deck heading — "receivables" card.
+      options: null
+      readonly: false
+      required: false
+      sort: 9
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: fincobiz_card_receivables_heading
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: fincobiz_card_receivables_body
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: fincobiz_card_receivables_body
+      group: home_fincobiz_group
+      hidden: false
+      interface: input-multiline
+      note: Card-deck body copy — "receivables" card.
+      options: null
+      readonly: false
+      required: false
+      sort: 10
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: fincobiz_card_receivables_body
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: fincobiz_card_eligibility_heading
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: fincobiz_card_eligibility_heading
+      group: home_fincobiz_group
+      hidden: false
+      interface: input
+      note: Card-deck heading — "eligibility" card.
+      options: null
+      readonly: false
+      required: false
+      sort: 11
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: fincobiz_card_eligibility_heading
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: fincobiz_card_eligibility_body
+    type: text
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: fincobiz_card_eligibility_body
+      group: home_fincobiz_group
+      hidden: false
+      interface: input-multiline
+      note: Card-deck body copy — "eligibility" card.
+      options: null
+      readonly: false
+      required: false
+      sort: 12
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: fincobiz_card_eligibility_body
+      table: pages_translations
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: beep_download_label
+    type: string
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: beep_download_label
+      group: home_beep_group
+      hidden: false
+      interface: input
+      note: Label above the App Store / Google Play badges, e.g. "Апп татах:".
+      options: null
+      readonly: false
+      required: false
+      sort: 6
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: beep_download_label
+      table: pages_translations
+      data_type: varchar
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: pages_translations
+    field: beep_qr_file
+    type: uuid
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: beep_qr_file
+      group: home_beep_group
+      hidden: false
+      interface: file-image
+      note: Download QR shown beside the store badges (177x186). Stored in R2.
+      options: null
+      readonly: false
+      required: false
+      sort: 7
+      special:
+        - file
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: beep_qr_file
+      table: pages_translations
+      data_type: char
+      default_value: null
+      max_length: 36
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_files
+      foreign_key_column: id
+  - collection: pages_translations
+    field: hero_slide_fincobiz_file
+    type: uuid
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: hero_slide_fincobiz_file
+      group: home_group
+      hidden: false
+      interface: file-image
+      note: >-
+        FincoBiz slide background (1440x737). Stored in R2. Leave empty to use
+        the built-in art.
+      options: null
+      readonly: false
+      required: false
+      sort: 32
+      special:
+        - file
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: hero_slide_fincobiz_file
+      table: pages_translations
+      data_type: char
+      default_value: null
+      max_length: 36
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_files
+      foreign_key_column: id
+  - collection: pages_translations
+    field: hero_slide_beepwallet_file
+    type: uuid
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: hero_slide_beepwallet_file
+      group: home_group
+      hidden: false
+      interface: file-image
+      note: >-
+        BeepWallet slide background (1440x737). Stored in R2. Leave empty to use
+        the built-in art.
+      options: null
+      readonly: false
+      required: false
+      sort: 33
+      special:
+        - file
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: hero_slide_beepwallet_file
+      table: pages_translations
+      data_type: char
+      default_value: null
+      max_length: 36
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_files
+      foreign_key_column: id
+  - collection: pages_translations
+    field: hero_slide_loans_file
+    type: uuid
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: hero_slide_loans_file
+      group: home_group
+      hidden: false
+      interface: file-image
+      note: >-
+        Loans slide background (1440x737). Stored in R2. Leave empty to use the
+        built-in art.
+      options: null
+      readonly: false
+      required: false
+      sort: 34
+      special:
+        - file
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: hero_slide_loans_file
+      table: pages_translations
+      data_type: char
+      default_value: null
+      max_length: 36
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_files
+      foreign_key_column: id
+  - collection: pages_translations
+    field: hero_slide_trust_file
+    type: uuid
+    meta:
+      collection: pages_translations
+      conditions: null
+      display: null
+      display_options: null
+      field: hero_slide_trust_file
+      group: home_group
+      hidden: false
+      interface: file-image
+      note: >-
+        Trust slide background (1440x737). Stored in R2. Leave empty to use the
+        built-in art.
+      options: null
+      readonly: false
+      required: false
+      sort: 35
+      special:
+        - file
+      translations: null
+      validation: null
+      validation_message: null
+      width: half
+    schema:
+      name: hero_slide_trust_file
+      table: pages_translations
+      data_type: char
+      default_value: null
+      max_length: 36
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: directus_files
+      foreign_key_column: id
   - collection: products
     field: id
     type: uuid
@@ -8460,7 +9381,7 @@ fields:
       foreign_key_column: null
   - collection: products_translations
     field: tabs_requirements
-    type: json
+    type: text
     meta:
       collection: products_translations
       conditions: null
@@ -8469,23 +9390,15 @@ fields:
       field: tabs_requirements
       group: null
       hidden: false
-      interface: list
-      note: Rows of the "Requirements" tab.
-      options:
-        fields:
-          - field: text
-            meta:
-              field: text
-              interface: input-multiline
-              width: full
-            name: text
-            type: text
-        template: '{{text}}'
+      interface: input-rich-text-md
+      note: >-
+        Markdown. The "Requirements" tab — a numbered list renders as the
+        design's numbered rows.
+      options: null
       readonly: false
       required: false
       sort: 80
-      special:
-        - cast-json
+      special: null
       translations: null
       validation: null
       validation_message: null
@@ -8493,7 +9406,7 @@ fields:
     schema:
       name: tabs_requirements
       table: products_translations
-      data_type: json
+      data_type: text
       default_value: null
       max_length: null
       numeric_precision: null
@@ -8518,8 +9431,8 @@ fields:
       field: tabs_other
       group: null
       hidden: false
-      interface: input-multiline
-      note: Content of the "Other" tab.
+      interface: input-rich-text-md
+      note: Markdown. The "Other documents" tab.
       options: null
       readonly: false
       required: false
@@ -9989,6 +10902,111 @@ relations:
     schema:
       table: pages_translations
       column: about_ceo_portrait_file
+      foreign_key_table: directus_files
+      foreign_key_column: id
+      constraint_name: null
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: pages_translations
+    field: beep_qr_file
+    related_collection: directus_files
+    meta:
+      junction_field: null
+      many_collection: pages_translations
+      many_field: beep_qr_file
+      one_allowed_collections: null
+      one_collection: directus_files
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: pages_translations
+      column: beep_qr_file
+      foreign_key_table: directus_files
+      foreign_key_column: id
+      constraint_name: null
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: pages_translations
+    field: hero_slide_fincobiz_file
+    related_collection: directus_files
+    meta:
+      junction_field: null
+      many_collection: pages_translations
+      many_field: hero_slide_fincobiz_file
+      one_allowed_collections: null
+      one_collection: directus_files
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: pages_translations
+      column: hero_slide_fincobiz_file
+      foreign_key_table: directus_files
+      foreign_key_column: id
+      constraint_name: null
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: pages_translations
+    field: hero_slide_beepwallet_file
+    related_collection: directus_files
+    meta:
+      junction_field: null
+      many_collection: pages_translations
+      many_field: hero_slide_beepwallet_file
+      one_allowed_collections: null
+      one_collection: directus_files
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: pages_translations
+      column: hero_slide_beepwallet_file
+      foreign_key_table: directus_files
+      foreign_key_column: id
+      constraint_name: null
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: pages_translations
+    field: hero_slide_loans_file
+    related_collection: directus_files
+    meta:
+      junction_field: null
+      many_collection: pages_translations
+      many_field: hero_slide_loans_file
+      one_allowed_collections: null
+      one_collection: directus_files
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: pages_translations
+      column: hero_slide_loans_file
+      foreign_key_table: directus_files
+      foreign_key_column: id
+      constraint_name: null
+      on_update: NO ACTION
+      on_delete: SET NULL
+  - collection: pages_translations
+    field: hero_slide_trust_file
+    related_collection: directus_files
+    meta:
+      junction_field: null
+      many_collection: pages_translations
+      many_field: hero_slide_trust_file
+      one_allowed_collections: null
+      one_collection: directus_files
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: pages_translations
+      column: hero_slide_trust_file
       foreign_key_table: directus_files
       foreign_key_column: id
       constraint_name: null
