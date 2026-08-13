@@ -201,12 +201,22 @@ const markdownRows = (v: unknown): string | undefined => {
 // lookup. Legacy /images/… path strings pass through as a fallback.
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+// Hero-slide background columns, one per fixed slide key
+// (directus/setup-hero-slide-relational-images.mjs).
+const HERO_SLIDE_FILE_FIELDS: Record<string, string> = {
+  fincoBiz: 'hero_slide_fincobiz_file',
+  beepWallet: 'hero_slide_beepwallet_file',
+  loans: 'hero_slide_loans_file',
+  trust: 'hero_slide_trust_file',
+}
+
 async function fileUrlResolver(t: Row): Promise<(v: unknown) => string | undefined> {
   const ids = [
     t.hero_image_file,
     t.about_hero_photo_file,
     t.about_ceo_portrait_file,
     t.beep_qr_file,
+    ...Object.values(HERO_SLIDE_FILE_FIELDS).map((f) => t[f]),
     ...(Array.isArray(t.about_board_members) ? t.about_board_members.map((m: Row) => m?.photo) : []),
     ...(Array.isArray(t.hero_slides) ? t.hero_slides.map((s: Row) => s?.image) : []),
   ].filter((v): v is string => typeof v === 'string' && UUID_RE.test(v))
@@ -230,16 +240,18 @@ const assembleHero = (t: Row, url: (v: unknown) => string | undefined) =>
     cta: linkObj(t.hero_cta_label, t.hero_cta_to),
     secondaryCta: linkObj(t.hero_secondary_cta_label, t.hero_secondary_cta_to),
   })
-// Home hero carousel rows. Copy passes through as-is; `image` is a file uuid
-// (directus/setup-hero-slide-images.mjs) resolved to a media URL, with a legacy
-// path string tolerated. Rows with no image keep the component's baked art.
+// Home hero carousel rows. Copy passes through as-is. The background image
+// prefers the slide's RELATIONAL column (hero_slide_*_file — the real file
+// fields with a working Studio picker), then the legacy repeater uuid, then a
+// legacy path string. Rows with no image keep the component's baked art.
 const assembleHeroSlides = (t: Row, url: (v: unknown) => string | undefined) => {
   if (!Array.isArray(t.hero_slides)) return undefined
   return t.hero_slides.map((s: Row) => {
     const raw = s?.image
     // A uuid that didn't resolve (file deleted) must NOT reach the <img> as a
     // src, so drop it and let the component fall back.
-    const image = typeof raw === 'string' && UUID_RE.test(raw) ? url(raw) : raw || undefined
+    const legacy = typeof raw === 'string' && UUID_RE.test(raw) ? url(raw) : raw || undefined
+    const image = url(t[HERO_SLIDE_FILE_FIELDS[s?.key as string] ?? '']) ?? legacy
     const { image: _, ...rest } = s ?? {}
     return image ? { ...rest, image } : rest
   })
