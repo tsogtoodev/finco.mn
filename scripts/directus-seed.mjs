@@ -162,6 +162,7 @@ const TYPES = {
       beep_expand_lead: d.beep?.expandLead ?? null,
       beep_expand_rest: d.beep?.expandRest ?? null,
       beep_teaser: d.beep?.teaser ?? null,
+      beep_download_label: d.beep?.downloadLabel ?? null,
       fincobiz_subtext: d.fincobiz?.subtext ?? null,
       fincobiz_callout_heading: d.fincobiz?.calloutHeading ?? null,
       fincobiz_callout_subtext: d.fincobiz?.calloutSubtext ?? null,

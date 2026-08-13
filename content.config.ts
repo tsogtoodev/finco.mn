@@ -228,13 +228,18 @@ const pages = defineCollection({
         }),
       )
       .optional(),
-    // Beep showcase copy (home). Pills/artwork are baked images.
+    // Beep showcase copy (home). Pills/glow artwork are baked images; the store
+    // badges are vendor artwork and stay in the component. `downloadLabel` sits
+    // above them and `qr` is the scannable download code — a resolved media URL,
+    // same uuid→URL handling as heroSlides[].image; omit it for the baked QR.
     beep: z
       .object({
         heading: z.string(),
         subtext: z.string(),
         expandLead: z.string(),
         expandRest: z.string(),
+        downloadLabel: z.string().optional(),
+        qr: z.string().optional(),
       })
       .optional(),
     // FincoBiz showcase copy (home) incl. the interactive card deck. Each card

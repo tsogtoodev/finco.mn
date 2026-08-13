@@ -11,7 +11,14 @@ const page = await usePageContent('home')
 const copy = computed(() => ({
   lead: page.value?.beep?.expandLead ?? t('home.beep.expandLead'),
   rest: page.value?.beep?.expandRest ?? t('home.beep.expandRest'),
+  // "Апп татах:" above the store badges. The colon is part of the CMS string
+  // (Figma 1267:15649); the i18n fallback is the colon-less button label.
+  downloadLabel: page.value?.beep?.downloadLabel ?? `${t('home.beep.appDownload')}:`,
 }))
+
+// Editors can swap the QR (it encodes the app's download link); the baked
+// export is the fallback.
+const qrSrc = computed(() => page.value?.beep?.qr || '/images/home/beep-qr-v2.png')
 
 const words = computed(() => {
   const split = (s: string) => s.trim().split(/\s+/).filter(Boolean)
@@ -119,22 +126,31 @@ onBeforeUnmount(() => videoIo?.disconnect())
           <MotionReveal :y="48" :delay="0.15">
             <span class="beep2-qr-row">
               <span class="beep2-qr-card">
-                <img src="/images/home/beep-qr-v2.png" alt="" class="beep2-qr-img">
+                <img :src="qrSrc" alt="" class="beep2-qr-img">
               </span>
+              <!-- Label + the two official store badges, stacked (Figma 1267:15601).
+                   The badges are the vendors' own artwork (Apple / Google brand
+                   guidelines), so they are used as-is at their exact ratios — never
+                   recoloured or re-typeset. -->
               <span class="beep2-qr-stores">
-                <img src="/images/home/beep-playstore.svg" alt="Google Play" class="beep2-store beep2-store--play">
-                <img src="/images/home/beep-apple-dark.svg" alt="App Store" class="beep2-store beep2-store--apple">
+                <p class="beep2-qr-cap">{{ copy.downloadLabel }}</p>
+                <img
+                  src="/images/home/beep-badge-appstore.svg"
+                  alt="Download on the App Store"
+                  width="120"
+                  height="40"
+                  class="beep2-badge beep2-badge--apple"
+                >
+                <img
+                  src="/images/home/beep-badge-googleplay.svg"
+                  alt="Get it on Google Play"
+                  width="119"
+                  height="36"
+                  class="beep2-badge beep2-badge--play"
+                >
               </span>
             </span>
           </MotionReveal>
-          <BlurText
-            text="Beep wallet"
-            as="p"
-            animate-by="words"
-            :delay="45"
-            :start-delay="0.3"
-            class="beep2-qr-cap justify-center"
-          />
         </div>
       </div>
     </div>
@@ -238,22 +254,28 @@ onBeforeUnmount(() => videoIo?.disconnect())
 .beep2-qr-row {
   display: flex;
   align-items: center;
-  gap: 0.9259cqw; /* 14px */
+  gap: 1.5873cqw; /* 24px */
 }
+/* Label + badges column (Figma 1267:15601): 12px rhythm, left-aligned. */
 .beep2-qr-stores {
   display: flex;
   flex-direction: column;
-  gap: 1.0582cqw; /* 16px */
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.7937cqw; /* 12px */
 }
-.beep2-store {
+/* Vendor badge artwork — BOTH axes are set from each badge's own ratio (they
+   differ: 120×40 Apple, 119×36 Google) so neither is ever stretched. */
+.beep2-badge {
   display: block;
+}
+.beep2-badge--apple {
+  width: 7.9143cqw; /* 119.66px */
   height: 2.6455cqw; /* 40px */
 }
-.beep2-store--play {
-  width: 2.3148cqw; /* 35px — 14:16 */
-}
-.beep2-store--apple {
-  width: 2.1495cqw; /* 32.5px — 13:16 */
+.beep2-badge--play {
+  width: 7.8704cqw; /* 119px */
+  height: 2.381cqw; /* 36px */
 }
 .beep2-qr-card {
   display: block;
@@ -274,7 +296,7 @@ onBeforeUnmount(() => videoIo?.disconnect())
   font-size: 1.3228cqw; /* 20px */
   line-height: 1.3228cqw;
   color: rgba(37, 64, 63, 0.5);
-  padding-left: 30px;
+  white-space: nowrap;
 }
 
 @media (max-width: 1023.98px) {
@@ -316,19 +338,19 @@ onBeforeUnmount(() => videoIo?.disconnect())
     border-radius: 0.75rem;
   }
   .beep2-qr-row {
-    gap: 0.875rem;
-  }
-  .beep2-qr-stores {
     gap: 1rem;
   }
-  .beep2-store {
-    height: 2.5rem; /* 40px */
+  .beep2-qr-stores {
+    gap: 0.75rem;
   }
-  .beep2-store--play {
-    width: 2.1875rem; /* 35px */
+  /* Badges shrink to ~87% below lg so the row still clears a 360px viewport. */
+  .beep2-badge--apple {
+    width: 6.5rem; /* 104px */
+    height: 2.1667rem; /* 34.7px */
   }
-  .beep2-store--apple {
-    width: 2.03125rem; /* 32.5px */
+  .beep2-badge--play {
+    width: 6.4625rem; /* 103.4px */
+    height: 1.9531rem; /* 31.3px */
   }
   .beep2-qr-cap {
     font-size: 1.125rem;

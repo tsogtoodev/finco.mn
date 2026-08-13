@@ -161,6 +161,9 @@ const SPECS = [
       input('beep_expand_lead', { group: 'home_beep_group', sort: 3, width: 'full', note: 'Lead of the expanding headline.' }),
       input('beep_expand_rest', { group: 'home_beep_group', sort: 4, width: 'full', note: 'Rest of the expanding headline.' }),
       input('beep_teaser', { group: 'home_beep_group', sort: 5, width: 'full', note: 'Loyalty teaser under the info bar (may start with an emoji).' }),
+      // Store-badge label; the QR upload beside it is added by
+      // directus/setup-beep-download.mjs (which also back-fills both).
+      input('beep_download_label', { group: 'home_beep_group', sort: 6, width: 'full', note: 'Label above the App Store / Google Play badges, e.g. "Апп татах:".' }),
 
       text('fincobiz_subtext', { group: 'home_fincobiz_group', sort: 1 }),
       input('fincobiz_callout_heading', { group: 'home_fincobiz_group', sort: 2, width: 'full' }),
@@ -188,6 +191,7 @@ const SPECS = [
       beep_expand_lead: r.beep?.expandLead ?? null,
       beep_expand_rest: r.beep?.expandRest ?? null,
       beep_teaser: r.beep?.teaser ?? null,
+      beep_download_label: r.beep?.downloadLabel ?? null,
       fincobiz_subtext: r.fincobiz?.subtext ?? null,
       fincobiz_callout_heading: r.fincobiz?.calloutHeading ?? null,
       fincobiz_callout_subtext: r.fincobiz?.calloutSubtext ?? null,
@@ -210,7 +214,7 @@ const SPECS = [
         subheading: r.value_props_subheading,
         items: r.value_props_items ?? undefined,
       }),
-      beep: strip({ heading: r.beep_heading, subtext: r.beep_subtext, expandLead: r.beep_expand_lead, expandRest: r.beep_expand_rest, teaser: r.beep_teaser }),
+      beep: strip({ heading: r.beep_heading, subtext: r.beep_subtext, expandLead: r.beep_expand_lead, expandRest: r.beep_expand_rest, teaser: r.beep_teaser, downloadLabel: r.beep_download_label }),
       fincobiz: strip({
         subtext: r.fincobiz_subtext,
         calloutHeading: r.fincobiz_callout_heading,

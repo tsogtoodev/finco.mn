@@ -206,6 +206,7 @@ async function fileUrlResolver(t: Row): Promise<(v: unknown) => string | undefin
     t.hero_image_file,
     t.about_hero_photo_file,
     t.about_ceo_portrait_file,
+    t.beep_qr_file,
     ...(Array.isArray(t.about_board_members) ? t.about_board_members.map((m: Row) => m?.photo) : []),
     ...(Array.isArray(t.hero_slides) ? t.hero_slides.map((s: Row) => s?.image) : []),
   ].filter((v): v is string => typeof v === 'string' && UUID_RE.test(v))
@@ -250,8 +251,18 @@ const assembleValueProps = (t: Row) =>
     subheading: t.value_props_subheading,
     items: t.value_props_items ?? undefined,
   })
-const assembleBeep = (t: Row) =>
-  strip({ heading: t.beep_heading, subtext: t.beep_subtext, expandLead: t.beep_expand_lead, expandRest: t.beep_expand_rest, teaser: t.beep_teaser })
+const assembleBeep = (t: Row, url: (v: unknown) => string | undefined) =>
+  strip({
+    heading: t.beep_heading,
+    subtext: t.beep_subtext,
+    expandLead: t.beep_expand_lead,
+    expandRest: t.beep_expand_rest,
+    teaser: t.beep_teaser,
+    // Store-badge label + the scannable download QR
+    // (directus/setup-beep-download.mjs).
+    downloadLabel: t.beep_download_label,
+    qr: url(t.beep_qr_file) ?? t.beep_qr,
+  })
 // Each FincoBiz card carries its own tab label, heading and body. Previously
 // only the tab existed (`fincobiz_card_<id>`, a bare string) and the deck's
 // headings/bodies came from i18n — except the `request` card, which borrowed the
@@ -534,7 +545,7 @@ export const CMS_COLLECTIONS: Record<string, CmsCollectionConfig> = {
         statsHeading: undef(t.stats_heading),
         valueProps: assembleValueProps(t) ?? undef(t.value_props),
         heroSlides: assembleHeroSlides(t, url) ?? undef(t.hero_slides),
-        beep: assembleBeep(t) ?? undef(t.beep),
+        beep: assembleBeep(t, url) ?? undef(t.beep),
         fincobiz: assembleFincobiz(t) ?? undef(t.fincobiz),
         showcases: undef(t.showcases),
         cta: undef(t.cta),
