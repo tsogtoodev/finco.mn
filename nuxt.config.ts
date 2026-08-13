@@ -17,8 +17,9 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', type: 'image/png', href: '/favicon.png' },
         { rel: 'manifest', href: '/manifest.json' },
-        { rel: 'preconnect', href: 'https://prod.spline.design', crossorigin: 'anonymous' },
-        { rel: 'dns-prefetch', href: 'https://prod.spline.design' },
+        // No Spline CDN hints: every `.splinecode` is vendored into
+        // `public/spline` (see scripts/sync-spline.mjs) and served same-origin,
+        // so the connection is already open by the time a scene loads.
       ],
     },
     // Cross-page fade+rise (classes in main.css). `out-in` so the old page

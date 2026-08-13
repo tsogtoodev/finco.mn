@@ -173,7 +173,7 @@ onBeforeUnmount(() => {
           >
             <SplineScene
               v-if="splineEnabled"
-              scene="https://prod.spline.design/5QI6kS8kPdn7j7Y3/scene.splinecode?timestamp=20260812040000"
+              scene="/spline/5QI6kS8kPdn7j7Y3.splinecode"
               preload
               defer-until-lcp
               :zoom="1"

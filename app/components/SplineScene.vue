@@ -21,7 +21,13 @@ import {
 
 const props = withDefaults(
   defineProps<{
-    /** URL of the exported .splinecode scene. */
+    /**
+     * URL of the exported .splinecode scene. Same-origin by convention —
+     * the scenes are vendored into `public/spline/<sceneId>.splinecode` by
+     * `scripts/sync-spline.mjs` rather than fetched from prod.spline.design,
+     * so a Spline outage or CDN hiccup can't take a section down and the
+     * bytes ride the site's own cache headers.
+     */
     scene: string
     /** Pre-load margin (px) around the viewport before the canvas is visible. */
     rootMargin?: number
@@ -92,11 +98,11 @@ const props = withDefaults(
      */
     occludedBy?: string
     /**
-     * Treat this scene as important: `preconnect` to the Spline CDN from the
-     * SSR'd head, and warm the runtime + `.splinecode` immediately on mount
-     * rather than waiting for browser idle. For the scenes a visitor reliably
-     * reaches (the About mission pin, the contact CTA) this removes the pause
-     * between scrolling to the section and the scene appearing.
+     * Treat this scene as important: warm the runtime + `.splinecode`
+     * immediately on mount rather than waiting for browser idle. For the scenes
+     * a visitor reliably reaches (the About mission pin, the contact CTA) this
+     * removes the pause between scrolling to the section and the scene
+     * appearing.
      */
     preload?: boolean
     /**
@@ -130,11 +136,11 @@ const props = withDefaults(
   },
 )
 
-// The `preconnect`/`dns-prefetch` for the Spline CDN lives in nuxt.config's
-// app.head, not here: this component only ever renders on the client (call sites
-// gate it behind `useSplineEnabled()`, which is false through SSR and hydration),
-// so a useHead in this setup never runs during SSR and the hint would arrive only
-// after hydration — too late to save the DNS + TLS round trips it exists for.
+// No connection hints: scenes are same-origin (see the `scene` prop), so there
+// are no DNS + TLS round trips left to save. They couldn't be emitted from here
+// anyway — this component only ever renders on the client (call sites gate it
+// behind `useSplineEnabled()`, false through SSR and hydration), so a useHead in
+// this setup would land after hydration, too late to matter.
 //
 // Deliberately no `<link rel="preload" as="fetch">` for the scene itself either.
 // It is ~1MB of runtime plus the scene payload; a hard preload on a below-fold

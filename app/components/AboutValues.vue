@@ -48,7 +48,7 @@ const routeD = computed(() => {
             style="scale: calc(tan(atan2(var(--cluster-size), 1024px)))"
           >
             <SplineScene
-              scene="https://prod.spline.design/n2ZpeSHKKA8Olc1E/scene.splinecode?timestamp=20260812040000"
+              scene="/spline/n2ZpeSHKKA8Olc1E.splinecode"
               :zoom="1"
               no-hover
               defer-until-lcp

@@ -15,7 +15,7 @@ const splineEnabled = useSplineEnabled()
     >
       <SplineScene
         v-if="splineEnabled"
-        scene="https://prod.spline.design/rAfqlL9pnx29yw5P/scene.splinecode?timestamp=20260812040000"
+        scene="/spline/rAfqlL9pnx29yw5P.splinecode"
         no-drag
         preload
         defer-until-lcp
