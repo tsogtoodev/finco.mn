@@ -578,6 +578,28 @@ export const CMS_COLLECTIONS: Record<string, CmsCollectionConfig> = {
   // are the same string in every locale, so `locale` is accepted and ignored
   // rather than used to pick a row. The shape matches the @nuxt/content
   // fallback in content/configuration/*.yml one field for one field.
+  announcement: {
+    param: 'key',
+    // One record ('bar'), translated. `translations.*` for the same reason the
+    // pages normalizer uses it: naming a column that has not landed yet 403s
+    // the whole query, and this one renders on every route.
+    fields: ['key', 'enabled', 'cta_url', 'translations.*'],
+    normalize: (item, locale) => {
+      const t = tr(item, locale)
+      return {
+        locale,
+        key: item.key,
+        // Absent column (pre-migration) reads as enabled — the bar's copy is
+        // what decides whether it says anything, and a silently hidden strip is
+        // harder to diagnose than a visible one.
+        enabled: item.enabled !== false,
+        text: t.text ?? '',
+        ctaLabel: undef(t.cta_label),
+        ctaUrl: undef(item.cta_url),
+      }
+    },
+  },
+
   configuration: {
     param: 'key',
     sort: 'sort',

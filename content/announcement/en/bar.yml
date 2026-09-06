@@ -1,0 +1,10 @@
+# Site-wide promo strip above the nav. One record per locale; `enabled: false`
+# hides it everywhere. Mirrors the Directus `announcement` collection row for
+# row — see directus/setup-announcement.mjs.
+locale: en
+key: bar
+enabled: true
+text: Beep Wallet - New loan terms are live
+ctaLabel: Learn more
+# Internal path (locale prefix is added at render time) or a full https:// URL.
+ctaUrl: /products

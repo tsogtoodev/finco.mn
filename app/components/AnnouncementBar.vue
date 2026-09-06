@@ -9,6 +9,18 @@
 const { t } = useI18n()
 const localePath = useLocalePath()
 
+// Copy comes from the CMS (`announcement` collection); useAnnouncement falls
+// back to the i18n strings when the record is missing or the CMS is down.
+const content = await useAnnouncement()
+
+// An absolute URL is an external campaign link — NuxtLink handles the target,
+// but the locale prefix must NOT be prepended to it.
+const isExternal = computed(() => /^https?:\/\//.test(content.value.ctaUrl))
+const ctaTo = computed(() =>
+  isExternal.value ? content.value.ctaUrl : localePath(content.value.ctaUrl),
+)
+const showCta = computed(() => Boolean(content.value.ctaLabel && content.value.ctaUrl))
+
 const dismissed = useCookie<boolean>('finco_announcement_dismissed', {
   default: () => false,
   sameSite: 'lax',
@@ -36,20 +48,23 @@ onBeforeUnmount(() => clearTimeout(collapseTimer))
 
 <template>
   <div
-    v-if="!dismissed"
+    v-if="content.enabled && content.text && !dismissed"
     class="announcement-bar relative h-[var(--announcement-h)] overflow-hidden bg-announcement text-white"
     :class="{ 'is-collapsing': collapsing }"
   >
     <div class="relative mx-auto flex h-9 max-w-7xl items-center justify-center gap-3 px-12">
       <p class="flex min-w-0 items-center gap-1.5 text-sm">
-        <span class="truncate text-white/75">{{ t('announcement.text') }}</span>
+        <span class="truncate text-white/75">{{ content.text }}</span>
       </p>
 
       <NuxtLink
-        :to="localePath('/products')"
+        v-if="showCta"
+        :to="ctaTo"
+        :target="isExternal ? '_blank' : undefined"
+        :rel="isExternal ? 'noopener noreferrer' : undefined"
         class="flex shrink-0 items-center gap-0.5 text-sm text-teal transition-opacity hover:opacity-80"
       >
-        {{ t('announcement.cta') }}
+        {{ content.ctaLabel }}
         <svg
           viewBox="0 0 24 24"
           class="size-4"

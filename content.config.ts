@@ -395,6 +395,25 @@ const configuration = defineCollection({
   }),
 })
 
+// ─── Announcement bar (site-wide promo strip) ────────────────────────────────
+// One record per locale (key: 'bar'). Unlike `configuration` this IS translated
+// — the strip is copy, not a phone number — so it gets the usual mn/ en/ split.
+// `enabled: false` hides the bar site-wide without deleting the copy.
+const announcement = defineCollection({
+  type: 'data',
+  source: 'announcement/**/*.{yml,yaml}',
+  schema: z.object({
+    locale,
+    key: z.enum(['bar']),
+    enabled: z.boolean().default(true),
+    text: z.string(),
+    ctaLabel: z.string().optional(),
+    // Internal path ('/products') or absolute URL. Internal paths get the
+    // locale prefix at render time; absolute ones open in a new tab.
+    ctaUrl: z.string().optional(),
+  }),
+})
+
 export default defineContentConfig({
-  collections: { products, services, branches, jobs, news, legal, pages, configuration },
+  collections: { products, services, branches, jobs, news, legal, pages, configuration, announcement },
 })
